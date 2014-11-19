@@ -1,4 +1,9 @@
-###Arduino开发环境搭建###
+---
+layout: post
+title:  "Arduino开发环境搭建"
+date:   2014-08-4
+categories: others
+---
 
 准备做一个Arduino+Python的个人项目，发现Arduino找不到一个好用的开发环境.官方的IDE实在是太难用，不支持输入中文。，Sublime的插件的只能编辑文件和编译上传，没法创建项目，新建项目还得切换到官方IDE下。后来发现eclipse也支持Arduino开发，虽然对eclipse没什么好感，但起码是个正经的开发环境了。后来趁着周末折腾了一次，才发现把这货用起来需要花费的精力不比sublime少多少，不过总算是成功了，趁着还没忘记录下步骤。
 
