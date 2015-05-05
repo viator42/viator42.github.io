@@ -628,10 +628,45 @@ SimpleAdapter构造函数的参数分别为
         super.onActivityResult(requestCode, resultCode, data);
     }
 
+#### GPS获取当前位置
 
+AndroidManifest.xml文件添加以下权限.
+    
+    <?xml version="1.0" encoding="utf-8"?>
+    <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+        package="im.supai.supaimarketing" >
+        <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+        <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    ...
+    </manifest>
 
+类必须继承LocationListener接口并重写相关函数.
 
+    public class NewStoreActivity extends BaseAccivity implements LocationListener {
+        
+        //位置相关
+        @Override
+        public void onLocationChanged(Location location) {
+            latitude = location.getLatitude();
+            longitude = location.getLongitude();
+        }
 
+        @Override
+        public void onStatusChanged(String s, int i, Bundle bundle) {
+        }
 
+        @Override
+        public void onProviderEnabled(String s) {
+        }
+
+        @Override
+        public void onProviderDisabled(String s) {
+        }
+    }
+
+在Activity类中需要获取位置的地方新建一个LocationManager并发送请求即可.
+
+    LocationManager locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, (android.location.LocationListener) this);
 
 
