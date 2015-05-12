@@ -669,4 +669,24 @@ AndroidManifest.xml文件添加以下权限.
     LocationManager locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
     locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, (android.location.LocationListener) this);
 
+#### ImageView/ImageButton 设置缩放
+
+设置自适应调整大小和最大宽度.
+
+    itemBtn.setAdjustViewBounds(true);
+    itemBtn.setMaxWidth(100);
+
+### 根据权重设置控件宽度
+
+    把view的宽度设置为0dp同时设置weight属性.
+    
+    android:layout_width="0dp"
+    android:layout_weight="1"
+
+
+
+
+
+
+
 
