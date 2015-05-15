@@ -683,10 +683,3 @@ AndroidManifest.xml文件添加以下权限.
     android:layout_width="0dp"
     android:layout_weight="1"
 
-
-
-
-
-
-
-
