@@ -1,10 +1,11 @@
 # Site settings
 title: 创客工坊
 email: via313@gmail.com
-description: "关注智能硬件,Arduino开发."
+description: "Viator42的个人站,记录折腾路上的点点滴滴."
 baseurl: ""
 url: "http://viator42.github.io"
 username: "viator42"
 # Build settings
 markdown: kramdown
 permalink: pretty
+favicon: "/static/images/favicon.png"

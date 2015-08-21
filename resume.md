@@ -1,8 +1,7 @@
 ---
-layout: post
-title:  "个人简历"
-date:   2015-03-13
-categories: linux，resume
+layout: page
+title: 个人简历
+permalink: /resume/
 ---
 
 ####个人信息
