@@ -5,31 +5,31 @@ date:   2015-04-04
 categories: android
 ---
 
-####HttpClient
-
-获取界面组件
+#### 获取界面组件
 
 	<Button
-	android:layout_width="wrap_content"
-	android:layout_height="wrap_content"
-	android:text="New Button"
 	android:id="@+id/btn1" />
 
 	Button btn1 = findViewById(R.id.btn1);
 
-activity跳转
+#### activity跳转(带参数)
 
-	Intent intent = new Intent();
-	intent.setClass(activity, MainActivity.class);
+	Intent intent = new Intent(activity.this, MainActivity.class);
+    Bundle bundle = new Bundle();
+    Bundle bundle = new Bundle();
+    bundle.putString("key", "value");
 	startActivity(intent);
 	finish();
 
-输出log日志
+    Bundle bundle = this.getIntent().getExtras();
+    String value = bundle.getString("key", "");
+
+#### 输出log日志
 
 	import android.util.Log;
 	Log.v(“log title”, “value");
 
-SharedReference
+#### SharedReference
 
 	//获取SharedPreferences实例     第一个参数是名称, 第二个是作用域
 	SharedPreferences ref = getSharedPreferences("user", Context.MODE_PRIVATE);
@@ -47,7 +47,7 @@ SharedReference
 	//完成后提交修改
 	editor.commit();
 
-Fragment (Android4 以上)
+#### Fragment (Android4 以上)
 
 Fragment类定义
 HelloFragment.java
@@ -58,48 +58,65 @@ public class HelloFragment extends Fragment
 
 包含以下方法
 
-#### Activity跳转
+    public class StatisticFragment extends Fragment {
+        private OnFragmentInteractionListener mListener;
+        private AppContext context;
+        private Store store;
 
-	Intent intent = new Intent();
-	intent.setClass(MyOrderActivity.this, OrderDetailActivity.class);
-	startActivity(intent);
+        private TextView productCountTextView;
 
-#### 跳转传递参数
+        /**
+         * Use this factory method to create a new instance of
+         * this fragment using the provided parameters.
+         *
+         * @return A new instance of fragment StatisticFragment.
+         */
+        // TODO: Rename and change types and number of parameters
+        public static StatisticFragment newInstance(String param1, String param2) {
+            StatisticFragment fragment = new StatisticFragment();
+            Bundle args = new Bundle();
 
-方法1
-传递方
+            fragment.setArguments(args);
+            return fragment;
+        }
 
-	Intent intent = new Intent();
-	intent.setClass(MyOrderActivity.this, OrderDetailActivity.class);
-	intent.putExtra("id", id);
-	startActivity(intent);
+        public StatisticFragment() {
+            // Required empty public constructor
+        }
 
-接收方
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            context = (AppContext) getActivity().getApplicationContext();
+            store = context.getStore();
 
-	int id = this.getIntent().getIntExtra("id", 0);
+        }
 
-方法2, 用bundle
+        @Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                                 Bundle savedInstanceState) {
+            // Inflate the layout for this fragment
+            View view = inflater.inflate(R.layout.fragment_statistic, container, false);
 
-传递方
+            productCountTextView = (TextView) view.findViewById(R.id.product_count);
+            
+            return view;
+        }
+    }
 
-	//新建一个显式意图，第一个参数为当前Activity类对象，第二个参数为你要打开的Activity类
-    Intent intent =new Intent(MainActivity.this,MainActivity2.class);
-    
-    //用Bundle携带数据
-    Bundle bundle=new Bundle();
-    //传递name参数为tinyphp
-    bundle.putString("name", "tinyphp");
-    intent.putExtras(bundle);
-    
-    startActivity(intent);
+Activity.java 使用 Fragment
 
-接收方
+先定义FragmentManager
 
-	//新页面接收数据
-    Bundle bundle = this.getIntent().getExtras();
-    //接收name值
-    String name = bundle.getString("name");
-    Log.i("获取到的name值为",name);
+    private FragmentManager manager;
+    private FragmentTransaction transaction;
+
+设置Fragment
+
+    manager = getFragmentManager();
+    transaction = manager.beginTransaction();
+    transaction.replace(R.id.content, fragment );
+    transaction.commit();
 
 #### ListView自定义布局
 
@@ -245,33 +262,33 @@ listView onClick事件设置
 
 重写方法完成操作.
 
-*  onPreExecute 表示任务执行之前的操作.
-*  doInBackground方法实现耗时的任务。
-*  onPostExecute 主要是更新UI的操作.
+*  onPreExecute 表示任务执行之前的操作.    
+*  doInBackground方法实现耗时的任务。    
+*  onPostExecute 主要是更新UI的操作.    
 
-	public class ListAllTask extends AsyncTask<String, Void, String>
-	{
-		@Override
-        protected void onPreExecute() {
-            super.onPreExecute();
+
+        public class ListAllTask extends AsyncTask<String, Void, String>
+        {
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+            }
+
+            @Override
+            protected String doInBackground(String... params) {
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(String s) {
+                super.onPostExecute(s);
+            }
         }
-
-        @Override
-        protected String doInBackground(String... params) {
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(String s) {
-            super.onPostExecute(s);
-        }
-
-	}
 
 运行AsyncTask
 new ListAllTask().execute("aaa");
 
-#### Application 全局类
+#### Application 全局类配置
 
 定义一个类可以继承Application, onCreate方法在应用启动时运行.
 
@@ -288,6 +305,7 @@ new ListAllTask().execute("aaa");
 	}
 
 必须在manifest中指定类名.
+
 	<application
 	    android:name=".AppContext" >
 
@@ -311,7 +329,7 @@ AndroidManifest.xml添加网络访问权限
 
 Activity类和OnCreate方法.
 
-	private String imgUrl = "http://imgsrc.baidu.com/forum/w%3D580/sign=c7e8beb832d12f2ece05ae687fc2d5ff/d017b051f81986188a7e30eb4eed2e738bd4e6b5.jpg";
+	private String imgUrl = "http://image_url";
     private final int IS_END = 1;
     private ProgressDialog dialog;
 
@@ -463,12 +481,48 @@ Activity中有一个默认的Looper对象,来处理子线程发送的消息.所�
 有dialog和dropdown两种显示方式.
 需要使用适配器来完成填充数据.
 
-    ArrayList<String> list= new ArrayList<String>();
-    list.add("aaaa");
-    list.add("bbbb");
+获取数据, 设置显示内容name和值id.    
 
-    ArrayAdapter<String> adapter = new ArrayAdapter<String>(RegisterActivity.this, android.R.layout.simple_spinner_item, list);
+    ArrayList<Map<String, Object>> result= new ArrayList<Map<String, Object>>();
+    Map province = new HashMap();
+    province.put("id", jsonObject.getString("code"));
+    province.put("name", jsonObject.getString("name"));
+    result.add(province);
+
+
+设置spinner    
+
+    provinceSpinner = (Spinner)findViewById(R.id.province);
+    
+    SimpleAdapter adapter = new SimpleAdapter
+        NewStoreActivity.this, result, R.layout.spinner_item, new String[] {"name"}, new int[] {R.id.alias});
     provinceSpinner.setAdapter(adapter);
+    provinceSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        @Override
+        public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+            String code = ((Map) provinceSpinner.getItemAtPosition(i)).get("id").toString();
+            new GetCityTask().execute(new Integer(code));
+
+        }
+        @Override
+        public void onNothingSelected(AdapterView<?> adapterView) {
+
+        }
+    });
+
+Spinner_item.xml布局文件
+
+    <?xml version="1.0" encoding="utf-8"?>
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent" android:layout_height="match_parent"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="25dp"
+            android:id="@+id/alias"
+            android:gravity="center" />
+    </LinearLayout>
 
 #### 自定义选项布局
 
@@ -495,6 +549,7 @@ Activity中有一个默认的Looper对象,来处理子线程发送的消息.所�
     line.put("name", "beijing");
     listData.add(line);
 
+    // 参数含义, context, 列表数据, 列表项布局, 显示的value名称, 名称对应的xml布局id
     SimpleAdapter adapter = new SimpleAdapter(this, listData, R.layout.spinner_item, new String[] {"name"}, new int[] {R.id.name});
     provinceSpinner.setAdapter(adapter);
 
@@ -628,6 +683,82 @@ SimpleAdapter构造函数的参数分别为
         super.onActivityResult(requestCode, resultCode, data);
     }
 
+#### 图片尺寸压缩
+
+    /**
+     * 图片进行压缩处理,宽度固定,高度自动适配
+     * @param bm
+     *
+     * @return
+     */
+    public static Bitmap zoomImg(Bitmap bm){
+        // 获得图片的宽高
+        int width = bm.getWidth();
+        int height = bm.getHeight();
+
+        if(width > 0 && height > 0)
+        {
+            if(width <= StaticValues.WIDTH_LIMIT)
+            {
+                //原图小于规定尺寸的不用缩放
+                return bm;
+            }
+            else
+            {
+                int newWidth = StaticValues.WIDTH_LIMIT;
+                int newHeight = (int)((newWidth * height) / width);
+                // 计算缩放比例
+                float scaleWidth = ((float) newWidth) / width;
+                float scaleHeight = ((float) newHeight) / height;
+
+                // 取得想要缩放的matrix参数
+                Matrix matrix = new Matrix();
+                matrix.postScale(scaleWidth, scaleHeight);
+                // 得到新的图片
+                Bitmap newbm = Bitmap.createBitmap(bm, 0, 0, width, height, matrix, true);
+                return newbm;
+            }
+        }
+        else
+        {
+            return bm;
+
+        }
+    }
+
+#### 图片裁剪
+
+    Intent intent = new Intent("com.android.camera.action.CROP");
+    intent.setDataAndType(imageUri, "image/*");
+    intent.putExtra("crop", "true");
+    intent.putExtra("aspectX", 1);
+    intent.putExtra("aspectY", 1);
+    intent.putExtra("outputX", StaticValues.ICON_WIDTH);
+    intent.putExtra("outputY", StaticValues.ICON_HEIGHT);
+    intent.putExtra("scale", true);
+    intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+    intent.putExtra("return-data", false);
+    intent.putExtra("outputFormat", Bitmap.CompressFormat.JPEG.toString());
+    intent.putExtra("noFaceDetection", true); // no face detection
+    startActivityForResult(intent, StaticValues.IMAGE_CROP);
+
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if(requestCode == StaticValues.IMAGE_CROP && resultCode == RESULT_OK)
+        {
+            //裁剪
+            if(imageUri != null){
+                logoBitmap = decodeUriAsBitmap(imageUri);//decode bitmap
+                iconImageBtn.setImageBitmap(logoBitmap);
+            }
+            else
+            {
+                Toast.makeText(NewStoreActivity.this, "图片裁剪失败", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+    
 #### GPS获取当前位置
 
 AndroidManifest.xml文件添加以下权限.
