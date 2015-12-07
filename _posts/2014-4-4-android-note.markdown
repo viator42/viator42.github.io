@@ -118,7 +118,48 @@ Activity.java 使用 Fragment
     transaction.replace(R.id.content, fragment );
     transaction.commit();
 
-#### ListView自定义布局
+#### fragment传递参数
+
+创建对象时使用bundle传递参数
+
+    fragment1 = new Fragment1();
+    Bundle bundle = new Bundle();
+    bundle.putParcelable("data", model01);
+
+    fragment1.setArguments(bundle);
+
+    transaction = manager.beginTransaction();
+    transaction.replace(R.id.content, fragment1);
+    transaction.commit();
+
+然后fragment获取参数
+
+    public static Fragment1 newInstance(Model01 model01) {
+        Fragment1 fragment = new Fragment1();
+        Bundle args = new Bundle();
+        args.putParcelable("data", model01);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            model01 = getArguments().getParcelable("data");
+        }
+    }
+
+可以传递基本类型和parcelble对象
+
+通过id获取fragment对象
+
+    FragmentManager manager = getFragmentManager();
+    Fragment1 fragment1 = (Fragment1) manager.findFragmentById(R.id.content);
+
+获取到fragment实例之后就可以执行重新赋值的操作
+
+### ListView自定义布局
 
 先创建一个layout resource file: layout.xml
 
@@ -813,4 +854,34 @@ AndroidManifest.xml文件添加以下权限.
     
     android:layout_width="0dp"
     android:layout_weight="1"
+
+### AutoCompleteTextView的使用方法
+
+AutoCompleteTextView可以为输入框提供补全提示功能
+
+在layout中定义widget
+
+    <AutoCompleteTextView
+    android:id="@+id/search_bar" />
+
+activity中实现
+
+    private AutoCompleteTextView searchEditText;
+    searchEditText = (AutoCompleteTextView) findViewById(R.id.search_bar);
+
+    String[] ary = new String[]{"aaa", "bbb"};  //定义候选词列表,可以使用字符串数组或者ArrayList
+
+    //定义adaper
+    ArrayAdapter<String> searchEditAdapter=new ArrayAdapter<String>(this, 
+        android.R.layout.simple_dropdown_item_1line, context.searchList);
+    searchEditText.setAdapter(searchEditAdapter);
+
+
+
+
+
+
+
+
+
 
