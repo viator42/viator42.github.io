@@ -12,7 +12,7 @@ categories: arduino
 3. 打开reference->arduino, 设置Arduino IDE path到你的arduino的安装目录。
 4. 此时eclipse还不支持输入中文，下载rabel语言包。压缩包里的文件复制到eclipse安装目录中即可。
 开发arduino需要eclipse以root用户身份启动，因此要么在root用户下开发，要么编写脚本sudo启动eclipse。
-
+	
 	#! /bin/bash
 	sudo /opt/eclipse/eclipse
 
