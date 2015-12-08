@@ -202,7 +202,10 @@ Activity.java 使用 Fragment
                 }
             });
 
+动态添加数据
 
+    adapter.add() 或者addAll()添加元素
+    adapter.notifyDataSetChanged();      //通知listview数据改变
 
 
 ### ListView自定义布局
