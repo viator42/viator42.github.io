@@ -159,6 +159,52 @@ Activity.java 使用 Fragment
 
 获取到fragment实例之后就可以执行重新赋值的操作
 
+### ListView
+
+简单列表,只显示一个textview,使用ArrayAdapter实现.
+    
+    private ArrayList<String> paymethodList;
+    private ListView payMethodListView;
+
+    payMethodListView = (ListView) view.findViewById(R.id.pay_method_list);
+
+    paymethodList = new ArrayList<String>();
+            paymethodList.add("支付宝");
+            paymethodList.add("信用卡1");
+            paymethodList.add("信用卡2");
+
+    ArrayAdapter adapter = new ArrayAdapter(context, android.R.layout.simple_list_item_1, paymethodList);
+            payMethodListView.setAdapter(adapter);
+            payMethodListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    payMethod = paymethodList.get(position);
+                    setPayConfirmMode();
+                }
+            });
+
+带单选框的listview
+
+    listview=new ListView(this);
+
+    //android.R.layout.simple_list_item_single_choice设置ListView项目条带单选按钮
+
+    listview.setAdapter(new ArrayAdapter<String>(this,android.R.layout.simple_list_item_single_choice,getData()));
+
+    listview.setChoiceMode(ListView.CHOICE_MODE_SINGLE);//如果不使用这个设置，选项中的radiobutton无法响应选中事件
+
+    listview.setItemChecked(2, true);
+
+    payMethodListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    listview.setItemChecked(position, true);
+                }
+            });
+
+
+
+
 ### ListView自定义布局
 
 先创建一个layout resource file: layout.xml
