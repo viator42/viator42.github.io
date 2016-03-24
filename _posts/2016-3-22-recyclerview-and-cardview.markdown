@@ -152,3 +152,98 @@ LayoutManager有三种,分别对应不同的显示样式.
         }
 
     }
+    
+    
+### 滚动到底部加载更多功能实现
+
+添加一个接口实现类.这个对应的是单列列表(LinearLayoutManager),如果是Grid替换成GridLayoutManager即可.
+
+    public abstract class EndlessRecyclerOnScrollListener extends
+            RecyclerView.OnScrollListener {
+
+        private int previousTotal = 0;
+        private boolean loading = true;
+        int firstVisibleItem, visibleItemCount, totalItemCount;
+
+        private int currentPage = 1;
+
+        private LinearLayoutManager mLinearLayoutManager;
+
+        public EndlessRecyclerOnScrollListener(
+                LinearLayoutManager linearLayoutManager) {
+            this.mLinearLayoutManager = linearLayoutManager;
+        }
+
+        @Override
+        public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+            super.onScrolled(recyclerView, dx, dy);
+
+            visibleItemCount = recyclerView.getChildCount();
+            totalItemCount = mLinearLayoutManager.getItemCount();
+            firstVisibleItem = mLinearLayoutManager.findFirstVisibleItemPosition();
+
+            if (loading) {
+                if (totalItemCount > previousTotal) {
+                    loading = false;
+                    previousTotal = totalItemCount;
+                }
+            }
+            if (!loading
+                    && (totalItemCount - visibleItemCount) <= firstVisibleItem) {
+                currentPage++;
+                onLoadMore(currentPage);
+                loading = true;
+            }
+        }
+
+        public abstract void onLoadMore(int currentPage);
+    }
+    
+Activity中使用
+
+    recyclerView.addOnScrollListener(new EndlessGridRecyclerOnScrollListener(layoutManager) {
+        @Override
+        public void onLoadMore(int currentPage) {
+            Log.v("recycler test", "load more");
+            Toast.makeText(MainActivity.this, "load more", Toast.LENGTH_SHORT).show();
+
+        }
+    });
+    
+
+### 下拉刷新功能的实现
+
+使用SwipeRefreshLayout来实现
+
+把需要刷新的列表SwipeRefreshLayout包裹.
+
+layout.xml
+
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/swipe"
+        >
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/recycler_view"
+            android:scrollbars="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#bbccaa"
+            />
+    </android.support.v4.widget.SwipeRefreshLayout>
+
+Activity.java
+
+    swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe);
+    swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+        @Override
+        public void onRefresh() {
+            swipeRefreshLayout.setRefreshing(true);
+            Toast.makeText(MainActivity.this, "reload", Toast.LENGTH_SHORT).show();
+
+            swipeRefreshLayout.setRefreshing(false);
+        }
+    });
+
+setRefreshing用于显示/隐藏loading动画.
