@@ -247,3 +247,13 @@ Activity.java
     });
 
 setRefreshing用于显示/隐藏loading动画.
+
+
+### 添加/删除
+
+修改绑定的数据然后调用Adapter的方法告知ListView.一般使用以下方法.    
+
+1. notifyItemChanged(int position)     通知位置position的Item的数据改变
+2. notifyItemInserted(int)             通知位置position的Item的数据插入
+3. notifyItemRemoved(int)              通知位置position的Item的数据移除
+4. notifyDataSetChanged()              跟ListView兼容,但没有动画效果
