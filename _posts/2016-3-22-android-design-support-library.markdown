@@ -1,13 +1,14 @@
 ---
 layout: post
-title:  "Android 5.0 Material Design 笔记"
+title:  "Android Design Support Library笔记"
 date:   2016-01-02
 categories: android
 ---
 
-### Android Design Support Library笔记
+## 使用前配置    
 
-首先打开 Android SDK Manager安装支持库Android Support Library.
+保证编译使用的API Level在21,也就是对应的Android版本在5.0以上.
+打开 Android SDK Manager安装支持库Android Support Library.
 然后再build.gradle中添加
 
     dependencies {
@@ -18,14 +19,17 @@ categories: android
 
     }
 
-Snackbar，用来代替Toast的提示框。
+
+## Snackbar 
+
+用来代替Toast的提示框的组件。
 
     Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                             .setAction("Action", null).show();
 
-Floating Action Button
+## Floating Action Button
 
-用于展示页面主操作的按钮，一般在右下角
+表示页面主操作的按钮，一般在右下角。
 
 Layout    
 
@@ -50,17 +54,13 @@ Activity
         });
 
 
-NavigationView
+## NavigationView
 
-侧边弹出的导航抽屉，分为
+侧边弹出的导航抽屉，一般在主Activity中使用，作为应用的功能导航。组件分为上部自定义的view（一般用于显示登录用户信息），下部menu。
 
-使用方法
+### 使用方法
 
-将layout的根view定义为DrawerLayout，然后嵌套NavigationView
-
-Activity_Layout
-
-NavigationView分为两部分，包括可自定义样式的headerLayout，和下面的menu。必须指定这两个的样式属性
+1. 将layout的根view定义为DrawerLayout，然后嵌套NavigationView
 
     <android.support.v4.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -82,7 +82,11 @@ NavigationView分为两部分，包括可自定义样式的headerLayout，和下
 
     </android.support.v4.widget.DrawerLayout>
 
-nav_header layout
+必须指定headerLayout，menu这两个属性,对应的是上下两部分的样式.
+
+2. 创建nav_header和menu的layout.
+
+nav_header.xml
 
     <?xml version="1.0" encoding="utf-8"?>
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -113,7 +117,7 @@ nav_header layout
 
     </LinearLayout>
 
-drawer_view layout
+drawer_view.xml
 
     <?xml version="1.0" encoding="utf-8"?>
     <menu xmlns:android="http://schemas.android.com/apk/res/android">
@@ -138,22 +142,45 @@ drawer_view layout
 
     </menu>
 
+3. Activity类的编写.
+
 Activity.java
 
-Activity类继承AppCompatActivity。
+Activity类继承AppCompatActivity并implements接口NavigationView.OnNavigationItemSelectedListener 。
 
-    private DrawerLayout mDrawerLayout;
-    final ActionBar ab = getSupportActionBar();
-    ab.setHomeAsUpIndicator(R.drawable.ic_menu);
-    ab.setDisplayHomeAsUpEnabled(true);
+    public class MainActivity extends AppCompatActivity
+        implements NavigationView.OnNavigationItemSelectedListener {
+    
+        //先定义一个toolbar
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        //把toolbar定义为activity所有
+        setSupportActionBar(toolbar);
+        
+        //设置toolbar的导航按钮
+        toolbar.setNavigationIcon(R.drawable.ic_menu);
+        
+        //定义DrawerLayout
+        DrawerLayout mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        
+        //定义NavigationView
+        navigationView = (NavigationView) findViewById(R.id.navigation_view);
+        navigationView.setNavigationItemSelectedListener(
+                new NavigationView.OnNavigationItemSelectedListener() {
+                    @Override
+                    public boolean onNavigationItemSelected(MenuItem menuItem) {
+                        menuItem.setChecked(true);
+                        drawerLayout.closeDrawers();
+                        return true;
+                    }
+                });
+    
+    }
 
-    mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-
-    NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-    if (navigationView != null) {
-        setupDrawerContent(navigationView);
-    }    
-
+* 注意: 需要把theme设置成NoActionBar,就是不带默认actionBar的样式,否则就会出现下面的错误.
+    
+    This Activity already has an action bar supplied by the window decor. 
+    Do not request Window.FEATURE_SUPPORT_ACTION_BAR and set windowActionBar to false in your theme to use a Toolbar instead.
+    
     
 ## TabLayout
 
