@@ -19,7 +19,6 @@ categories: android
 
     }
 
-
 ## Snackbar 
 
 用来代替Toast的提示框的组件。
