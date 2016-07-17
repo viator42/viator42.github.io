@@ -9,14 +9,16 @@ categories: android
 
 保证编译使用的API Level在21,也就是对应的Android版本在5.0以上.
 打开 Android SDK Manager安装支持库Android Support Library.
-然后再build.gradle中添加
+然后再build.gradle中添加，注意引入库的版本要和build sdk version对应
 
     dependencies {
         compile fileTree(dir: 'libs', include: ['*.jar'])
         testCompile 'junit:junit:4.12'
-        compile 'com.android.support:appcompat-v7:23.1.1'
-        compile 'com.android.support:design:23.1.1'
 
+        compile 'com.android.support:appcompat-v7:23.3.0'
+        compile 'com.android.support:design:23.3.0'
+        compile 'com.android.support:support-v4:23.3.0'
+        compile 'com.android.support:cardview-v7:23.3.0'
     }
 
 ## Snackbar 
@@ -30,7 +32,7 @@ categories: android
 
 表示页面主操作的按钮，一般在右下角。
 
-Layout    
+#### Layout    
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"
@@ -40,7 +42,7 @@ Layout
         android:layout_margin="@dimen/fab_margin"
         android:src="@drawable/ic_done"/>
         
-Activity    
+#### Activity    
 
     private FloatingActionButton fab;
     fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -141,6 +143,28 @@ drawer_view.xml
 
     </menu>
 
+3. 定义ToolBar
+    
+ToolBar定义到AppBarLayout里面
+    
+#### content_main.xml    
+    
+    <android.support.design.widget.AppBarLayout
+        android:id="@+id/appbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+            app:layout_scrollFlags="scroll|enterAlways|snap" />
+
+    </android.support.design.widget.AppBarLayout>
+
 3. Activity类的编写.
 
 Activity.java
@@ -183,12 +207,32 @@ Activity类继承AppCompatActivity并implements接口NavigationView.OnNavigation
     
 ## TabLayout
 
-layout
+#### layout
 
-    <android.support.design.widget.TabLayout
-        android:id="@+id/tabs"
+定义TabLayout，放到AppBarLayout里面
+
+    <android.support.design.widget.AppBarLayout
+        android:id="@+id/appbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+            app:layout_scrollFlags="scroll|enterAlways|snap" />
+
+        <android.support.design.widget.TabLayout
+            android:id="@+id/tabs"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+    </android.support.design.widget.AppBarLayout>
+
+ViewPager作为放置Tab内容的容器
 
     <android.support.v4.view.ViewPager
         android:id="@+id/viewpager"
@@ -197,7 +241,7 @@ layout
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
     
 
-Activity.java
+#### Activity.java
 
     ViewPager viewPager = (ViewPager) findViewById(R.id.viewpager);
     if (viewPager != null) {
@@ -212,7 +256,6 @@ Activity.java
     TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
     tabLayout.setupWithViewPager(viewPager);
 
-    
     static class PagerAdapter extends FragmentPagerAdapter {
         private final List<Fragment> mFragments = new ArrayList<>();
         private final List<String> mFragmentTitles = new ArrayList<>();
@@ -245,7 +288,7 @@ Activity.java
 
 ## CoordinatorLayout
 
-layout
+#### layout
 
 根元素使用CoordinatorLayout，里面嵌套AppBarLayout作为展开时的toolbar样式。AppBarLayout中再嵌套CollapsingToolbarLayout。
 
@@ -305,7 +348,7 @@ layout
 
     </android.support.design.widget.CoordinatorLayout>
     
-Activity.java
+#### Activity.java
 
     private Toolbar toolbar;
     private CollapsingToolbarLayout collapsingToolbar;
