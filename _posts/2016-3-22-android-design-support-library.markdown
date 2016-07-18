@@ -167,7 +167,7 @@ ToolBar定义到AppBarLayout里面
 
 3. Activity类的编写.
 
-Activity.java
+#### Activity.java
 
 Activity类继承AppCompatActivity并implements接口NavigationView.OnNavigationItemSelectedListener 。
 
@@ -187,17 +187,50 @@ Activity类继承AppCompatActivity并implements接口NavigationView.OnNavigation
         
         //定义NavigationView
         navigationView = (NavigationView) findViewById(R.id.navigation_view);
-        navigationView.setNavigationItemSelectedListener(
-                new NavigationView.OnNavigationItemSelectedListener() {
-                    @Override
-                    public boolean onNavigationItemSelected(MenuItem menuItem) {
-                        menuItem.setChecked(true);
-                        drawerLayout.closeDrawers();
-                        return true;
-                    }
-                });
+        //设置元素的响应事件
+        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(MenuItem item) {
+                switch (item.getItemId())
+                {
+                    case R.id.about_us:
+                        Toast.makeText(MainActivity.this, "about us", Toast.LENGTH_SHORT).show();
+                        break;
+                }
+                return false;
+            }
+        });
     
+        public boolean onCreateOptionsMenu(Menu menu) {
+            super.onCreateOptionsMenu(menu);
+            return true;
+        }
+
+        //需要定义导航按钮的事件，点击打开Drawer。
+        @Override
+        public boolean onOptionsItemSelected(MenuItem item) {
+            int id = item.getItemId();
+            switch (item.getItemId()) {
+                case android.R.id.home:
+                    mDrawerLayout.openDrawer(GravityCompat.START);
+                    return true;
+            }
+
+            return super.onOptionsItemSelected(item);
+        }
+
     }
+
+#### styles.xml
+
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/actionbar_background</item>
+        <item name="colorPrimaryDark">@color/actionbar_background</item>
+        <item name="colorAccent">@color/actionbar_background</item>
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
 
 * 注意: 需要把theme设置成NoActionBar,就是不带默认actionBar的样式,否则就会出现下面的错误.
     
