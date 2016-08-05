@@ -12,6 +12,28 @@ categories: android
 
 	Button btn1 = findViewById(R.id.btn1);
 
+#### Activity    
+Activity全屏
+    
+    requestWindowFeature(Window.FEATURE_NO_TITLE);  //隐藏应用的ActionBar
+    getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+            WindowManager.LayoutParams.FLAG_FULLSCREEN);    //应用全屏,隐藏android的标题栏
+
+#### activity的生命周期
+
+![Activity Lifescycle](http://android.okhelp.cz/wp-content/uploads/lifecycle-activity-android.png "Activity Lifescycle")
+
+#### activity启动模式
+
+* standard 默认的启动模式,每次启动一个新的activity都创建一个新的实例到栈中.
+* singleTop 创建activity的时候如果栈顶已经是该活动,就直接使用不会重复创建.
+* singleTask 如果栈中已经有此activity则把这个活动之上的所有活动出栈.
+
+设置方法
+
+    <activity
+    android:launchMode="singleTop"/>
+
 #### activity跳转(带参数)
 
 	Intent intent = new Intent(activity.this, MainActivity.class);
@@ -28,6 +50,15 @@ categories: android
 
 	import android.util.Log;
 	Log.v(“log title”, “value");
+
+2个参数,一个是tag,另一个是日志内容.
+
+输出日志类型
+
+* Log.v();  日志信息,对应级别verbose
+* Log.i();  调试信息,对应级别info
+* Log.w();  警告信息,对应级别warning
+* Log.e();  错误信息,对应级别error
 
 #### SharedReference
 
@@ -48,6 +79,11 @@ categories: android
 	editor.commit();
 
 #### Fragment (Android4 以上)
+
+Fragment生命周期
+![Fragment Lifescycle](http://indy-world.net/wp-content/uploads/2014/08/fragment_lifecycle.png "Fragment Lifescycle")
+
+
 
 Fragment类定义
 HelloFragment.java

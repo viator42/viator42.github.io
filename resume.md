@@ -10,7 +10,7 @@ permalink: /resume/
 出生年月：1987年2月    
 工作年限：4年    
 期望职位: Android开发工程师    
-期望薪资：5k    
+期望薪资：8k    
 [个人博客](http://viator42.github.io/)
 [Github](https://github.com/viator42)
 
@@ -18,11 +18,18 @@ permalink: /resume/
 电话: 15165417820
 
 ####技能
-熟练使用Java语言，熟悉Android平台的应用开发，能对常用控件进行优化如listview,Fragment,了解软件开发流程。熟悉多线程等操作。熟悉http协议，精通json数据的解析。熟悉服务器端工作原理。。
-使用Mac和Linux作为开发环境。项目中使用Git做版本控制。了解Linux系统管理。
-了解Python脚本语言编写。
+开发语言Java,Python
+精通Android平台的应用开发
+熟悉主流机型的适配.
+熟悉Material Design的设计与开发.
+熟悉大量数据展示和性能优化.
+熟悉服务器交互http,socket.
+熟悉多线程操作
 
 ####项目经历
+
+#####[U购](http://ugouchina.com/)
+服装行业的O2O应用.应用宝,百度,小米等平台上架.
 
 #####[速派网销平台](http://www.supai.in)    
 面向批发零售行业O2O应用,为超市和批发部提供在线的商品展示,销售,库存管理以及销售统计.
