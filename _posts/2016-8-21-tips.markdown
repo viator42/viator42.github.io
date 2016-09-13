@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Android开发Tips"
+title:  "一句话技巧"
 date:   2016-08-21
 categories: android
 ---
