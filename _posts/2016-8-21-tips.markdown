@@ -17,3 +17,12 @@ categories: android
     
     git commit -m "fixed untracked files"
     
+### Ubuntu 如何安装 Classic Gnome 经典桌面
+
+    sudo apt-get install gnome-session-fallback
+
+安装完成之后，注销当前用户，登陆界面就可以选择了：
+
+### Android ImageView 图片拉伸填充
+
+    android:scaleType="fitXY"
