@@ -4,28 +4,21 @@ title: 个人简历
 permalink: /resume/
 ---
 
-## 个人信息
-
-姓名：吴传青    
-出生年月：1987年2月    
-工作年限：4年    
-期望职位: Android开发工程师    
-期望薪资：8k    
-[个人博客](http://viator42.github.io/)
-[Github](https://github.com/viator42)
-
-邮箱: <viator42@qq.com>    
-电话: 15165417820
-
 ## 技能
-精通Android平台的应用开发，包括http网络访问，多线程，列表大量数据的展示，界面优化，性能优化    
-熟悉Linux系统，熟练使用CLI命令，熟悉http，ftp，samba等各种网络服务的配置    
-熟练使用Git版本控制系统    
+精通Android常用的UI控件和布局,熟悉自定义控件的实现
+熟悉四大组件的使用,了解实现原理
+熟悉常用的第三方库的集成和使用，例如：地图，推送，第三方登录等
+熟悉http,socket网络访问
+熟悉UI适配,机型适配以及性能优化,多线程
+熟悉sqlite等数据持久化方式
+熟悉Linux系统，熟练使用CLI命令，熟悉http，ftp，samba等各种网络服务的配置
+熟练使用Git,Svn版本控制系统
 
 ## 项目经历
 
 ### 财来记账
-个人开发的开源作品。MaterialDesign风格的记账App，提供定时提醒功能和根据自定义规则自动记账。    
+个人开发的开源作品。MaterialDesign风格的记账App，使用系统的AlarmManager提供定时提醒功能和根据自定义规则自动记账。
+
 [源码](https://github.com/viator42/ErikaNote)    
 [下载链接](http://android.myapp.com/myapp/detail.htm?apkName=com.viator42.erikanote)    
 
