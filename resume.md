@@ -41,6 +41,10 @@ permalink: /resume/
 
 [官网链接](http://ugouchina.com/)
 
+销售，库存管理以及销售统计。独立完成Android端App和服务端开发
+
+
+
 ### 2. 速派网销平台
 面向批发零售行业O2O应用，为超市和批发部提供在线的商品展示，销售，库存管理以及销售统计。    
 [官网链接](http://www.supai.in)
