@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Android SQLite常用快捷键"
+title:  "Android Studio常用快捷键"
 date:   2016-12-08
 categories: android
 ---
