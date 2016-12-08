@@ -1,0 +1,156 @@
+---
+layout: post
+title:  "Android HttpURLConnection网络连接"
+date:   2016-09-13
+categories: android
+---
+
+Android已经不支持Apache HttpClient,okHttp虽然简单但还是有坑,现在Google推荐的是原生的HttpURLConnection.
+
+### 工具类
+
+    public class URLConnectionUtil
+    {
+        public static String post(String path, Map<String, Object> params) throws Exception
+        {
+            Log.v("params", path + " ---- " + params.toString());
+            URL url = new URL(path);
+
+            PrintWriter printWriter = null;
+            BufferedReader bufferedReader = null;
+            StringBuffer responseResult = null;
+            StringBuffer paramsStringBuffer = new StringBuffer();
+
+            // 组织请求参数
+            Iterator it = params.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry element = (Map.Entry) it.next();
+                paramsStringBuffer.append(element.getKey());
+                paramsStringBuffer.append("=");
+                paramsStringBuffer.append(URLEncoder.encode((String) element.getValue(), "UTF-8"));
+                paramsStringBuffer.append("&");
+            }
+
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            // 发送POST请求必须设置如下两行
+            conn.setDoOutput(true);
+            conn.setDoInput(true);
+            // 设置通用的请求属性
+            conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded;charset=utf-8");
+            conn.setRequestProperty("Content-Length", String.valueOf(paramsStringBuffer.length()));
+            conn.setRequestProperty("Accept-Charset", "utf-8");
+            conn.setRequestProperty("contentType", "utf-8");
+            conn.setUseCaches(false);
+            conn.setInstanceFollowRedirects(true);
+
+            // 获取URLConnection对象对应的输出流
+            printWriter = new PrintWriter(conn.getOutputStream());
+            // 发送请求参数
+            printWriter.write(paramsStringBuffer.toString());
+            // flush输出流的缓冲
+            printWriter.flush();
+
+            int responseCode = conn.getResponseCode();
+            if (responseCode == HttpURLConnection.HTTP_OK)
+            {
+                // 定义BufferedReader输入流来读取URL的ResponseData
+                bufferedReader = new BufferedReader(new InputStreamReader(
+                        conn.getInputStream()));
+                String line;
+                responseResult = new StringBuffer();
+                while ((line = bufferedReader.readLine()) != null) {
+                    responseResult.append(line);
+                }
+
+            }
+
+            if (printWriter != null) {
+                printWriter.close();
+            }
+            if (bufferedReader != null) {
+                bufferedReader.close();
+            }
+            conn.disconnect();
+
+            if(responseResult != null)
+            {
+                Log.v("resultString", path + " ---- " + responseResult.toString());
+                return responseResult.toString();
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+    }
+
+### 使用
+
+定义action,使用model类传入参数和返回结果,服务端使用JSON传递数据.fastjson作为json解析库.
+
+    public Feedback feedbackSaveAction(Feedback feedback)
+    {
+        feedback.addVersion(context);   //添加App版本信息
+        String resultString = null;
+        String jsonParam = JSON.toJSONString(feedback);
+
+        try
+        {
+            resultString = URLConnectionUtil.post(CommonUtils.getAbsoluteUrl("FeedbackSaveAction.action"), CommonUtils.generateParams(jsonParam));
+
+            if(resultString != null)
+            {
+                JSONObject jsonObject = new JSONObject(resultString);
+
+                feedback.setSuccess(jsonObject.getBoolean("success"));
+                if(feedback.isSuccess())
+                {
+                    //赋值
+                    JSONObject dataObject = jsonObject.getJSONObject("data");
+                    String data = dataObject.toString();
+                    feedback = JSON.parseObject(data, Feedback.class);
+                    feedback.setSuccess(true);
+                }
+                else
+                {
+                    feedback.setMsg(jsonObject.getString("msg"));
+
+                }
+
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        return feedback;
+    }
+
+由于Android不允许直接在主线程中进行网络访问操作,网络操作应开启新线程或者使用AsyncTask
+
+    public class FeedbackSaveActionTask extends AsyncTask<Feedback, Void, Feedback>
+    {
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected Feedback doInBackground(Feedback... feedbacks) {
+            return new AppAction(RefActivity.this).feedbackSaveAction(feedbacks[0]);
+        }
+
+        @Override
+        protected void onPostExecute(Feedback result) {
+            
+    }
+
+哦对了,别忘了在AndroidManifest.xml中声明网络访问权限.
+
+    <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+        package="com.brand.aaa">
+        <uses-permission android:name="android.permission.INTERNET" />
+        ...
