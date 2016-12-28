@@ -4,9 +4,7 @@ title: 关于作者
 permalink: /about/
 ---
 
-移动开发老司机一枚,目前主要研究Android,App开发熟悉的基础上正在向framework层深入研究.
-辅语言Python,这东西写App后台和一些系统脚本还是各种好用的.
-
+主力语言Java，精通Android平台的App开发，了解常用类的实现原理，阅读过相关源码，现正在研究源码framework层的相关内容。辅助语言为Python,主要用来编写App后台。
 * email:  viator42@qq.com  
 * QQ:     同上  
 
