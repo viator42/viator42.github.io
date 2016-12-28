@@ -4,12 +4,10 @@ title: 关于作者
 permalink: /about/
 ---
 
-#### id: Viator42   
-一直都用这个,所以不管从哪看到这个id基本都是我
-
-Android移动应用全栈开发者.爱好跑步骑行和Roguelike游戏.
+移动开发老司机一枚,目前主要研究Android,App开发熟悉的基础上正在向framework层深入研究.
+辅语言Python,这东西写App后台和一些系统脚本还是各种好用的.
 
 * email:  viator42@qq.com  
-* QQ:     437982176  
+* QQ:     同上  
 
 blog: [cnblogs.com/viator42/](http://cnblogs.com/viator42/)    
