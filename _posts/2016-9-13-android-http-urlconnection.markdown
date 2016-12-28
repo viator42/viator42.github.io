@@ -7,10 +7,9 @@ categories: android
 
 Android已经不支持Apache HttpClient,okHttp虽然简单但还是有坑,现在Google推荐的是原生的HttpURLConnection.
 
-### 工具类
+### HttpConnection工具类
 
-    public class URLConnectionUtil
-    {
+    public class UrlConnectionUtil {
         public static String post(String path, Map<String, Object> params) throws Exception
         {
             Log.v("params", path + " ---- " + params.toString());
@@ -83,70 +82,13 @@ Android已经不支持Apache HttpClient,okHttp虽然简单但还是有坑,现在
                 return null;
             }
         }
-
     }
 
 ### 使用
 
-定义action,使用model类传入参数和返回结果,服务端使用JSON传递数据.fastjson作为json解析库.
-
-    public Feedback feedbackSaveAction(Feedback feedback)
-    {
-        feedback.addVersion(context);   //添加App版本信息
-        String resultString = null;
-        String jsonParam = JSON.toJSONString(feedback);
-
-        try
-        {
-            resultString = URLConnectionUtil.post(CommonUtils.getAbsoluteUrl("FeedbackSaveAction.action"), CommonUtils.generateParams(jsonParam));
-
-            if(resultString != null)
-            {
-                JSONObject jsonObject = new JSONObject(resultString);
-
-                feedback.setSuccess(jsonObject.getBoolean("success"));
-                if(feedback.isSuccess())
-                {
-                    //赋值
-                    JSONObject dataObject = jsonObject.getJSONObject("data");
-                    String data = dataObject.toString();
-                    feedback = JSON.parseObject(data, Feedback.class);
-                    feedback.setSuccess(true);
-                }
-                else
-                {
-                    feedback.setMsg(jsonObject.getString("msg"));
-
-                }
-
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-
-        return feedback;
-    }
-
-由于Android不允许直接在主线程中进行网络访问操作,网络操作应开启新线程或者使用AsyncTask
-
-    public class FeedbackSaveActionTask extends AsyncTask<Feedback, Void, Feedback>
-    {
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-        }
-
-        @Override
-        protected Feedback doInBackground(Feedback... feedbacks) {
-            return new AppAction(RefActivity.this).feedbackSaveAction(feedbacks[0]);
-        }
-
-        @Override
-        protected void onPostExecute(Feedback result) {
-            
-    }
+    Map<String, Object> params = new HashMap<String, Object>();
+            params.put("pcode", area.pcode);
+    resultString = UrlConnectionUtil.post("server url", params);
 
 哦对了,别忘了在AndroidManifest.xml中声明网络访问权限.
 
