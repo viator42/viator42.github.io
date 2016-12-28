@@ -14,15 +14,17 @@ categories: android
 
 
 新建BaseExpandableListAdapter    
+
 必须重载的方法    
-getGroupCount          返回分组的个数    
-getChildrenCount       返回子列表的个数    
-getGroup                    返回分组对象    
-getChild                      返回子列表对象    
-getGroupId                  返回分组的Id    
-getChildId                    返回子列表对象的Id    
-getGroupView            分组的View绘制    
-getChildView               子列表的View绘制    
+
+* getGroupCount          返回分组的个数    
+* getChildrenCount       返回子列表的个数    
+* getGroup                    返回分组对象    
+* getChild                      返回子列表对象    
+* getGroupId                  返回分组的Id    
+* getChildId                    返回子列表对象的Id    
+* getGroupView            分组的View绘制    
+* getChildView               子列表的View绘制    
 
 #### Adapter.java
 
@@ -31,7 +33,9 @@ getChildView               子列表的View绘制
         private ArrayList<String> titleList;
         private ArrayList<List<String>> childrenList;
 
-        public ListViewAdapter(Context context, ArrayList<String> titleList, ArrayList<List<String>> childrenList)
+        public ListViewAdapter(
+            Context context, ArrayList<String> titleList, 
+            ArrayList<List<String>> childrenList)
         {     
             this.context = context;
             this.titleList = titleList;
@@ -74,7 +78,11 @@ getChildView               子列表的View绘制
         }
 
         @Override
-        public View getGroupView(int groupPosition, boolean isExpanded, View convertView, ViewGroup parent) {
+        public View getGroupView(
+            int groupPosition, 
+            boolean isExpanded, 
+            View convertView, 
+            ViewGroup parent) {
             //获取文本
             String text = titleList.get(groupPosition);
             if(convertView == null){
@@ -83,8 +91,9 @@ getChildView               子列表的View绘制
                 //设定界面，AbsListView:用于实现条目的虚拟列表的基类
                 AbsListView.LayoutParams lp = new AbsListView.LayoutParams(
                         ViewGroup.LayoutParams.FILL_PARENT, 60);
-                ((TextView) convertView).setGravity(Gravity.CENTER_VERTICAL | Gravity.LEFT); //文本框放在中央
-                convertView.setPadding(45, 0, 0, 0);                              //设置文本里那个下拉的图标远一点
+                ((TextView) convertView)
+                .setGravity(Gravity.CENTER_VERTICAL | Gravity.LEFT); //文本框放在中央
+                convertView.setPadding(45, 0, 0, 0);    //设置文本里那个下拉的图标远一点
                 convertView.setLayoutParams(lp);
             }
             ((TextView) convertView).setText(text);
@@ -92,7 +101,12 @@ getChildView               子列表的View绘制
         }
 
         @Override
-        public View getChildView(int groupPosition, int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
+        public View getChildView(
+            int groupPosition, 
+            int childPosition, 
+            boolean isLastChild, 
+            View convertView, 
+            ViewGroup parent) {
             //子列表控件通过界面文件设计
             if(convertView ==null){//convert在运行中会重用，如果不为空，则表明不用重新获取
                 LayoutInflater layoutInflater;//使用这个来载入界面
@@ -151,7 +165,10 @@ getChildView               子列表的View绘制
             cat3.add("CCC_3");
             childrenList.add(cat3);
 
-            ListViewAdapter listViewAdapter = new ListViewAdapter(MainActivity.this, titleList, childrenList);
+            ListViewAdapter listViewAdapter = new ListViewAdapter(
+                MainActivity.this, 
+                titleList, 
+                childrenList);
             expandableListView.setAdapter(listViewAdapter);
 
             //展开所有组,也可以单独选择某一组展开
