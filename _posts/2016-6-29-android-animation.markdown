@@ -15,7 +15,7 @@ categories: android
 在res/anim下创建动画定义的xml文件,格式如下    
 
     <? xml version="1.0" encoding= "utf-8"?>
-        <set xmlns: android="http://schemas.android.com/apk/res/android" >
+        <set xmlns:android="http://schemas.android.com/apk/res/android" >
     </set>
 
 ### 定义
@@ -67,7 +67,83 @@ categories: android
 ### 使用
 
     //创建动画
-    Animation animation = animation = AnimationUtils. loadAnimation(AnimationActivity. this, R.anim. anim_tester_1 );
+    Animation animation = AnimationUtils.loadAnimation(AnimationActivity.this, R.anim.anim_tester_1);
     //view上使用动画
-    view_item.startAnimation( animation) ;
+    view_item.startAnimation(animation) ;
+
+### Activity 跳转动画
+
+在startActivity后面调用overridePendingTransition,两个参数代表新Activty进入和旧Activty退出的动画,两个动画注意时间必须相等
+
+    Intent intent = new Intent(MainActivity.this, DestActivity.class);
+    startActivity(intent);
+    overridePendingTransition(R.anim.wrap_enter_in, R.anim.wrap_enter_out);
+
+Activty退出的时候也可以使用动画,在onBackPressed方法中使用
+
+    public void onBackPressed() {
+        super.onBackPressed();
+        overridePendingTransition(R.anim.wrap_exit_in,R.anim.wrap_exit_out);
+    }
+
+#### 动画示例
+
+新Activity向左滑动进入,向右滑动退出
+
+进入动画
+
+    wrap_enter_in.xml
+    <translate
+        android:duration="250"
+        android:fromXDelta="0%p"
+        android:toXDelta="-100%p"
+        android:fillAfter="true"/>
+
+    wrap_enter_out.xml
+    <translate
+        android:duration="250"
+        android:fromXDelta="100%p"
+        android:toXDelta="0%p"
+        android:fillAfter="true"/>
+
+退出动画
+
+    wrap_exit_in.xml
+    <translate
+        android:duration="250"
+        android:fromXDelta="-100%p"
+        android:toXDelta="0%p"
+        android:fillAfter="true"/>
+
+    wrap_exit_out.xml
+    <translate
+        android:duration="250"
+        android:fromXDelta="0%p"
+        android:toXDelta="100%p"
+        android:fillAfter="true"/>
+
+### 多重动画
+
+第一个动画设置停止事件播放第二个动画
+
+    Animation animation = AnimationUtils.loadAnimation(this, R.anim.scale);
+            iv.startAnimation(animation);
+            final Animation animation2 = AnimationUtils.loadAnimation(this, R.anim.rotate);
+            animation.setAnimationListener(new Animation.AnimationListener() {
+                @Override
+                public void onAnimationStart(Animation animation) {
+
+                }
+
+                @Override
+                public void onAnimationEnd(Animation animation) {
+
+                    iv.startAnimation(animation2);
+                }
+
+                @Override
+                public void onAnimationRepeat(Animation animation) {
+
+                }
+            });
 
