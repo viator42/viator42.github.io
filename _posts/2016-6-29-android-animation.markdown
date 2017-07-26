@@ -147,3 +147,31 @@ Activty退出的时候也可以使用动画,在onBackPressed方法中使用
                 }
             });
 
+### 逐帧动画
+
+使用方法
+
+1.动画所用的图片导入res/drawable中
+
+2.res/drawable创建动画定义文件    
+
+    <animation-list xmlns:android="http://schemas.android.com/apk/res/android">
+        <item android:drawable="@drawable/m_1" android:duration="100" />
+        <item android:drawable="@drawable/m_2" android:duration="100" />
+        <item android:drawable="@drawable/m_3" android:duration="100" />
+        <item android:drawable="@drawable/m_4" android:duration="100" />
+        <item android:drawable="@drawable/m_5" android:duration="100" />
+    </animation-list>
+
+3.Activity中使用
+
+    frameAnimImageView = (ImageView) findViewById(R.id.frame_anim);
+        frameAnimImageView.setBackgroundResource(R.drawable.anim_frame);
+        frameAnimImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AnimationDrawable animationDrawable = (AnimationDrawable) frameAnimImageView.getBackground();
+                animationDrawable.start();
+
+            }
+        });
