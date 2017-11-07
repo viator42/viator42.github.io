@@ -20,25 +20,22 @@ permalink: /about/
 
 ### 项目经历
 
-#### 柠檬壁纸
+#### 柠檬壁纸    
+__简介：__ 一款手机壁纸聚合App。采用MD风格构建，提供高清壁纸的浏览，分类收藏，下载功能。    
+[下载链接](http://7xj4vv.com1.z0.glb.clouddn.com/Lemon_v1.0.apk)    
 
-__简介：__ 一款手机壁纸聚合App。采用MD风格构建，提供高清壁纸的浏览，分类收藏，下载功能。
-
-#### 财来记账
-
+#### 财来记账    
 __简介：__ 个人开发的开源作品。MaterialDesign风格的记账App，使用系统定时器实现应收应付款的提醒以及自动记账的功能。    
 [源码](https://github.com/viator42/ErikaNote)    
 [下载链接](http://android.myapp.com/myapp/detail.htm?apkName=com.viator42.erikanote)    
 
-#### U购
-
+#### U购    
 __简介：__ 服装行业的在线商城应用，提供门店的定制主页，服装的分类展示和查询搜索。主要功能有基于地理位置的周边门店查询及导航，在线下单购买，上门预约试衣，扫码查询购买等功能。    
 __职责：__ 负责Android端的开发维护，与后端合作完成数据交互以及逻辑业务处理。
 
 [官网链接](http://ugouchina.com/)
 
-#### 速派网销平台
-
+#### 速派网销平台    
 __简介：__ 面向批发零售行业O2O应用，为超市和批发部提供在线的商品展示，销售，库存管理以及销售统计。   
 
 __功能：__
@@ -49,23 +46,20 @@ __功能：__
 
 ### 应用截图
 
-#### 柠檬壁纸
-
+#### 柠檬壁纸    
 ![lemon_1](http://7xj4vv.com1.z0.glb.clouddn.com/lemon_1.jpg)
 ![lemon_2](http://7xj4vv.com1.z0.glb.clouddn.com/lemon_2.jpg)
 ![lemon_3](http://7xj4vv.com1.z0.glb.clouddn.com/lemon_3.jpg)
 ![lemon_4](http://7xj4vv.com1.z0.glb.clouddn.com/lemon_4.jpg)
 
-#### U购
-
+#### U购    
 ![ushopping_01](http://7xj4vv.com1.z0.glb.clouddn.com/ushopping_01.jpg)
 ![ushopping_02](http://7xj4vv.com1.z0.glb.clouddn.com/ushopping_02.jpg)
 ![ushopping_03](http://7xj4vv.com1.z0.glb.clouddn.com/ushopping_03.jpg)
 ![ushopping_04](http://7xj4vv.com1.z0.glb.clouddn.com/ushopping_04.jpg)
 ![ushopping_05](http://7xj4vv.com1.z0.glb.clouddn.com/ushopping_05.jpg)
 
-#### 速派网销平台
-
+#### 速派网销平台    
 ![SupaiMarketing_1](http://7xj4vv.com1.z0.glb.clouddn.com/SupaiMarketing_1.jpg)
 ![SupaiMarketing_2](http://7xj4vv.com1.z0.glb.clouddn.com/SupaiMarketing_2.jpg)
 ![SupaiMarketing_3](http://7xj4vv.com1.z0.glb.clouddn.com/SupaiMarketing_3.jpg)
@@ -73,7 +67,6 @@ __功能：__
 ![SupaiMarketing_5](http://7xj4vv.com1.z0.glb.clouddn.com/SupaiMarketing_5.jpg)
 
 ### 联系方式
-
 email:    viator42@qq.com    
 Github:   https://github.com/viator42    
 blog: [cnblogs.com/viator42/](http://cnblogs.com/viator42/)    
