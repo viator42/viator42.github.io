@@ -5,22 +5,17 @@ date:   2016-06-29
 categories: android
 ---
 
-### 动画分类    
-* TranslateAnimation 位置移动
-* RotateAnimation 旋转
-* ScaleAnimation 尺寸变化
-* AlphaAnimation 透明度变化
+## 视图动画
+视图动画有两种定义方法,一种是xml定义,另一种是通过代码生成
 
-### 动画定义    
+### xml定义    
 在res/anim下创建动画定义的xml文件,格式如下    
 
     <? xml version="1.0" encoding= "utf-8"?>
         <set xmlns:android="http://schemas.android.com/apk/res/android" >
     </set>
 
-### 定义
-
-#### TranslateAnimation
+#### 位置移动(TranslateAnimation)
 
     <translate
     android :fromXDelta="10"     //初始位置X轴
@@ -31,7 +26,7 @@ categories: android
     android :fillAfter="true"     //动画结束时是否返回起始位置
     />
 
-#### RotateAnimation
+#### 旋转(RotateAnimation)
 
     <rotate
     android :fromDegrees="0"     //初始角度
@@ -42,7 +37,7 @@ categories: android
     android :fillAfter="true"
     />
 
-#### ScaleAnimation
+#### 尺寸变化(ScaleAnimation)
 
     <scale
     android :fromXScale="1.0"     //初始比例X轴
@@ -55,7 +50,7 @@ categories: android
     android :fillAfter="true"
     />
 
-#### AlphaAnimation
+#### 透明度变化(AlphaAnimation)
 
     <alpha
     android :fromAlpha="0.1"     //初始透明度
@@ -64,14 +59,72 @@ categories: android
     android :fillAfter="true"
     />
 
-### 使用
+#### 使用
 
     //创建动画
     Animation animation = AnimationUtils.loadAnimation(AnimationActivity.this, R.anim.anim_tester_1);
     //view上使用动画
     view_item.startAnimation(animation) ;
 
-### Activity 跳转动画
+另一种是在代码中定义动画
+
+1.位置移动(TranslateAnimation)
+
+    ScaleAnimation scaleAnimation = new ScaleAnimation(1.0f, 2.0f, 1.0f, 2.0f);
+    scaleAnimation.setDuration(200);
+    v.startAnimation(scaleAnimation);
+
+2.旋转(RotateAnimation)
+
+    TranslateAnimation translateAnimation = new TranslateAnimation(10, 100, 10, 100);
+    translateAnimation.setDuration(200);
+    v.startAnimation(translateAnimation);
+
+3.尺寸变化(ScaleAnimation)
+
+    RotateAnimation rotateAnimation = new RotateAnimation(0, 90);
+    rotateAnimation.setDuration(200);
+    v.startAnimation(rotateAnimation);
+
+4.透明度变化(AlphaAnimation)
+
+    AlphaAnimation alphaAnimation = new AlphaAnimation(1f, 0.5f);
+    alphaAnimation.setDuration(200);
+    v.startAnimation(alphaAnimation);
+
+## 属性动画
+
+Android 3.0之后出现了属性动画.    
+视图动画(补间动画)只能作用于View对象,而且只有移动,旋转,尺寸变化,透明度四种效果.只改变View的显示外观不能修改属性
+属性动画是通过对目标对象不断的修改属性来实现动画效果
+
+__有关类__
+
+ValueAnimator    
+属性动画的运行机制是通过不断地对值进行操作来实现的，而初始值和结束值之间的动画过渡就是由ValueAnimator这个类来负责计算的。相当于一个计数器
+
+    ValueAnimator valueAnimator = ValueAnimator.ofInt(0,100);
+    valueAnimator.setDuration(1000);
+    valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+        @Override
+        public void onAnimationUpdate(ValueAnimator animation) {
+            Log.v("AnimateValue", String.valueOf(animation.getAnimatedValue()));
+        }
+    });
+    valueAnimator.start();
+
+ObjectAnimator    
+对任意的对象进行动画操作的类
+
+    ObjectAnimator animator = ObjectAnimator.ofFloat(destTextView, "alpha", 1f, 0f, 1f);
+    animator.setDuration(5000);
+    animator.start();
+
+参数: 执行动画的view, 改变的属性, 之后的数字是属性值的变化列表,属性值会按次序改变
+
+
+
+## Activity 跳转动画
 
 在startActivity后面调用overridePendingTransition,两个参数代表新Activty进入和旧Activty退出的动画,两个动画注意时间必须相等
 
@@ -147,7 +200,7 @@ Activty退出的时候也可以使用动画,在onBackPressed方法中使用
                 }
             });
 
-### 逐帧动画
+## 逐帧动画
 
 使用方法
 
