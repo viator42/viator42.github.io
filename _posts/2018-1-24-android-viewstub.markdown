@@ -5,13 +5,13 @@ date:   2018-1-24
 categories: Android
 ---
 
-***定义    
+### 定义    
 
 ViewStub，惰性装载控件。ViewStub是一个无形的、零大小的视图，可以在程序运行的过程中，通过懒加载的模式inflate进布局资源中。当一个ViewStub的inflate()方法被调用或者被设为显示时，这个ViewStub使用设定的View才会被加载，并替换当前ViewStub的位置。因此，ViewStub存在于视图层次，直到setVisibility(int)或inflate()方法被调用，否则是不加载控件的，所以消耗的资源小。通常也叫它为“懒惰的include”。
 
 ViewStub的好处是，在某些场景中，并不一定需要把所有的内容都展示出来，可以隐藏一些View视图，待用户需要展示的时候再加载到当前的Layout中，这个时候就可以用到ViewStub这个控件了，这样可以减少资源的消耗，使最初的加载速度变快。
 
-***使用
+### 使用
 
 __需要占位的View__
 
