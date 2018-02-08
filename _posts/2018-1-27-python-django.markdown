@@ -77,3 +77,48 @@ model关联到数据库
 admin用户模块使用
 
     你可以通过命令 python manage.py createsuperuser 来创建超级用户
+
+项目部署(以Nginx作为服务器)
+
+    yum install python-devel
+    pip install uwsgi
+
+uwsgi 配置
+
+创建配置文件/etc/uwsgi9000.ini
+
+    [uwsgi]
+    socket = 127.0.0.1:9090
+    master = true         //主进程
+    vhost = true          //多站模式
+    no-site = true        //多站模式时不设置入口模块和文件
+    workers = 2           //子进程数
+    reload-mercy = 10     
+    vacuum = true         //退出、重启时清理文件
+    max-requests = 1000   
+    limit-as = 512
+    buffer-size = 30000
+    pidfile = /var/run/uwsgi9090.pid    //pid文件，用于下面的脚本启动、停止该进程
+    daemonize = /website/uwsgi9090.log
+
+Nginx 配置
+
+找到nginx的安装目录（如：/usr/local/nginx/），打开conf/nginx.conf文件，修改server配置：
+
+    server {
+        listen       80;
+        server_name  localhost;
+        
+        location / {            
+            include  uwsgi_params;
+            uwsgi_pass  127.0.0.1:9000;              //必须和uwsgi中的设置一致
+            uwsgi_param UWSGI_SCRIPT demosite.wsgi;  //入口文件，即wsgi.py相对于项目根目录的位置，“.”相当于一层目录
+            uwsgi_param UWSGI_CHDIR /demosite;       //项目根目录
+            index  index.html index.htm;
+            client_max_body_size 35m;
+        }
+    }
+
+设置完成后，在终端运行：
+
+    uwsgi --ini /etc/uwsgi9000.ini &
