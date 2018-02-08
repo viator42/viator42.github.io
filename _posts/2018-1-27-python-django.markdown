@@ -122,3 +122,15 @@ Nginx 配置
 设置完成后，在终端运行：
 
     uwsgi --ini /etc/uwsgi9000.ini &
+
+Python3相关
+
+由于Python3没有Python-mysql组件，连接数据库需要安装PyMySQL
+
+    pip install PyMySQL
+
+在项目的__init__.py文件中添加以下代码
+
+    import pymysql
+    pymysql.install_as_MySQLdb()
+
