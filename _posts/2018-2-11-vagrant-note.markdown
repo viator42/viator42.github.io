@@ -1,0 +1,44 @@
+---
+layout: post
+title:  "Vagrant使用笔记"
+date:   2018-2-11
+categories: Vagrant
+---
+
+# Markdown使用笔记
+---------------------
+
+需要安装Vagrant和VirtualBox
+
+创建Vagrant实例，创建vagrant虚拟机目录,然后cd进此目录
+
+    vagrant init
+
+下载Vagrant虚拟机
+修改vagrantfile文件,填入所需要的box文件
+
+      config.vm.box = "centos/7"
+
+完成之后运行
+
+    vagrant up
+
+进入虚拟机
+
+    vagrant ssh
+
+端口映射
+
+    config.vm.network :forwarded_port, host: 8000, guest: 80
+
+设置共享目录（可以设置多个
+
+    config.vm.synced_folder "./vagrant", "/vagrant"
+
+网络桥接，让虚拟机可以使用宿主机的IP进行访问
+
+    config.vm.network "public_network"
+
+修改配置文件之后需要重置vagrant
+
+    vagrant reload
