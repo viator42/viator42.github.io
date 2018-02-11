@@ -126,3 +126,172 @@ map方法
 
 ## Retrofit笔记
 
+__配置__
+
+AndroidManifest.xml添加网络访问权限
+
+    <uses-permission android:name="android.permission.INTERNET" />
+
+buildGradle,需要加载retrofit, converter-gson, gson, okhttp, okio
+
+    compile 'com.squareup.retrofit2:retrofit:2.3.0'
+    compile 'com.squareup.retrofit2:converter-gson:2.3.0'
+    compile 'com.google.code.gson:gson:2.8.2'
+    compile files('libs/okhttp-3.9.1.jar')
+    compile files('libs/okio-1.13.0.jar')
+
+__使用方法__
+
+1.创建Retrofit对象
+
+需要设置数据解析器
+
+    Retrofit retrofit = new Retrofit.Builder()
+        .baseUrl(StaticValues.SERVER_PATH)
+        .addConverterFactory(GsonConverterFactory.create())
+        .build();
+
+2.定义接口文件
+
+一组网络操作可以放到一个接口文件中,每个方法都是一个网络操作
+
+    public interface MyGetActionInterfaces {
+        @GET("main/test/get/{param1}/{param2}")
+        Call<GetTesterRestult> getTest(
+                @Path("param1") String param1,
+                @Path("param2") String param2
+        );
+
+        @POST("main/test/post/")
+        @FormUrlEncoded
+        Call<List<User>> postTest(@Field("params") String postParams);
+
+    }
+
+Retrofit大量使用@注解来定义属性
+GET把参数拼接到url中,POST使用表单
+
+3.网络访问
+
+GET请求
+
+    public class GetTesterRestult {
+        public String success;
+        public String msg;
+        public String data;
+    }
+
+    MyGetActionInterfaces myGetActionInterfaces = retrofit.create(MyGetActionInterfaces.class);
+    Call<GetTesterRestult> call = myGetActionInterfaces.getTest("123", "456");
+    try {
+        GetTesterRestult getTesterRestult = call.execute().body();
+        Log.v("RetrofitTester", getTesterRestult.success);
+        Log.v("RetrofitTester", getTesterRestult.msg);
+        Log.v("RetrofitTester", getTesterRestult.data);
+    } catch (IOException e) {
+        e.printStackTrace();
+        Log.v("RetrofitTester", "error");
+    }
+
+POST请求
+
+    PostParams postParams = new PostParams();
+    postParams.param1 = "123456";
+    postParams.param2 = "Param2 here";
+
+    Gson gson = new Gson();
+    String paramStr = gson.toJson(postParams);
+
+构建参数
+
+    Call<List<User>> call = myGetActionInterfaces.postTest(paramStr);
+    try {
+        ArrayList<User> userList = (ArrayList<User>) call.execute().body();
+
+    } catch (IOException e) {
+        e.printStackTrace();
+        Log.v("RetrofitTester", "error");
+    }
+
+返回值直接从json格式映射成对象
+
+--------------------------------------------------------------------------------------
+## Retrofit和RxJava结合
+
+导入库
+
+    compile 'com.squareup.retrofit2:retrofit:2.3.0'
+    compile 'com.squareup.retrofit2:converter-gson:2.3.0'
+    compile 'com.squareup.retrofit2:adapter-rxjava2:2.3.0'
+
+    compile 'io.reactivex.rxjava2:rxandroid:2.0.1'
+    compile 'io.reactivex.rxjava2:rxjava:2.1.8'
+
+    compile 'com.google.code.gson:gson:2.8.2'
+    compile files('libs/okhttp-3.9.1.jar')
+    compile files('libs/okio-1.13.0.jar')
+
+注意导入的compile 'com.squareup.retrofit2:adapter-rxjava2:2.3.0'
+
+__使用__
+
+    public interface MyGetActionInterfaces {
+        @POST("main/test/post/")
+        @FormUrlEncoded
+        Single<List<User>> rxjavaTest(@Field("params") String postParams);
+    }
+
+    Retrofit retrofit = new Retrofit.Builder()
+            .baseUrl(StaticValues.SERVER_PATH)
+            .addConverterFactory(GsonConverterFactory.create())
+            .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+            .build();
+
+    PostParams postParams = new PostParams();
+    postParams.param1 = "123456";
+    postParams.param2 = "Param2 here";
+    Gson gson = new Gson();
+    String paramStr = gson.toJson(postParams);
+
+以下有两种方法
+
+方法1
+
+    CompositeDisposable mCompositeDisposable = new CompositeDisposable();
+    MyGetActionInterfaces myGetActionInterfaces = retrofit.create(MyGetActionInterfaces.class);
+    mCompositeDisposable.add(myGetActionInterfaces.rxjavaTest(paramStr)
+        .subscribeOn(Schedulers.newThread()) // "work" on io thread
+        .observeOn(AndroidSchedulers.mainThread()) // "listen" on UIThread);
+        .subscribe(new Consumer<List<User>>() {
+            @Override
+            public void accept(List<User> users) throws Exception {
+                for (User user :users) {
+                    Log.v("RetrofitTester", user.toString());
+                }
+            }
+        }));
+
+方法2
+
+    MyGetActionInterfaces myGetActionInterfaces = retrofit.create(MyGetActionInterfaces.class);
+    myGetActionInterfaces.rxjavaTest(paramStr)
+        .subscribeOn(Schedulers.newThread()) // "work" on io thread
+        .observeOn(AndroidSchedulers.mainThread()) // "listen" on UIThread);
+        .subscribe(new SingleObserver<List<User>>() {
+            @Override
+            public void onSubscribe(@NonNull Disposable d) {
+
+            }
+
+            @Override
+            public void onSuccess(@NonNull List<User> users) {
+                for (User user :users) {
+                    Log.v("RetrofitTester", user.toString());
+                }
+            }
+
+            @Override
+            public void onError(@NonNull Throwable e) {
+
+            }
+        });
