@@ -961,12 +961,103 @@ activity中实现
         android.R.layout.simple_dropdown_item_1line, context.searchList);
     searchEditText.setAdapter(searchEditAdapter);
 
+### ASyncTask相关
 
+Android多线程编程主要使用的方法    
+创建Thread,Handler Looper机制通信和使用异步框架ASyncTask    
 
+Android 原生的 AsyncTask.java 是对线程池的一个封装，使用其自定义的 Executor 来调度线程的执行方式（并发还是串行），并使用 Handler 来完成子线程和主线程数据的共享。
 
+ASyncTask需要继承父类并定义三个泛型类型
 
+    private class MyTask extends AsyncTask<Void, Void, Void> { ... }
 
+* Params  传入的参数,这里是可变长参数
+* Progress    处理过程中的进度信息
+* Result  返回的结果信息
 
+ASyncTask需要重写三个方法    
+* onPreExecute() 该方法将在执行实际的后台操作前被UI thread调用。可以在该方法中做一些准备工作，如在界面上显示一个进度条。
+* doInBackground(Params...), 将在onPreExecute 方法执行后马上执行，该方法运行在后台线程中。这里将主要负责执行那些很耗时的后台计算工作。可以调用 publishProgress方法来更新实时的任务进度。此方法中不能进行修改UI操作
+* onProgressUpdate(Progress...) UI thread将调用这个方法从而在界面上展示任务的进展情况，例如通过一个进度条进行展示。
+* onPostExecute(Result), 在doInBackground 执行完成后，onPostExecute 方法将被UI thread调用，后台的计算结果将通过该方法传递到UI thread.
 
+ASyncTask必须在UI线程中创建,execute方法必须在UI thread中调用,不要手动的调用onPreExecute(), onPostExecute(Result)，doInBackground(Params...), onProgressUpdate(Progress...)这几个方法
 
+ASyncTask的缺点: 后台线程只有一个,多个任务线性执行
+
+参考    
+https://segmentfault.com/a/1190000002872278    
+http://www.infoq.com/cn/articles/android-asynctask    
+
+### Android ToolBar使用
+
+ToolBar是Android 5.0（API Level 21）之后用来取代ActionBar的
+
+1.AndroidMenifest.xml 中修改theme为NoActionBar
+
+    android:theme="@style/AppTheme.NoActionBar"
+
+2.activity.xml中添加ToolBar
+
+    <android.support.design.widget.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:theme="@style/AppTheme.AppBarOverlay">
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            app:popupTheme="@style/AppTheme.PopupOverlay" >
+
+            <!--自定义控件-->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="自定义控件" />
+
+        </android.support.v7.widget.Toolbar>
+    </android.support.design.widget.AppBarLayout>
+
+Toolbar中可以添加自定义控件
+
+3.activity.java
+
+    public class MainActivity extends AppCompatActivity {
+        @Override
+        protected void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            setContentView(R.layout.activity_main);
+            //定义和初始化ToolBar
+            Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+            setSupportActionBar(toolbar);
+
+            toolbar.setNavigationIcon(R.mipmap.ic_launcher);//设置导航栏图标
+            toolbar.setLogo(R.mipmap.ic_launcher);//设置app logo
+            toolbar.setTitle("Title");//设置主标题
+            toolbar.setSubtitle("Subtitle");//设置子标题
+
+        }
+
+        //设置菜单
+        @Override
+        public boolean onCreateOptionsMenu(Menu menu) {
+            // Inflate the menu; this adds items to the action bar if it is present.
+            getMenuInflater().inflate(R.menu.main, menu);
+            return true;
+        }
+
+        @Override
+        public boolean onOptionsItemSelected(MenuItem item) {
+            switch (item.getItemId()) {
+                case R.id.menu_item1:
+                    Toast.makeText(MainActivity.this , "Menu Item 1 Clicked", Toast.LENGTH_SHORT).show();
+                    break;
+            }
+
+            return super.onOptionsItemSelected(item);
+        }
+    }
 
