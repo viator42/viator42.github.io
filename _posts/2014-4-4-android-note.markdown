@@ -5,25 +5,25 @@ date:   2015-04-04
 categories: android
 ---
 
-#### 获取界面组件
+### 获取界面组件
 
 	<Button
 	android:id="@+id/btn1" />
 
 	Button btn1 = findViewById(R.id.btn1);
 
-#### Activity    
+### Activity    
 Activity全屏
     
     requestWindowFeature(Window.FEATURE_NO_TITLE);  //隐藏应用的ActionBar
     getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
             WindowManager.LayoutParams.FLAG_FULLSCREEN);    //应用全屏,隐藏android的标题栏
 
-#### activity的生命周期
+### activity的生命周期
 
 ![Activity Lifescycle](http://android.okhelp.cz/wp-content/uploads/lifecycle-activity-android.png "Activity Lifescycle")
 
-#### activity启动模式
+### activity启动模式
 
 * standard 默认的启动模式,每次启动一个新的activity都创建一个新的实例到栈中.
 * singleTop 创建activity的时候如果栈顶已经是该活动,就直接使用不会重复创建.
@@ -34,7 +34,7 @@ Activity全屏
     <activity
     android:launchMode="singleTop"/>
 
-#### activity跳转(带参数)
+### activity跳转(带参数)
 
 	Intent intent = new Intent(activity.this, MainActivity.class);
     Bundle bundle = new Bundle();
@@ -46,7 +46,7 @@ Activity全屏
     Bundle bundle = this.getIntent().getExtras();
     String value = bundle.getString("key", "");
 
-#### 输出log日志
+### 输出log日志
 
 	import android.util.Log;
 	Log.v(“log title”, “value");
@@ -60,7 +60,7 @@ Activity全屏
 * Log.w();  警告信息,对应级别warning
 * Log.e();  错误信息,对应级别error
 
-#### SharedReference
+### SharedReference
 
 	//获取SharedPreferences实例     第一个参数是名称, 第二个是作用域
 	SharedPreferences ref = getSharedPreferences("user", Context.MODE_PRIVATE);
@@ -78,12 +78,10 @@ Activity全屏
 	//完成后提交修改
 	editor.commit();
 
-#### Fragment (Android4 以上)
+### Fragment (Android4 以上)
 
 Fragment生命周期
 ![Fragment Lifescycle](http://indy-world.net/wp-content/uploads/2014/08/fragment_lifecycle.png "Fragment Lifescycle")
-
-
 
 Fragment类定义
 HelloFragment.java
@@ -154,7 +152,7 @@ Activity.java 使用 Fragment
     transaction.replace(R.id.content, fragment );
     transaction.commit();
 
-#### fragment传递参数
+### fragment传递参数
 
 创建对象时使用bundle传递参数
 
@@ -194,6 +192,8 @@ Activity.java 使用 Fragment
     Fragment1 fragment1 = (Fragment1) manager.findFragmentById(R.id.content);
 
 获取到fragment实例之后就可以执行重新赋值的操作
+
+--------
 
 ### ListView
 
@@ -368,20 +368,48 @@ listView onClick事件设置
 
     }
 
-####http连接库httpClient
+--------
 
-	简单实例
+### 使用SimpleAddpter
 
-	CloseableHttpClient httpclient = HttpClients.createDefault();
-	HttpGet httpget = new HttpGet("http://localhost/");
-	CloseableHttpResponse response = httpclient.execute(httpget);
-	try {
-	    <...>
-	} finally {
-		
-	}
+    List listData = new ArrayList<Map<String,Object>>();
 
-#### Async task
+    Map line = new HashMap();
+    line.put("id", 1);
+    line.put("name", "beijing");
+    listData.add(line);
+
+    // 参数含义, context, 列表数据, 列表项布局, 显示的value名称, 名称对应的xml布局id
+    SimpleAdapter adapter = new SimpleAdapter(this, listData, R.layout.spinner_item, new String[] {"name"}, new int[] {R.id.name});
+    provinceSpinner.setAdapter(adapter);
+
+SimpleAdapter构造函数的参数分别为
+
+1. 上下文,一般为Activity类
+2. 列表数据, 类型是List,每个元素是Map, 每个Map对象包含key,value键值对表示属性名和属性值.
+3. 布局xml文件.
+4. 字符串数组, 表示数据中key的属性名.
+5. int数组, 数据中每个key属性名所对应的样式xml中的组件id.
+
+最后两个参数数组项是一一对应的,把数据赋值给对应的控件显示
+
+设置列表项选中时的事件
+
+    provinceSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                Toast.makeText(RegisterActivity.this, ((Map)provinceSpinner.getItemAtPosition(i)).get("id").toString(), Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
+
+--------
+
+### Async task
 
 一般声明在Activity类中作为内内部类.标注三个参数的类型
 第一个参数表示要执行的任务通常是网络的路径。第二个参数表示进度的刻度，第三个参数表示任务执行的结果。
@@ -391,7 +419,6 @@ listView onClick事件设置
 *  onPreExecute 表示任务执行之前的操作.    
 *  doInBackground方法实现耗时的任务。    
 *  onPostExecute 主要是更新UI的操作.    
-
 
         public class ListAllTask extends AsyncTask<String, Void, String>
         {
@@ -414,7 +441,7 @@ listView onClick事件设置
 运行AsyncTask
 new ListAllTask().execute("aaa");
 
-#### Application 全局类配置
+### Application 全局类配置
 
 定义一个类可以继承Application, onCreate方法在应用启动时运行.
 
@@ -439,7 +466,7 @@ new ListAllTask().execute("aaa");
 	
 	AppContext context =  (AppContext)activity.getApplication();
 
-#### Handler和Message
+### Handler和Message
 
 从网络上下载图片的示例.
 
@@ -556,7 +583,7 @@ Activity类中新建一个Handler类并重写handleMessage方法.
     message.what = IS_END;
     message.sendToTarget();
 
-#### Looper对象
+### Looper对象
 
 Activity中有一个默认的Looper对象,来处理子线程发送的消息.所以主线程接收子线程发送的消息就补需要定义looper
 如果子线程需要获取主线程发送的消息就必须定义Lopper.
@@ -594,7 +621,7 @@ Activity中有一个默认的Looper对象,来处理子线程发送的消息.所�
         }
     }
 
-#### 查看SHA1签名
+### 查看SHA1签名
 
 (Mac OS)
     
@@ -602,7 +629,9 @@ Activity中有一个默认的Looper对象,来处理子线程发送的消息.所�
 
 口令没有就直接enter
 
-#### Spinner选择器
+--------
+
+### Spinner选择器
 
 有dialog和dropdown两种显示方式.
 需要使用适配器来完成填充数据.
@@ -650,7 +679,7 @@ Spinner_item.xml布局文件
             android:gravity="center" />
     </LinearLayout>
 
-#### 自定义选项布局
+### 自定义选项布局
 
 /res/value下添加spinner_item.xml
 
@@ -666,42 +695,9 @@ Spinner_item.xml布局文件
             android:gravity="center" />
     </LinearLayout>
 
-使用SimpleAddpter
+--------
 
-    List listData = new ArrayList<Map<String,Object>>();
-
-    Map line = new HashMap();
-    line.put("id", 1);
-    line.put("name", "beijing");
-    listData.add(line);
-
-    // 参数含义, context, 列表数据, 列表项布局, 显示的value名称, 名称对应的xml布局id
-    SimpleAdapter adapter = new SimpleAdapter(this, listData, R.layout.spinner_item, new String[] {"name"}, new int[] {R.id.name});
-    provinceSpinner.setAdapter(adapter);
-
-SimpleAdapter构造函数的参数分别为
-
-1. 上下文,一般为Activity类
-2. 列表数据, 类型是List,每个元素是Map, 每个Map对象包含key,value键值对表示属性名和属性值.
-3. 布局xml文件.
-4. 字符串数组, 表示数据中key的属性名.
-5. int数组, 数据中每个key属性名所对应的样式xml中的组件id.
-
-设置列表项选中时的事件
-
-    provinceSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                Toast.makeText(RegisterActivity.this, ((Map)provinceSpinner.getItemAtPosition(i)).get("id").toString(), Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-
-            }
-        });
-
-#### AVD 模拟器添加sd卡
+### AVD 模拟器添加sd卡
 
 使用mksdcard程序,位置如下(MacOS系统)
 
@@ -711,7 +707,9 @@ SimpleAdapter构造函数的参数分别为
 
     mksdcard -l <label> <size> <file>
 
-#### 获取相册图片
+--------
+
+### 获取相册图片
 
 方式1, 直接返回图片数据.
 
@@ -809,7 +807,7 @@ SimpleAdapter构造函数的参数分别为
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-#### 图片尺寸压缩
+### 图片尺寸压缩
 
     /**
      * 图片进行压缩处理,宽度固定,高度自动适配
@@ -852,7 +850,7 @@ SimpleAdapter构造函数的参数分别为
         }
     }
 
-#### 图片裁剪
+### 图片裁剪
 
     Intent intent = new Intent("com.android.camera.action.CROP");
     intent.setDataAndType(imageUri, "image/*");
@@ -885,7 +883,9 @@ SimpleAdapter构造函数的参数分别为
         }
     }
     
-#### GPS获取当前位置
+--------
+
+### GPS获取当前位置
 
 AndroidManifest.xml文件添加以下权限.
     
@@ -926,12 +926,16 @@ AndroidManifest.xml文件添加以下权限.
     LocationManager locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
     locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, (android.location.LocationListener) this);
 
-#### ImageView/ImageButton 设置缩放
+--------
+
+### ImageView/ImageButton 设置缩放
 
 设置自适应调整大小和最大宽度.
 
     itemBtn.setAdjustViewBounds(true);
     itemBtn.setMaxWidth(100);
+
+--------
 
 ### 根据权重设置控件宽度
 
@@ -939,6 +943,8 @@ AndroidManifest.xml文件添加以下权限.
     
     android:layout_width="0dp"
     android:layout_weight="1"
+
+--------
 
 ### AutoCompleteTextView的使用方法
 
@@ -960,6 +966,8 @@ activity中实现
     ArrayAdapter<String> searchEditAdapter=new ArrayAdapter<String>(this, 
         android.R.layout.simple_dropdown_item_1line, context.searchList);
     searchEditText.setAdapter(searchEditAdapter);
+
+--------
 
 ### ASyncTask相关
 
@@ -989,6 +997,8 @@ ASyncTask的缺点: 后台线程只有一个,多个任务线性执行
 参考    
 https://segmentfault.com/a/1190000002872278    
 http://www.infoq.com/cn/articles/android-asynctask    
+
+--------
 
 ### Android ToolBar使用
 
@@ -1060,4 +1070,6 @@ Toolbar中可以添加自定义控件
             return super.onOptionsItemSelected(item);
         }
     }
+
+--------
 
