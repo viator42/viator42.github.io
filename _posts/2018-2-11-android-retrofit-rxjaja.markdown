@@ -9,7 +9,7 @@ categories: Java Android
 
 __概念__
 
-RxJava是一种响应式编程框架.响应式编程是一种基于异步数据流概念的编程模式。数据流就像一条河：它可以被观测，被过滤，被操作，或者为新的消费者与另外一条流合并为一条新的流。    
+RxJava是一种响应式编程框架.响应式编程是一种基于异步数据流概念的编程模式。当数据到达的时候，消费者做出响应。响应式编程可以将事件传递给注册了的observer。    
 RxJava本质上是一个异步操作库，是一个能让你用极其简洁的逻辑去处理繁琐复杂任务的异步事件库。    
 Android平台上为已经开发者提供了AsyncTask,Handler等用来做异步操作的类库，那我们为什么还要选择RxJava呢？答案是简洁！RxJava可以用非常简洁的代码逻辑来解决复杂问题；而且即使业务逻辑的越来越复杂，它依然能够保持简洁    
 RxJava主要使用的是观察者模式    
@@ -80,11 +80,26 @@ observeOn() 方法将会在指定的调度器上返回结果
 
 RxJava提供了5种调度器：
 
-1. .io()
-2. .computation()
-3. .immediate()
-4. .newThread()
-5. .trampoline()
+1. .io()    
+用于IO密集型任务，如异步阻塞IO操作，这个调度器的线
+程池会根据需要增长；对于普通的计算任务，请使用
+Schedulers.computation()；Schedulers.io( )默认是一个
+CachedThreadScheduler，很像一个有线程缓存的新线程
+调度器
+
+2. .computation()    
+用于计算任务，如事件循环或和回调处理，不要用于IO操
+作(IO操作请使用Schedulers.io())；默认线程数等于处理器
+的数量
+
+3. .immediate()    
+在当前线程立即开始执行任务
+
+4. .newThread()    
+为每个任务创建一个新线程
+
+5. .trampoline()    
+当其它排队的任务完成后，在当前线程排队开始执行
 
 3.定义Observer
 
@@ -110,7 +125,25 @@ RxJava提供了5种调度器：
     }
 });
 
-转换Observables
+Subscribe方法用于将观察者连接到Observable，你的观察者需要实现以下方法的一个子集：
+
+* onNext(T item)    
+Observable调用这个方法发射数据，方法的参数就是Observable发射的数据，这个方法
+可能会被调用多次，取决于你的实现。
+
+* onError(Exception ex)    
+当Observable遇到错误或者无法返回期望的数据时会调用这个方法，这个调用会终止
+Observable，后续不会再调用onNext和onCompleted，onError方法的参数是抛出的异
+常。
+
+* onComplete    
+正常终止，如果没有遇到错误，Observable在最后一次调用onNext之后调用此方法。
+根据Observable协议的定义，onNext可能会被调用零次或者很多次，最后会有一次
+onCompleted或onError调用（不会同时），传递数据给onNext通常被称作发射，
+onCompleted和onError被称作通知。
+
+__转换Observables__
+
 map方法
 
     .map(new Function<Integer, String>() {
