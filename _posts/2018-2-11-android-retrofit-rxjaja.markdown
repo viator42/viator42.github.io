@@ -195,7 +195,7 @@ __merge方法__
 
 ## Retrofit笔记
 
-__配置__
+### 配置
 
 AndroidManifest.xml添加网络访问权限
 
@@ -209,7 +209,7 @@ buildGradle,需要加载retrofit, converter-gson, gson, okhttp, okio
     compile files('libs/okhttp-3.9.1.jar')
     compile files('libs/okio-1.13.0.jar')
 
-__使用方法__
+### 使用方法
 
 1.创建Retrofit对象
 
@@ -287,7 +287,7 @@ POST请求
 --------------------------------------------------------------------------------------
 ## Retrofit和RxJava结合
 
-导入库
+### 导入库
 
     compile 'com.squareup.retrofit2:retrofit:2.3.0'
     compile 'com.squareup.retrofit2:converter-gson:2.3.0'
@@ -302,7 +302,7 @@ POST请求
 
 注意导入的compile 'com.squareup.retrofit2:adapter-rxjava2:2.3.0'
 
-__使用__
+### 使用
 
     public interface MyGetActionInterfaces {
         @POST("main/test/post/")
