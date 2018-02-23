@@ -58,6 +58,20 @@ __使用流程__
 
 1.创建Obserable被观察者对象
 
+使用Observable.just()将一个或者多个对象转换成使用Observable
+
+    Observable.just("step1", "step2", "step3")
+
+Observable.from()是从一个数据集中创建Observable对象
+
+    Integer[] items = { 0, 1, 2, 3, 4, 5 };
+    Observable myObservable = Observable.from(items);
+
+Just类似于From，但是From会将数组或Iterable的数据取出然后逐个发射，而Just只是简单的
+原样发射，将数组或Iterable当做单个数据。
+
+Observable.create()是手动创建一个Observable对象
+
     Observable.create(new ObservableOnSubscribe<Integer>() {
         @Override
         public void subscribe(@NonNull ObservableEmitter<Integer> e) throws Exception {
@@ -75,8 +89,8 @@ subscribe方法中定义需要执行的操作序列(向操作序列中发射数�
     .subscribeOn(Schedulers.io())
     .observeOn(AndroidSchedulers.mainThread())
 
-subscribeOn() 在指定的调度器上进行Observer的操作
-observeOn() 方法将会在指定的调度器上返回结果
+subscribeOn() 指定Observable自身在哪个调度器上执行
+observeOn() 指定一个观察者在哪个调度器上观察这个Observable
 
 RxJava提供了5种调度器：
 
