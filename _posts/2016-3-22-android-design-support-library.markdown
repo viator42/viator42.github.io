@@ -21,12 +21,15 @@ categories: android
         compile 'com.android.support:cardview-v7:23.3.0'
     }
 
+--------
 ## Snackbar 
 
 用来代替Toast的提示框的组件。
 
     Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                             .setAction("Action", null).show();
+
+--------
 
 ## Floating Action Button
 
@@ -54,6 +57,7 @@ categories: android
             }
         });
 
+--------
 
 ## NavigationView
 
@@ -200,6 +204,10 @@ Activity类继承AppCompatActivity并implements接口NavigationView.OnNavigation
                 return false;
             }
         });
+
+        //访问Header View中的元素
+        View navHeaderView = navigationView.getHeaderView(0);
+        ImageView headImgView = navHeaderView.findViewById(R.id.head_img);
     
         public boolean onCreateOptionsMenu(Menu menu) {
             super.onCreateOptionsMenu(menu);
@@ -237,7 +245,8 @@ Activity类继承AppCompatActivity并implements接口NavigationView.OnNavigation
     This Activity already has an action bar supplied by the window decor. 
     Do not request Window.FEATURE_SUPPORT_ACTION_BAR and set windowActionBar to false in your theme to use a Toolbar instead.
     
-    
+--------
+
 ## TabLayout
 
 #### layout
