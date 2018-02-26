@@ -1073,3 +1073,57 @@ Toolbar中可以添加自定义控件
 
 --------
 
+### Android 手势相关
+
+首先定义GestureDetector
+
+    GestureDetector mGestureDetector = new GestureDetector(this, new GestureDetector.OnGestureListener() {
+        @Override
+        //当手指按下的时候触发下面的方法
+        public boolean onDown(MotionEvent e) {
+            Toast.makeText(MainActivity.this, "Press Down", Toast.LENGTH_SHORT).show();
+            return true;
+        }
+
+        @Override
+        //当用户手指在屏幕上按下,而且还未移动和松开的时候触发这个方法
+        public void onShowPress(MotionEvent e) {
+
+        }
+
+        @Override
+        //当手指在屏幕上轻轻点击的时候触发下面的方法
+        public boolean onSingleTapUp(MotionEvent e) {
+            return false;
+        }
+
+        @Override
+        //当手指在屏幕上滚动的时候触发这个方法
+        public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+            return false;
+        }
+
+        @Override
+        //当用户手指在屏幕上长按的时候触发下面的方法
+        public void onLongPress(MotionEvent e) {
+            Toast.makeText(MainActivity.this, "Long pressed", Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        //当用户的手指在触摸屏上拖过的时候触发下面的方法,velocityX代表横向上的速度,velocityY代表纵向上的速度
+        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+            return false;
+        }
+    });
+
+组件应用touch事件, 将touch事件交给gesture处理
+
+    button = (Button) findViewById(R.id.test_btn);
+    button.setOnTouchListener(new View.OnTouchListener() {
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            mGestureDetector.onTouchEvent(event);
+            return true;
+        }
+    });
+
