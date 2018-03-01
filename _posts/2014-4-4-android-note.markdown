@@ -12,8 +12,50 @@ categories: android
 
 	Button btn1 = findViewById(R.id.btn1);
 
-### Activity    
-Activity全屏
+## Activity 相关
+
+Actitity之间跳转,分为显式跳转和隐式跳转
+
+### 显式跳转
+
+    Intent intent=new Intent(this,OtherActivity.class);  //方法1
+
+    Intent intent2=new Intent();
+
+    intent2.setClass(this, OtherActivity.class);//方法2
+    intent2.setClassName(this, "com.zy.MutiActivity.OtherActivity");  //方法3 此方式可用于打开其它的应用
+    intent2.setComponent(new ComponentName(this, OtherActivity.class));  //方法4
+    startActivity(intent2);
+
+### 隐式跳转（只要action、category、data和要跳转到的Activity在AndroidManifest.xml中设置的匹配就OK
+
+隐式跳转不指定启动特定的Activity,需要判断action和category找到匹配的Actitity启动     
+AndroidManifest.xml文件中为每一个Activity中设置intent-filter来指定
+
+这个是指定启动App启动时首先启动的Actitity
+
+    <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+    </intent-filter>
+
+指定目标Activity的filter, 包括name和category,name只有一个category可以设置多个
+
+    <activity android:name=".SecondActivity" >
+        <intent-filter>
+            <action android:name="com.example.activitytest.ACTION_START" />
+            <category android:name="android.intent.category.DEFAULT" />
+            <category android:name="com.example.activitytest.MY_CATEGORY"/>
+        </intent-filter>
+    </activity>
+
+创建Intent的时候设置name和category,只有name和所有的category都匹配的时候才会跳转到新的Activity.否则就会爆出ActivityNotFoundException异常
+
+    Intent intent = new Intent("com.example.activitytest.ACTION_START");
+    intent.addCategory("com.example.activitytest.MY_CATEGORY");
+    startActivity(intent);
+
+### Activity全屏    
     
     requestWindowFeature(Window.FEATURE_NO_TITLE);  //隐藏应用的ActionBar
     getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
