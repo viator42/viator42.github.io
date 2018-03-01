@@ -46,6 +46,7 @@ AndroidManifest.xml文件中为每一个Activity中设置intent-filter来指定
             <action android:name="com.example.activitytest.ACTION_START" />
             <category android:name="android.intent.category.DEFAULT" />
             <category android:name="com.example.activitytest.MY_CATEGORY"/>
+            <data android:scheme="ispring" android:host="blog.csdn.net" />
         </intent-filter>
     </activity>
 
@@ -54,6 +55,25 @@ AndroidManifest.xml文件中为每一个Activity中设置intent-filter来指定
     Intent intent = new Intent("com.example.activitytest.ACTION_START");
     intent.addCategory("com.example.activitytest.MY_CATEGORY");
     startActivity(intent);
+
+Android可以根据Intent所携带的信息去查找要启动的组件，Intent还携带了一些数据信息以便要启动的组件根据Intent中的这些数据做相应的处理。
+
+### Intent的组成
+
+Intent由6部分信息组成：Component Name、Action、Data、Category、Extras、Flags。根据信息的作用用于，又可分为三类:   
+
+* Component Name、Action、Data、Category为一类，这4中信息决定了Android会启动哪个组件，其中Component Name用于在显式Intent中使用，Action、Data、Category、Extras、Flags用于在隐式Intent中使用。
+
+* Extras为一类，里面包含了具体的用于组件实际处理的数据信息。
+* Flags为一类，其是Intent的元数据，决定了Android对其操作的一些行为
+
+Component Name是在显式Intent中指定目标Activity    
+Action是表示了要执行操作的字符串，比如查看或选择，其对应着Intent Filter中的action标签<action />    
+Data指的是Uri对象和数据的MIME类型，其对应着Intent Filter中的data标签<data />一个完整的Uri由scheme、host、port、path组成，格式是<scheme>://<host>:<port>/<path>，例如content://com.example.project:200/folder/subfolder/etc。    
+Category包含了关于组件如何处理Intent的一些其他信息，虽然可以在Intent中加入任意数量的category，但是大多数的Intent其实不需要category。
+Extras就是额外的数据信息，Intent中有一个Bundle对象存储着各种键值对，接收该Intent的组件可以从中读取出所需要的信息以便完成相应的工作。
+
+参考链接: http://lib.csdn.net/article/android/62966
 
 ### Activity全屏    
     
