@@ -14,6 +14,11 @@ categories: android
 
 ## Activity 相关
 
+### Activity的生命周期
+
+activity第一次创建时调用onCreate(), 经过onStart() 、onResume()变成foreground process（前景模式）。 弹出对话框时activity变成visible process（可见模式）,调用onPause().对话框交互结束调用onResume()返回前景模式.跳转到其他activity的时候调用onStop().跳转回来的时候经过
+onRestart(), onStart() 、onResume().Activity被结束的时候调用onDestroy().
+
 Actitity之间跳转,分为显式跳转和隐式跳转
 
 ### 显式跳转
