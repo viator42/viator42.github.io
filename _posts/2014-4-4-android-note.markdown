@@ -1225,3 +1225,103 @@ Toolbar中可以添加自定义控件
         }
     });
 
+### 定时器Timer和TimerTask
+
+在开发中我们有时会有这样的需求，即在固定的每隔一段时间执行某一个任务。比如UI上的控件需要随着时间改变，我们可以使用Java为我们提供的计时器的工具类，即Timer和TimerTask。   
+
+Timer是一个普通的类，其中有几个重要的方法；而TimerTask则是一个抽象类，其中有一个抽象方法run()，类似线程中的run()方法，我们使用Timer创建一个他的对象，然后使用这对象的schedule方法来完成这种间隔的操作。    
+
+schedule方法有三个参数    
+
+* 第一个参数就是TimerTask类型的对象，我们实现TimerTask的run()方法就是要周期执行的一个任务；    
+* 第二个参数有两种类型，第一种是long类型，表示多长时间后开始执行，另一种是Date类型，表示从那个时间后开始执行；    
+* 第三个参数就是执行的周期，为long类型。    
+
+schedule方法还有一种两个参数的执行重载，第一个参数仍然是TimerTask，第二个表示为long的形式表示多长时间后执行一次，为Date就表示某个时间后执行一次。     
+
+Timer就是一个线程，使用schedule方法完成对TimerTask的调度，多个TimerTask可以共用一个Timer，也就是说Timer对象调用一次schedule方法就是创建了一个线程，并且调用一次schedule后TimerTask是无限制的循环下去的，使用Timer的cancel()停止操作。当然同一个Timer执行一次cancel()方法后，所有Timer线程都被终止。    
+
+#### 用法：
+
+    //true 说明这个timer以daemon方式运行（优先级低，程序结束timer也自动结束）   
+    java.util.Timer timer = new java.util.Timer(true);  
+      
+    TimerTask task = new TimerTask() {  
+       public void run() {  
+       //每次需要执行的代码放到这里面。     
+       }     
+    };  
+      
+    //以下是几种调度task的方法：  
+      
+    //time为Date类型：在指定时间执行一次。  
+    timer.schedule(task, time);  
+      
+    //firstTime为Date类型,period为long，表示从firstTime时刻开始，每隔period毫秒执行一次。  
+    timer.schedule(task, firstTime, period);     
+      
+    //delay 为long类型：从现在起过delay毫秒执行一次。  
+    timer.schedule(task, delay);  
+      
+    //delay为long,period为long：从现在起过delay毫秒以后，每隔period毫秒执行一次。  
+    timer.schedule(task, delay, period);  
+
+#### 示例:
+
+    import android.app.Activity;  
+    import android.os.Bundle;  
+    import android.os.Handler;  
+    import android.os.Message;  
+      
+    import java.util.Timer;  
+    import java.util.TimerTask;  
+      
+    public class TimerTaskActivity extends Activity {  
+      
+        private Timer mTimer;  
+      
+        @Override  
+        protected void onCreate(Bundle savedInstanceState) {  
+            super.onCreate(savedInstanceState);  
+            // init timer  
+            mTimer = new Timer();  
+            // start timer task  
+            setTimerTask();  
+        }  
+      
+        @Override  
+        protected void onDestroy() {  
+            super.onDestroy();  
+            // cancel timer  
+            mTimer.cancel();  
+        }  
+      
+        private void setTimerTask() {  
+            mTimer.schedule(new TimerTask() {  
+                @Override  
+                public void run() {  
+                    Message message = new Message();  
+                    message.what = 1;  
+                    doActionHandler.sendMessage(message);  
+                }  
+            }, 1000, 1000/* 表示1000毫秒之後，每隔1000毫秒執行一次 */);  
+        }  
+      
+        /** 
+         * do some action 
+         */  
+        private Handler doActionHandler = new Handler() {  
+            @Override  
+            public void handleMessage(Message msg) {  
+                super.handleMessage(msg);  
+                int msgId = msg.what;  
+                switch (msgId) {  
+                    case 1:  
+                        // do some action  
+                        break;  
+                    default:  
+                        break;  
+                }  
+            }  
+        };  
+    }  
