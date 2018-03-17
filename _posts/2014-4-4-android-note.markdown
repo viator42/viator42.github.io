@@ -12,8 +12,75 @@ categories: android
 
 	Button btn1 = findViewById(R.id.btn1);
 
-### Activity    
-Activity全屏
+## Activity 相关
+
+### Activity的生命周期
+
+activity第一次创建时调用onCreate(), 经过onStart() 、onResume()变成foreground process（前景模式）。 弹出对话框时activity变成visible process（可见模式）,调用onPause().对话框交互结束调用onResume()返回前景模式.跳转到其他activity的时候调用onStop().跳转回来的时候经过
+onRestart(), onStart() 、onResume().Activity被结束的时候调用onDestroy().
+
+Actitity之间跳转,分为显式跳转和隐式跳转
+
+### 显式跳转
+
+    Intent intent=new Intent(this,OtherActivity.class);  //方法1
+
+    Intent intent2=new Intent();
+
+    intent2.setClass(this, OtherActivity.class);//方法2
+    intent2.setClassName(this, "com.zy.MutiActivity.OtherActivity");  //方法3 此方式可用于打开其它的应用
+    intent2.setComponent(new ComponentName(this, OtherActivity.class));  //方法4
+    startActivity(intent2);
+
+### 隐式跳转（只要action、category、data和要跳转到的Activity在AndroidManifest.xml中设置的匹配就OK
+
+隐式跳转不指定启动特定的Activity,需要判断action和category找到匹配的Actitity启动     
+AndroidManifest.xml文件中为每一个Activity中设置intent-filter来指定
+
+这个是指定启动App启动时首先启动的Actitity
+
+    <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+    </intent-filter>
+
+指定目标Activity的filter, 包括name和category,name只有一个category可以设置多个
+
+    <activity android:name=".SecondActivity" >
+        <intent-filter>
+            <action android:name="com.example.activitytest.ACTION_START" />
+            <category android:name="android.intent.category.DEFAULT" />
+            <category android:name="com.example.activitytest.MY_CATEGORY"/>
+            <data android:scheme="ispring" android:host="blog.csdn.net" />
+        </intent-filter>
+    </activity>
+
+创建Intent的时候设置name和category,只有name和所有的category都匹配的时候才会跳转到新的Activity.否则就会爆出ActivityNotFoundException异常
+
+    Intent intent = new Intent("com.example.activitytest.ACTION_START");
+    intent.addCategory("com.example.activitytest.MY_CATEGORY");
+    startActivity(intent);
+
+Android可以根据Intent所携带的信息去查找要启动的组件，Intent还携带了一些数据信息以便要启动的组件根据Intent中的这些数据做相应的处理。
+
+### Intent的组成
+
+Intent由6部分信息组成：Component Name、Action、Data、Category、Extras、Flags。根据信息的作用用于，又可分为三类:   
+
+* Component Name、Action、Data、Category为一类，这4中信息决定了Android会启动哪个组件，其中Component Name用于在显式Intent中使用，Action、Data、Category、Extras、Flags用于在隐式Intent中使用。
+
+* Extras为一类，里面包含了具体的用于组件实际处理的数据信息。
+* Flags为一类，其是Intent的元数据，决定了Android对其操作的一些行为
+
+Component Name是在显式Intent中指定目标Activity    
+Action是表示了要执行操作的字符串，比如查看或选择，其对应着Intent Filter中的action标签<action />    
+Data指的是Uri对象和数据的MIME类型，其对应着Intent Filter中的data标签<data />一个完整的Uri由scheme、host、port、path组成，格式是<scheme>://<host>:<port>/<path>，例如content://com.example.project:200/folder/subfolder/etc。    
+Category包含了关于组件如何处理Intent的一些其他信息，虽然可以在Intent中加入任意数量的category，但是大多数的Intent其实不需要category。
+Extras就是额外的数据信息，Intent中有一个Bundle对象存储着各种键值对，接收该Intent的组件可以从中读取出所需要的信息以便完成相应的工作。
+
+参考链接: http://lib.csdn.net/article/android/62966
+
+### Activity全屏    
     
     requestWindowFeature(Window.FEATURE_NO_TITLE);  //隐藏应用的ActionBar
     getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
@@ -59,6 +126,37 @@ Activity全屏
 * Log.i();  调试信息,对应级别info
 * Log.w();  警告信息,对应级别warning
 * Log.e();  错误信息,对应级别error
+
+### RelativeLayout属性
+
+第一类:属性值为true或false
+  
+  Android:layout_centerHrizontal 水平居中    
+  android:layout_centerVertical 垂直居中    
+  android:layout_centerInparent 相对于父元素完全居中    
+  android:layout_alignParentBottom 贴紧父元素的下边缘    
+  android:layout_alignParentLeft 贴紧父元素的左边缘    
+  android:layout_alignParentRight 贴紧父元素的右边缘    
+  android:layout_alignParentTop 贴紧父元素的上边缘    
+  android:layout_alignWithParentIfMissing 如果对应的兄弟元素找不到的话就以父元素做参照物    
+
+第二类：属性值必须为id的引用名“@id/id-name”
+
+  android:layout_below 在某元素的下方    
+  android:layout_above 在某元素的的上方    
+  android:layout_toLeftOf 在某元素的左边    
+  android:layout_toRightOf 在某元素的右边    
+  android:layout_alignTop 本元素的上边缘和某元素的的上边缘对齐    
+  android:layout_alignLeft 本元素的左边缘和某元素的的左边缘对齐    
+  android:layout_alignBottom 本元素的下边缘和某元素的的下边缘对齐    
+  android:layout_alignRight 本元素的右边缘和某元素的的右边缘对齐    
+
+第三类：属性值为具体的像素值，如30dip，40px
+
+  android:layout_marginBottom 离某元素底边缘的距离    
+  android:layout_marginLeft 离某元素左边缘的距离    
+  android:layout_marginRight 离某元素右边缘的距离    
+  android:layout_marginTop 离某元素上边缘的距离    
 
 ### SharedReference
 
@@ -1072,4 +1170,58 @@ Toolbar中可以添加自定义控件
     }
 
 --------
+
+### Android 手势相关
+
+首先定义GestureDetector
+
+    GestureDetector mGestureDetector = new GestureDetector(this, new GestureDetector.OnGestureListener() {
+        @Override
+        //当手指按下的时候触发下面的方法
+        public boolean onDown(MotionEvent e) {
+            Toast.makeText(MainActivity.this, "Press Down", Toast.LENGTH_SHORT).show();
+            return true;
+        }
+
+        @Override
+        //当用户手指在屏幕上按下,而且还未移动和松开的时候触发这个方法
+        public void onShowPress(MotionEvent e) {
+
+        }
+
+        @Override
+        //当手指在屏幕上轻轻点击的时候触发下面的方法
+        public boolean onSingleTapUp(MotionEvent e) {
+            return false;
+        }
+
+        @Override
+        //当手指在屏幕上滚动的时候触发这个方法
+        public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+            return false;
+        }
+
+        @Override
+        //当用户手指在屏幕上长按的时候触发下面的方法
+        public void onLongPress(MotionEvent e) {
+            Toast.makeText(MainActivity.this, "Long pressed", Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        //当用户的手指在触摸屏上拖过的时候触发下面的方法,velocityX代表横向上的速度,velocityY代表纵向上的速度
+        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+            return false;
+        }
+    });
+
+组件应用touch事件, 将touch事件交给gesture处理
+
+    button = (Button) findViewById(R.id.test_btn);
+    button.setOnTouchListener(new View.OnTouchListener() {
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            mGestureDetector.onTouchEvent(event);
+            return true;
+        }
+    });
 
