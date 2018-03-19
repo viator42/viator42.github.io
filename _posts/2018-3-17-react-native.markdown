@@ -123,6 +123,22 @@ const声明一个只读的常量。一旦声明，常量的值就不能改变。
         return x * x;
     };
 
+import,export引用
+
+utils.js
+
+    export const param1 = "Test Param from utils";
+    export function plus(x, y) {
+        return x + y;
+    }
+
+App.js
+
+    import * as utils from './utils.js'
+    console.log('utils.add:', utils.plus(123, 456));
+    console.log('utils.param:', utils.param1);
+
+
 箭头左边是参数, 右边是单行的表达式,表达式的结果作为函数返回值.
 如果是多行的话用{}包裹函数体并用return返回结果
 
@@ -156,3 +172,39 @@ const声明一个只读的常量。一旦声明，常量的值就不能改变。
 
 设定值的使用this.setState({text}); 获取属性值的时候使用this.state.text
 
+## 网络访问 使用Fetch
+
+包含访问的url和参数键值对
+
+    fetch('https://mywebsite.com/endpoint/', {
+    method: 'POST',
+    headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+        firstParam: 'yourValue',
+        secondParam: 'yourOtherValue',
+    })
+    })
+
+如果你的服务器无法识别上面POST的数据格式，那么可以尝试传统的form格式，示例如下：
+
+    fetch('https://mywebsite.com/endpoint/', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: 'key1=value1&key2=value2'
+    })
+
+处理返回值
+
+    return fetch('https://facebook.github.io/react-native/movies.json')
+    .then((response) => response.json())
+    .then((responseJson) => {
+        return responseJson.movies;
+    })
+    .catch((error) => {
+        console.error(error);
+    });
