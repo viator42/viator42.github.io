@@ -1325,3 +1325,36 @@ Timer就是一个线程，使用schedule方法完成对TimerTask的调度，多�
             }  
         };  
     }  
+
+## View绘制的过程
+
+Android的UI界面是一个树形结构,View的嵌套.子View在父View中，这些View都经过一个相同的流程最终显示到屏幕上    
+每一个View的绘制都有Measure,Layout,Draw三个步骤的过程
+
+measure -> onMeasure() -> layout -> onLayout() -> draw -> onDraw()
+
+* Measure()    
+测量视图的大小
+
+* Layout()    
+计算视图的位置
+
+* Draw()    
+视图绘制到屏幕上
+
+视图绘制过程中会回调onMeasure(), onLayout(), onDraw()方法,自定义View的时候需要重写这三个方法
+
+### onMeasure()
+
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+    }
+
+widthMeasureSpec和heightMeasureSpec是测量的view的尺寸    
+其中高两位是模式    
+模式分为一下三种    
+
+* EXACTLY 当View的layout_width和layout_height设置的是固定值的时候
+* AT_MOST 控件的layout_width和layout_height设置成wrap_content的时候,控件的大小随着子控件的大小变化.
+* UNSPECIFIED 不指定测量的大小
+
