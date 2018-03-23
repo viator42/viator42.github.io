@@ -1328,6 +1328,10 @@ Timer就是一个线程，使用schedule方法完成对TimerTask的调度，多�
 
 ## View绘制的过程
 
+各种组件都是ViewGroup的子类,ViewGroup是View的子类,view结构如下
+
+![view结构](http://zhaowen.io/post/Android_Dive_Deep_In_View/decor_view.jpg)
+
 Android的UI界面是一个树形结构,View的嵌套.子View在父View中，这些View都经过一个相同的流程最终显示到屏幕上    
 每一个View的绘制都有Measure,Layout,Draw三个步骤的过程
 
@@ -1342,7 +1346,8 @@ measure -> onMeasure() -> layout -> onLayout() -> draw -> onDraw()
 * Draw()    
 视图绘制到屏幕上
 
-视图绘制过程中会回调onMeasure(), onLayout(), onDraw()方法,自定义View的时候需要重写这三个方法
+meaure会经历performMeaure -> meaure -> onMeaure 的调用过程,其他两个也是同样    
+视图绘制过程中会回调onMeasure(), onLayout(), onDraw()方法,自定义View的时候需要重写这三个方法    
 
 ### onMeasure()
 
@@ -1357,4 +1362,25 @@ widthMeasureSpec和heightMeasureSpec是测量的view的尺寸
 * EXACTLY 当View的layout_width和layout_height设置的是固定值的时候
 * AT_MOST 控件的layout_width和layout_height设置成wrap_content的时候,控件的大小随着子控件的大小变化.
 * UNSPECIFIED 不指定测量的大小
+
+## View的事件分发机制
+
+每一个view都有三个方法来处理点击事件
+
+* dispatchTouchEvent 用于事件的分发,如果传递到当前view,一定会调用这个   
+* onInterruptTouchEvent 用于判断是否拦截某个事件
+* onTouchEvent 拦截之后处理点击事件
+
+点击事件是递归传递的按顺序为 Activity -> Window -> View,从顶级view一级一级向下直到目标view进行处理.    
+每个view收到点击事件后会寻找遍历自己的子view分发事件.如果子view能处理则由子view处理,没有的话就由当前view进行处理.    
+判断的依据是 1.能处理click事件 2.点击的坐标在view的范围内 3.view设置的允许响应事件enable=true.   
+
+### 处理滑动冲突的问题
+
+### Activity的创建过程
+
+## ASyncTask的源码
+
+## HandlerLooper的实现机制
+
 
