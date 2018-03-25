@@ -1358,11 +1358,23 @@ measure -> onMeasure() -> layout -> onLayout() -> draw -> onDraw()
 meaure会经历performMeaure -> meaure -> onMeaure 的调用过程,其他两个也是同样    
 视图绘制过程中会回调onMeasure(), onLayout(), onDraw()方法,自定义View的时候需要重写这三个方法    
 
-### onMeasure()
-
+    @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
+
+    @Override
+    protected void onLayout(boolean changed, int l, int t, int r, int b) {
+        super.onLayout(changed, l, t, r, b);
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+    }
+
+点击屏幕的事件顺序 DOWN->UP
+滑动屏幕的事件顺序 DOWN->MOVE...->UP
 
 widthMeasureSpec和heightMeasureSpec是测量的view的尺寸    
 其中高两位是模式    
@@ -1377,14 +1389,35 @@ widthMeasureSpec和heightMeasureSpec是测量的view的尺寸
 每一个view都有三个方法来处理点击事件
 
 * dispatchTouchEvent 用于事件的分发,如果传递到当前view,一定会调用这个   
-* onInterruptTouchEvent 用于判断是否拦截某个事件
-* onTouchEvent 拦截之后处理点击事件
+* onInterruptTouchEvent 用于判断是否拦截某个事件,被dispatchTouchEvent调用
+* onTouchEvent 拦截之后处理点击事件,被onInterruptTouchEvent调用
 
-点击事件是递归传递的按顺序为 Activity -> Window -> View,从顶级view一级一级向下直到目标view进行处理.    
+点击事件是递归传递的按顺序为 Activity -> Window -> View,从顶级ViewGroup一级一级向下直到目标view进行处理.    
 每个view收到点击事件后会寻找遍历自己的子view分发事件.如果子view能处理则由子view处理,没有的话就由当前view进行处理.    
 判断的依据是 1.能处理click事件 2.点击的坐标在view的范围内 3.view设置的允许响应事件enable=true.   
 
+如果View设置了touchListener,onTouch的返回值(boolean)决定onTouchEvent是否会被回调.如果onTouch返回了false,则会调用上级的onTouchEvent
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        return super.dispatchTouchEvent(ev);
+    }
+
+MotionEvent 是手指触控屏幕产生的一系列事件, 主要有以下几种
+
+* ACTION_DOWN    
+* ACTION_UP    
+* ACTION_MOVE    
+
 ### 处理滑动冲突的问题
+
+* 内外滑动方向一致的情况
+* 内外滑动方向不一致的情况
+
+__解决方法__
+
+1. 重写父容器的onInterruptTouchEvent方法, 判断是否拦截事件.    
+2. 父容器不拦截任何的方法,
 
 ### Activity的创建过程
 
