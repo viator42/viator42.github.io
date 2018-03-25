@@ -316,3 +316,123 @@ c. 运行时动态处理，如得到注解信息
         }
 
 --------
+
+## Java 强引用和弱引用
+
+引用分为强引用、 软引用、 弱引用、虚引用
+
+1. 强引用:    
+不会被垃圾回收器回收,内存空间不足的时候会抛出OutOfMemoryError异常.    
+
+ 使用:
+
+        Object obj = new Object();
+
+2. 软引用(SoftReference)    
+如果内存空间足够，垃圾回收器就不会回收它，如果内存空间不足了，就会回收这些对象的内存。只要垃圾回收器没有回收它，该对象就可以被程序使用。    
+
+使用:
+
+        import java.lang.ref.SoftReference;
+
+        Object obj = new Object();
+        SoftReference<Object> sr = new SoftRefernce<Object>(obj);
+        obj = null; //释放强引用
+        sr.get();  //获取对象
+        sr.clear(); //清除引用
+
+3. 弱引用(WeakReference)     
+弱引用与软引用的区别在于：只具有弱引用的对象拥有更短暂的生命周期。在垃圾回收器线程扫描它 所管辖的内存区域的过程中，一旦发现了只具有弱引用的对象，不管当前内存空间足够与否，都会回收它的内存。    
+使用与软引用类似    
+
+4. 虚引用(PhantomReference)     
+虚引用顾名思义，就是形同虚设，与其他几种引用都不同，虚引用并不会决定对象的生命周期。如果一个对象仅持有虚引用，那么它就和没有任何引用一样，在任何时候都可能被垃圾回收。
+虚引用主要用来跟踪对象被垃圾回收的活动。虚引用与软引用和弱引用的一个区别在于：虚引用必须和引用队列（ReferenceQueue）联合使用。当垃 圾回收器准备回收一个对象时，如果发现它还有虚引用，就会在回收对象的内存之前，把这个虚引用加入到与之关联的引用队列中。程序可以通过判断引用队列中是 否已经加入了虚引用，来了解被引用的对象是否将要被垃圾回收。程序如果发现某个虚引用已经被加入到引用队列，那么就可以在所引用的对象的内存被回收之前采取必要的行动。
+
+--------
+
+## Java多线程
+
+线程和进程有什么区别    
+一个进程是一个独立(self contained)的运行环境，它可以被看作一个程序或者一个应用。而线程是在进程中执行的一个任务。线程是进程的子集，一个进程可以有很多线程，每条线程并行执行不同的任务。不同的进程使用不同的内存空间，而所有的线程共享一片相同的内存空间。
+
+### 线程池
+
+代码示例
+
+        public class ThreadPollTask implements Runnable {
+        // 保存任务所需要的数据
+        private Object threadPoolTaskData;
+        ThreadPollTask(Object tasks) {
+                this.threadPoolTaskData = tasks;
+        }
+        @Override
+        public void run() {
+                // 处理一个任务，这里的处理方式太简单了，仅仅是一个打印语句
+                System.out.println("start .." + threadPoolTaskData);
+                try {
+                //便于观察，等待一段时间
+                Thread.sleep(2000);
+                } catch (Exception e) {
+                e.printStackTrace();
+                }
+        }
+        public Object getTask() {
+                return this.threadPoolTaskData;
+        }
+        }
+
+        private static int produceTaskSleepTime = 2;
+        private static int produceTaskMaxNumber = 10;
+
+        // 构造一个线程池
+        ThreadPoolExecutor threadPool = new ThreadPoolExecutor(2, 4, 3,
+                TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(3),
+                new ThreadPoolExecutor.DiscardOldestPolicy());
+
+        for (int i = 1; i <= produceTaskMaxNumber; i++) {
+            try {
+                // 产生一个任务，并将其加入到线程池
+                String task = "task@ " + i;
+                System.out.println("put " + task);
+                threadPool.execute(new ThreadPollTask(task));
+                // 便于观察，等待一段时间
+                Thread.sleep(produceTaskSleepTime);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+线程池类为 java.util.concurrent.ThreadPoolExecutor，常用构造方法为：
+
+        ThreadPoolExecutor(
+                int corePoolSize, 
+                int maximumPoolSize,
+                long keepAliveTime, 
+                TimeUnit unit,BlockingQueue<Runnable> workQueue,
+                RejectedExecutionHandler handler)
+
+corePoolSize：        线程池维护线程的最少数量 （core : 核心）
+maximumPoolSize：线程池维护线程的最大数量
+keepAliveTime：     线程池维护线程所允许的空闲时间
+unit：           线程池维护线程所允许的空闲时间的单位
+workQueue： 线程池所使用的缓冲队列
+handler：      线程池对拒绝任务的处理策略
+
+线程池对拒绝任务的处理策略    
+
+AbortPolicy    
+为java线程池默认的阻塞策略，不执行此任务，而且直接抛出一个运行时异常，切记ThreadPoolExecutor.execute需要try catch，否则程序会直接退出。
+
+DiscardPolicy
+直接抛弃，任务不执行，空方法
+
+DiscardOldestPolicy
+从队列里面抛弃head的一个任务，并再次execute 此task。
+
+CallerRunsPolicy
+在调用execute的线程里面执行此command，会阻塞入口
+
+用户自定义拒绝策略（最常用）
+实现RejectedExecutionHandler，并自己定义策略模式
+下我们以ThreadPoolExecutor为例展示下线程池的工作流程图

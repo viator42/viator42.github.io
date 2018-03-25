@@ -230,3 +230,15 @@ Activty退出的时候也可以使用动画,在onBackPressed方法中使用
         });
 
 ## LayoutAnimation
+
+为ViewGroup指定的动画,当子元素展示的时候使用这个动画.常用在ListView上面.每个item出现的时候伴随着动画.
+
+__使用__
+
+在属性里直接定义
+
+    <ListView
+        ...
+        android:layoutAnimation:@anim/layout_anim01
+        >
+
