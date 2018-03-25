@@ -21,6 +21,15 @@ onRestart(), onStart() 、onResume().Activity被结束的时候调用onDestroy()
 
 Actitity之间跳转,分为显式跳转和隐式跳转
 
+### OnSavedInstance
+
+不算生命周期方法,作用是当发生异常(内存不足,强行退出,屏幕旋转)由系统销毁一个Activity的时候会调用onSaveInstanceState()方法,用来保存当前实例的状态.比如存储数据到sharedFeference中
+
+__调用时机__
+
+onSaveInstanceState()在Activity快要销毁的时候提前调用,比如按home键退出,屏幕旋转,back键返回都会调用    
+onRestoreInstanceState()在onStart() 和 onPostCreate(Bundle)之间调用。用来恢复现场    
+
 ### 显式跳转
 
     Intent intent=new Intent(this,OtherActivity.class);  //方法1
@@ -1382,5 +1391,48 @@ widthMeasureSpec和heightMeasureSpec是测量的view的尺寸
 ## ASyncTask的源码
 
 ## HandlerLooper的实现机制
+
+## ImageView
+
+android:scaleType是控制图片如何resized/moved来匹对ImageView的size。
+
+ImageView.ScaleType / android:scaleType值的意义区别：
+
+* CENTER  按图片的原来size居中显示，当图片长/宽超过View的长/宽，则截取图片的居中部分显示    
+* CENTER_CROP 按比例扩大图片的size居中显示，使得图片长(宽)等于或大于View的长(宽)    
+* CENTER_INSIDE   将图片的内容完整居中显示，通过按比例缩小或原来的size使得图片长/宽等于或小于View的长/宽
+* FIT_CENTER  把图片按比例扩大/缩小到View的宽度，居中显示
+* FIT_END 把图片按比例扩大/缩小到View的宽度，显示在View的下部分位置
+* FIT_START   把图片按比例扩大/缩小到View的宽度，显示在View的上部分位置
+* FIT_XY  把图片不按比例扩大/缩小到View的大小显示
+* MATRIX  用矩阵来绘制，动态缩小放大图片来显示。
+
+android图片压缩质量参数
+
+public static final Bitmap.Config ALPHA_8
+public static final Bitmap.Config ARGB_4444
+public static final Bitmap.Config ARGB_8888
+public static final Bitmap.Config RGB_565
+
+我们知道ARGB指的是一种色彩模式，里面A代表Alpha，R表示red，G表示green，B表示blue，其实所有的可见色都是右红绿蓝组成的，所以红绿蓝又称为三原色，每个原色都存储着所表示颜色的信息值
+
+说白了就ALPHA_8就是Alpha由8位组成
+ARGB_4444就是由4个4位组成即16位，
+ARGB_8888就是由4个8位组成即32位，
+RGB_565就是R为5位，G为6位，B为5位共16位
+
+由此可见：
+ALPHA_8 代表8位Alpha位图
+ARGB_4444 代表16位ARGB位图
+ARGB_8888 代表32位ARGB位图
+RGB_565 代表8位RGB位图
+
+位图位数越高代表其可以存储的颜色信息越多，当然图像也就越逼真。
+
+设置位图的压缩模式
+
+    BitmapFactory.Options options = new BitmapFactory.Options();
+            options2.inPreferredConfig = Bitmap.Config.RGB_565;
+    bm = BitmapFactory.decodeFile("filepath/file.jpg", options);
 
 

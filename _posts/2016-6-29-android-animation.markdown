@@ -228,3 +228,5 @@ Activty退出的时候也可以使用动画,在onBackPressed方法中使用
 
             }
         });
+
+## LayoutAnimation
