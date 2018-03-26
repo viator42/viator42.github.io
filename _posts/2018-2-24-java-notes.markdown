@@ -356,31 +356,62 @@ c. 运行时动态处理，如得到注解信息
 线程和进程有什么区别    
 一个进程是一个独立(self contained)的运行环境，它可以被看作一个程序或者一个应用。而线程是在进程中执行的一个任务。线程是进程的子集，一个进程可以有很多线程，每条线程并行执行不同的任务。不同的进程使用不同的内存空间，而所有的线程共享一片相同的内存空间。
 
+### 线程同步
+
+synchronized的作用是给代码块加上互斥锁,每个时间点只能有一个线程可以访问.避免线程乱序执行导致的数据的不一致.保证数据一致性
+
+使用synchronized包裹需要同步的代码块
+
+        synchronized (this) {  
+                dosomething;
+        } 
+
+将synchronized加在需要互斥的方法上
+
+        public synchronized void func() {
+        }
+
 ### 线程池
 
-代码示例
+####线程池的分类
+
+* newCachedThreadPool 创建一个可根据需要创建新线程的线程池，但是在以前构造的线程可用时将重用它们。
+
+* newSingleThreadExecutor 创建只有一个线程的线程池
+
+* newFixedThreadPool 创建线程数量固定大小的线程池
+
+* newScheduledThreadPool 创建一个大小无限的线程池，此线程池支持定时以及周期性执行任务的需求。
+
+
+
+#### 代码示例
+
+需要执行的Runnable任务
 
         public class ThreadPollTask implements Runnable {
-        // 保存任务所需要的数据
-        private Object threadPoolTaskData;
-        ThreadPollTask(Object tasks) {
-                this.threadPoolTaskData = tasks;
-        }
-        @Override
-        public void run() {
-                // 处理一个任务，这里的处理方式太简单了，仅仅是一个打印语句
-                System.out.println("start .." + threadPoolTaskData);
-                try {
-                //便于观察，等待一段时间
-                Thread.sleep(2000);
-                } catch (Exception e) {
-                e.printStackTrace();
+                // 保存任务所需要的数据
+                private Object threadPoolTaskData;
+                ThreadPollTask(Object tasks) {
+                        this.threadPoolTaskData = tasks;
+                }
+                @Override
+                public void run() {
+                        // 处理一个任务，这里的处理方式太简单了，仅仅是一个打印语句
+                        System.out.println("start .." + threadPoolTaskData);
+                        try {
+                        //便于观察，等待一段时间
+                        Thread.sleep(2000);
+                        } catch (Exception e) {
+                        e.printStackTrace();
+                        }
+                }
+                public Object getTask() {
+                        return this.threadPoolTaskData;
                 }
         }
-        public Object getTask() {
-                return this.threadPoolTaskData;
-        }
-        }
+
+线程池创建
 
         private static int produceTaskSleepTime = 2;
         private static int produceTaskMaxNumber = 10;
@@ -434,5 +465,5 @@ CallerRunsPolicy
 在调用execute的线程里面执行此command，会阻塞入口
 
 用户自定义拒绝策略（最常用）
-实现RejectedExecutionHandler，并自己定义策略模式
-下我们以ThreadPoolExecutor为例展示下线程池的工作流程图
+实现RejectedExecutionHandler，并自己定义策略模式下我们以ThreadPoolExecutor为例展示下线程池的工作流程图
+
