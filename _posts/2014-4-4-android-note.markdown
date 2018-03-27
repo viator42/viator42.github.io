@@ -1419,6 +1419,27 @@ __解决方法__
 1. 重写父容器的onInterruptTouchEvent方法, 判断是否拦截事件.    
 2. 父容器不拦截任何的方法,
 
+## 自定义控件的实现过程
+
+* 自定义属性的声明和获取    
+    分析需要的自定义属性
+    在res/values/attrs.xml定义声明
+    在layout文件中进行使用
+    在View的构造方法中进行获取
+
+* 测量onMeasure
+
+* 布局onLayout(ViewGroup)
+
+* 绘制onDraw
+
+* onTouchEvent
+
+* onInterceptTouchEvent(ViewGroup)
+
+* 状态的恢复与保存
+
+
 ### Activity的创建过程
 
 ## ASyncTask的源码
@@ -1440,12 +1461,12 @@ ImageView.ScaleType / android:scaleType值的意义区别：
 * FIT_XY  把图片不按比例扩大/缩小到View的大小显示
 * MATRIX  用矩阵来绘制，动态缩小放大图片来显示。
 
-android图片压缩质量参数
+#### Bitmap的四种属性,也就是指图片压缩质量参数
 
-public static final Bitmap.Config ALPHA_8
-public static final Bitmap.Config ARGB_4444
-public static final Bitmap.Config ARGB_8888
-public static final Bitmap.Config RGB_565
+* public static final Bitmap.Config __ALPHA_8__
+* public static final Bitmap.Config __ARGB_4444__
+* public static final Bitmap.Config __ARGB_8888__
+* public static final Bitmap.Config __RGB_565__
 
 我们知道ARGB指的是一种色彩模式，里面A代表Alpha，R表示red，G表示green，B表示blue，其实所有的可见色都是右红绿蓝组成的，所以红绿蓝又称为三原色，每个原色都存储着所表示颜色的信息值
 
@@ -1467,5 +1488,191 @@ RGB_565 代表8位RGB位图
     BitmapFactory.Options options = new BitmapFactory.Options();
             options2.inPreferredConfig = Bitmap.Config.RGB_565;
     bm = BitmapFactory.decodeFile("filepath/file.jpg", options);
+
+## Service相关
+
+__定义Service类__
+
+类继承Service (android.app.Service)    
+     onCreate: 创建的时候调用的方法     
+     onStartCommand: service启动时调用的方法    
+
+    public class TestService extends Service {
+        private Timer timer = null;
+        public class TestBinder extends Binder
+        {
+            public void sendMsg(String msg)
+            {
+                Log.v("ServiceTester", "msg content: " + msg);
+            }
+            public String getMsg()
+            {
+                return "an msg from TestService";
+            }
+        }
+        private TestBinder binder = new TestBinder();
+
+        @Override
+        public void onCreate() {
+            super.onCreate();
+            Log.v("ServiceTester", "service created");
+
+        }
+
+        @Nullable
+        @Override
+        public IBinder onBind(Intent intent) {
+            return binder;
+        }
+
+        @Override
+        public boolean onUnbind(Intent intent) {
+            Log.v("ServiceTester", "service unBind");
+            return super.onUnbind(intent);
+
+        }
+
+        @Override
+        public int onStartCommand(Intent intent, int flags, int startId) {
+            Log.v("ServiceTester", "service startCommand");
+
+            if(timer == null)
+            {
+                timer = new Timer();
+            }
+            timer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    Log.v("ServiceTester", "service Ticking");
+                }
+            }, 1000, 1000);
+
+            return super.onStartCommand(intent, flags, startId);
+        }
+
+        @Override
+        public void onDestroy() {
+            super.onDestroy();
+            Log.v("ServiceTester", "service Destroy");
+
+        }
+    }
+
+AndroidManifest.xml 中注册service
+
+    <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+        package="com.viator42.erikanote">
+        <application>
+        '''
+
+    <service
+        android:name=".TestService"
+        android:enabled="true"
+        android:exported="true">
+    </service>
+
+启动service
+
+    Intent intent = new Intent(MainActivity.this, TestService.class);
+    startService(intent);
+
+如果应用退出，service即被销毁
+
+如果service与Activity进行通信，那么就需要在service类中定义Binder对象。
+Binder类中定义数据交换的方法。
+
+    public class TestBinder extends Binder
+    {
+        public void sendMsg(String msg)
+        {
+            Log.v("ServiceTester", "msg content: " + msg);
+        }
+        public String getMsg()
+        {
+            return "an msg from TestService";
+        }
+    }
+    private TestBinder binder = new TestBinder();
+
+onBind()方法中返回该binder对象
+
+    public IBinder onBind(Intent intent) {
+        return binder;
+    }
+
+activity中进行与service数据交换    
+创建ServiceConnection对象,之后通过binder对象与service进行通讯。    
+
+    private TestService.TestBinder testBinder;
+    private ServiceConnection serviceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            Log.v("ServiceTester", "Service Connected");
+            testBinder = (TestService.TestBinder) service;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            Log.v("ServiceTester", "Service Disconnected");
+        }
+    };
+
+    Intent intent = new Intent(MainActivity.this, TesterService.class);
+    bindService(intent, serviceConnection, Service.BIND_AUTO_CREATE);
+
+    ...
+    Log.v("ServiceTester", testBinder.getMsg());
+    testBinder.sendMsg("A msg to TestService");
+
+__Service的生命周期__
+
+* 调用startService：    
+onCreate() -> onStartCommand() -> service执行中 -> onDestroy()
+
+* 调用bindService：    
+onCreate() -> onBind() -> service执行中 -> onUnbind() -> onDestroy()
+
+__Service的两种启动方法，有什么区别__
+
+ 1.在Context中通过public boolean bindService(Intent service,ServiceConnection conn,int flags) 方法来进行Service与Context的关联并启动，并且Service的生命周期依附于Context
+
+### IntentService
+
+IntentService无需重写onStartCommand，onBind方法，只需重写onHandleIntent即可    
+IntentService会单独开启一个线程，完成操作之后自动退出，无需手动停止。    
+
+__IntentService使用__
+
+    public class TesterIntentService extends IntentService {
+        public TesterIntentService() {
+            super("TesterIntentService");
+        }
+
+        @Override
+        protected void onHandleIntent(Intent intent) {
+            Log.v("ServiceTester", "IntentService Start");
+
+            Log.v("ServiceTester", "IntentService Running");
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            Log.v("ServiceTester", "IntentService Done");
+
+        }
+
+        @Override
+        public void onDestroy() {
+            super.onDestroy();
+            Log.v("ServiceTester", "IntentService onDestroy");
+        }
+    }
+
+Activity调用
+
+    Intent intent = new Intent(MainActivity.this, TesterIntentService.class);
+    startService(intent);
+
 
 
