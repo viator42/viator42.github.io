@@ -1675,4 +1675,52 @@ Activity调用
     startService(intent);
 
 
+## ViewPager
+
+继承自ViewGroup, 专门用以实现左右滑动切换View的效果
+
+### 使用方法
+
+使用方法和ListView类似,先定义一个Adapter类继承PagerAdapter
+
+    public class MainpageBannerViewPagerAdapter extends PagerAdapter {
+        private Context context;
+        private ArrayList<SimpleDraweeView> imageViews;
+
+        public MainpageBannerViewPagerAdapter(Context context, ArrayList<SimpleDraweeView> imageViews) {
+            this.context = context;
+            this.imageViews = imageViews;
+        }
+
+        @Override
+        public int getCount() {
+            return imageViews.size();
+        }
+
+        @Override
+        public boolean isViewFromObject(View view, Object object) {
+            return view == object;
+        }
+
+        @Override
+        public ImageView instantiateItem(ViewGroup container, int position) {
+            SimpleDraweeView imageView = imageViews.get(position);
+            container.addView(imageView);
+            return imageView;
+        }
+
+    }
+
+__重载方法__
+
+* getCount()    获取ViewPager实际绘制的列表项的数量    
+* instantiateItem(ViewGroup container, int position)    获取当前列表项，也就是正在显示的当前页，当前ViewPager所在的位置    
+* destroyItem(ViewGroup container,int position,Object object) 当前项离开屏幕时回调本方法，在本方法中需要将当前想从ViewPager中移除    
+* isViewFromObject(View view,Object obj)    判断view和obj是否为同一个view    
+
+最后ViewPager关联Adapter即可
+
+    viewPager.setAdapter(goodsViewPagerAdapter);
+
+
 
