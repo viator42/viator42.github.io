@@ -54,11 +54,11 @@ App.js
     },
     });
 
-指定宽高
+## 指定宽高
     
     <View style={{width: 50, height: 50}} />
 
-Flex弹性宽高
+## Flex弹性宽高
 
 类似Android中的weight属性,代表占空间的权重比,数字越大占的相对空间越大,总和是父元素的尺寸
 
@@ -68,7 +68,7 @@ Flex弹性宽高
         <View style={{flex: 3, backgroundColor: 'steelblue'}} />
     </View>
 
-屏幕布局结构
+## 屏幕布局结构
 
 Flex Direction
 
@@ -99,13 +99,13 @@ TextInput组件
 
 ## ECMAScript基础相关
 
-定义变量
+__定义变量__
 
 var定义的是全局变量,定义之后所有的地方都能引用.let声明的是局部变量,只在代码块范围内有效
 
 const声明一个只读的常量。一旦声明，常量的值就不能改变。const声明的变量不得改变值，这意味着，const一旦声明变量，就必须立即初始化，不能留到以后赋值。
 
-箭头函数
+__箭头函数__
 
 函数的定义就是用一个箭头
 
@@ -123,7 +123,7 @@ const声明一个只读的常量。一旦声明，常量的值就不能改变。
         return x * x;
     };
 
-import,export引用
+__import,export引用__
 
 utils.js
 

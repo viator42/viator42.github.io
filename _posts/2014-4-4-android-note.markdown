@@ -5,6 +5,47 @@ date:   2015-04-04
 categories: android
 ---
 
+## 资源存储 /raw /asset 的区别
+
+相同点是两者目录下的文件在打包后会原封不动的保存在apk包中，不会被编译成二进制。
+
+不同点
+
+* res/raw中的文件会被映射到R.java文件中，访问的时候直接使用资源ID即R.id.filename；assets文件夹下的文件不会被映射到R.java中，访问的时候需要AssetManager类。    
+* res/raw不可以有目录结构，而assets则可以有目录结构，也就是assets目录下可以再建立文件夹    
+
+读取文件资源
+
+读取res/raw下的文件资源，通过以下方式获取输入流来进行写操作
+
+    InputStream is = getResources().openRawResource(R.id.filename);  
+
+读取assets下的文件资源，通过以下方式获取输入流来进行写操作
+
+    AssetManager am = null;  
+    am = getAssets();  
+    InputStream is = am.open("filename");
+
+## 屏幕显示dp、sp、px的区别
+
+dp (dip)设备独立像素,不依赖于实际的分辨率,根据屏幕密度自动进行变换(推荐使用这种单位)    
+sp (scaled pixels)（放大像素）主要用于字体显示（best for textsize）,跟dp不同的是可以根据用户的字体大小首选项进行缩放    
+px 实际像素数,在不同分辨率设备上显示效果不同,不推荐使用    
+
+## 图片显示fitScale的定义
+
+### Fresco
+
+* center 	居中，无缩放。
+* centerCrop 	保持宽高比缩小或放大，使得两边都大于或等于显示边界，且宽或高契合显示边界。居中显示。
+* focusCrop 	同centerCrop, 但居中点不是中点，而是指定的某个点。
+* centerInside 	缩放图片使两边都在显示边界内，居中显示。和 fitCenter 不同，不会对图片进行放大。如果图尺寸大于显示边界，则保持长宽比缩小图片。
+* fitCenter 	保持宽高比，缩小或者放大，使得图片完全显示在显示边界内，且宽或高契合显示边界。居中显示。
+* fitStart 	同上。但不居中，和显示边界左上对齐。
+* fitEnd 	同fitCenter， 但不居中，和显示边界右下对齐。
+* fitXY 	不保存宽高比，填充满显示边界。
+* none 	如要使用tile mode显示, 需要设置为none
+
 ### 获取界面组件
 
 	<Button
