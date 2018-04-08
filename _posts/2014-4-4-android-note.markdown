@@ -1425,6 +1425,40 @@ widthMeasureSpec和heightMeasureSpec是测量的view的尺寸
 * AT_MOST 控件的layout_width和layout_height设置成wrap_content的时候,控件的大小随着子控件的大小变化.
 * UNSPECIFIED 不指定测量的大小
 
+__重写onMeasure__
+
+    //widthMeasureSpec和heightMeasureSpec是当前的测量宽高
+    onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        //getMode用来获取测量模式
+        int wMode = MeasureSpec.getMode(widthMeasureSpec);
+        int hMode = MeasureSpec.getMode(widthMeasureSpec);
+
+        //getSize用来从Spec中获取尺寸
+        int width = MeasureSpec.getSize(widthMeasureSpec);
+        int height = MeasureSpec.getSize(heightMeasureSpec);
+
+        getPaddingLeft/Right/Top/Bottom获取Padding尺寸,需要在view中手动减去padding否则设置的padding值无效
+
+        //mode和size重新组合成Spec
+        int resultWidthMeasureSpec = MeasureSpec.makeMeasureSpec(width, wMode);
+        int resultHeightMeasureSpec = MeasureSpec.makeMeasureSpec(height, hMode);
+
+        //返回设置的尺寸
+        super.onMeasure(resultWidthMeasureSpec, resultHeightMeasureSpec);
+    }
+
+__重写onLayout__
+
+onLayout方法确定ViewGroup所有的子元素的位置
+
+__自定义View需要注意的地方__
+
+* View支持wrap_content    
+* View支持padding,就是设置padding值的时候onMeasure函数返回的尺寸减去padding值    
+* 使用post方法来传递信息,尽量不使用Handler   
+* onDetatchedFromVindow方法加载动画和线程,onDetachedFromWindow方法停止动画和线程,防止一直占用系统资源导致OOM   
+* View有滑动时处理滑动冲突
+
 ## View的事件分发机制
 
 每一个view都有三个方法来处理点击事件
@@ -1479,6 +1513,22 @@ __解决方法__
 * onInterceptTouchEvent(ViewGroup)
 
 * 状态的恢复与保存
+
+__Android平台从其它线程访问主线程主要有以下几种方式：__
+
+* Activity.runOnUiThread(Runnable)    
+* View.post(Runnable)    
+* View.postDelayed(Runnable, long)    
+* Handler    
+
+__View.post__
+
+View.post方法的主要作用是保证指定的任务顺序执行,post方法的执行时间是在view的layout过程结束之后.
+post方法会创建一个Runnable,但还是在主线程/UI线程中执行的.    
+所以可以直接调用UI的元素    
+主要用途是获取view的宽高尺寸,如果直接获取的话值为0,因为measure过程还没有完成
+
+    msgTextView.setText(String.valueOf(costomWidget.getMeasuredWidth()) + "  " + String.valueOf(costomWidget.getMeasuredHeight()));
 
 
 ### Activity的创建过程
