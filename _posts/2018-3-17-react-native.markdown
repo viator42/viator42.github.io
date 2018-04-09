@@ -208,3 +208,13 @@ App.js
     .catch((error) => {
         console.error(error);
     });
+
+## 获取StatusBar的高度
+
+    import {StatusBar} from 'react-native';
+    StatusBar.currentHeight
+
+    应用全屏的时候会被StatusBar覆盖,所以最外层的View应该设置style margin: StatusBar.currentHeight
+
+
+
