@@ -378,19 +378,47 @@ synchronized的作用是给代码块加上互斥锁,每个时间点只能有一�
 
 ### 线程池
 
-####线程池的分类
+__线程池的优点__
 
-* newCachedThreadPool 创建一个可根据需要创建新线程的线程池，但是在以前构造的线程可用时将重用它们。
+1. 重用线程池中的线程,避免线程创建销毁带来的性能开销
+2. 控制最大并发数,避免大量线程相互抢夺资源造成阻塞
+3. 对线程进行管理
 
-* newSingleThreadExecutor 创建只有一个线程的线程池
+线程池类为 java.util.concurrent.ThreadPoolExecutor，常用构造方法为：
 
-* newFixedThreadPool 创建线程数量固定大小的线程池
+        ThreadPoolExecutor(
+                int corePoolSize, 
+                int maximumPoolSize,
+                long keepAliveTime, 
+                TimeUnit unit,
+                BlockingQueue<Runnable> workQueue,
+                ThreadFactory threadFactory)
 
-* newScheduledThreadPool 创建一个大小无限的线程池，此线程池支持定时以及周期性执行任务的需求。
+corePoolSize：          线程池维护线程的最少数量 核心线程池数量
+maximumPoolSize：       线程池维护线程的最大数量
+keepAliveTime：         线程池维护线程所允许的空闲时间,超过这个时间非核心线程会被销毁
+unit：                  线程池维护线程所允许的空闲时间的单位
+workQueue：             线程池所使用的任务队列
+threadFactory           新线程的创建工厂类
+
+__创建新线程的策略__
+
+如果线程池中的线程数量未达到核心线程池数量,则新建一个核心线程    
+线程池中的线程数量已经超过核心线程数量,任务会被添加到BlockingQueue阻塞队列中    
+如果阻塞队列已满,线程池会创建一个非核心线程来处理任务.直到达到线程池最大数量    
+达到最大值的话线程池会拒绝执行任务    
+
+线程池创建后,核心线程会一直存活    
 
 
+__常见的线程池__
 
-#### 代码示例
+* FixedThreadPool 创建线程数量固定大小的线程池,只有核心线程,任务队列大小没有限制.适用于快速响应请求
+* CachedThreadPool 创建一个可根据需要创建新线程的线程池，但是在以前构造的线程可用时将重用它们。只有非核心线程,最大线程数没有限制,适合执行大量耗时较少的任务
+* ScheduledThreadPool 核心线程数固定,非核心线程数没有限制，此线程池支持定时以及周期性执行任务的需求。
+* SingleThreadExecutor 创建只有一个线程的线程池
+
+### __代码示例__
 
 需要执行的Runnable任务
 
@@ -426,6 +454,8 @@ synchronized的作用是给代码块加上互斥锁,每个时间点只能有一�
                 TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(3),
                 new ThreadPoolExecutor.DiscardOldestPolicy());
 
+执行Callable任务
+
         for (int i = 1; i <= produceTaskMaxNumber; i++) {
             try {
                 // 产生一个任务，并将其加入到线程池
@@ -438,26 +468,6 @@ synchronized的作用是给代码块加上互斥锁,每个时间点只能有一�
                 e.printStackTrace();
             }
         }
-
-线程池类为 java.util.concurrent.ThreadPoolExecutor，常用构造方法为：
-
-        ThreadPoolExecutor(
-                int corePoolSize, 
-                int maximumPoolSize,
-                long keepAliveTime, 
-                TimeUnit unit,BlockingQueue<Runnable> workQueue,
-                RejectedExecutionHandler handler)
-
-corePoolSize：        线程池维护线程的最少数量 （core : 核心）
-maximumPoolSize：线程池维护线程的最大数量
-keepAliveTime：     线程池维护线程所允许的空闲时间
-unit：           线程池维护线程所允许的空闲时间的单位
-workQueue： 线程池所使用的缓冲队列
-handler：      线程池对拒绝任务的处理策略
-
-执行Callable任务
-
-
 
 线程池对拒绝任务的处理策略    
 
@@ -474,7 +484,7 @@ CallerRunsPolicy
 在调用execute的线程里面执行此command，会阻塞入口
 
 用户自定义拒绝策略（最常用）
-实现RejectedExecutionHandler，并自己定义策略模式下我们以ThreadPoolExecutor为例展示下线程池的工作流程图
+实现RejectedExecutionHandler
 
 ## Socket相关
 

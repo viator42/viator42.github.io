@@ -557,38 +557,6 @@ SimpleAdapter构造函数的参数分别为
 
 --------
 
-### Async task
-
-一般声明在Activity类中作为内内部类.标注三个参数的类型
-第一个参数表示要执行的任务通常是网络的路径。第二个参数表示进度的刻度，第三个参数表示任务执行的结果。
-
-重写方法完成操作.
-
-*  onPreExecute 表示任务执行之前的操作.    
-*  doInBackground方法实现耗时的任务。    
-*  onPostExecute 主要是更新UI的操作.    
-
-        public class ListAllTask extends AsyncTask<String, Void, String>
-        {
-            @Override
-            protected void onPreExecute() {
-                super.onPreExecute();
-            }
-
-            @Override
-            protected String doInBackground(String... params) {
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(String s) {
-                super.onPostExecute(s);
-            }
-        }
-
-运行AsyncTask
-new ListAllTask().execute("aaa");
-
 ### Application 全局类配置
 
 定义一个类可以继承Application, onCreate方法在应用启动时运行.
@@ -1119,6 +1087,36 @@ activity中实现
 
 ### ASyncTask相关
 
+一般声明在Activity类中作为内内部类.标注三个参数的类型
+第一个参数表示要执行的任务通常是网络的路径。第二个参数表示进度的刻度，第三个参数表示任务执行的结果。
+
+重写方法完成操作.
+
+*  onPreExecute 表示任务执行之前的操作.    
+*  doInBackground方法实现耗时的任务。    
+*  onPostExecute 主要是更新UI的操作.    
+
+        public class ListAllTask extends AsyncTask<String, Void, String>
+        {
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+            }
+
+            @Override
+            protected String doInBackground(String... params) {
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(String s) {
+                super.onPostExecute(s);
+            }
+        }
+
+运行AsyncTask
+new ListAllTask().execute("aaa");
+
 Android多线程编程主要使用的方法    
 创建Thread,Handler Looper机制通信和使用异步框架ASyncTask    
 
@@ -1145,6 +1143,8 @@ ASyncTask的缺点: 后台线程只有一个,多个任务线性执行
 参考    
 https://segmentfault.com/a/1190000002872278    
 http://www.infoq.com/cn/articles/android-asynctask    
+
+
 
 --------
 
@@ -1813,5 +1813,12 @@ __重载方法__
 
     viewPager.setAdapter(goodsViewPagerAdapter);
 
+## SSL加密握手过程
 
-
+1. 客户端将它所支持的算法列表和一个用作产生密钥的随机数发送给服务器
+2. 服务器从算法列表中选择一种加密算法，并将它和一份包含服务器公用密钥的证书发送给客户端；该证书还包含了用于认证目的的服务器标识，服务器同时还提供了一个用作产生密钥的随机数
+3. 客户端验证服务器证书,如果验证失败,则停止建立SSL.验证成功进行下一步骤
+4. 客户端为本次会话生成预备主密码,并用服务器公钥加密后发送给服务器.
+5. 如果服务器要求验证客户端身份,则检查客户端的CA证书是否可信,如果不在可信列表中则结束会话.检查通过后服务器用私钥解密收到的预备主密码(pre master key),并生成本次会话的主密码(master key).客户端与服务端使用pre master key独立计算出master key.
+6. 客户端通知服务端以后发送的消息均使用master key加密.通知服务端完成这次SSL握手
+7. 服务端通知客户端完成SSL握手
