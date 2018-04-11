@@ -1822,3 +1822,83 @@ __重载方法__
 5. 如果服务器要求验证客户端身份,则检查客户端的CA证书是否可信,如果不在可信列表中则结束会话.检查通过后服务器用私钥解密收到的预备主密码(pre master key),并生成本次会话的主密码(master key).客户端与服务端使用pre master key独立计算出master key.
 6. 客户端通知服务端以后发送的消息均使用master key加密.通知服务端完成这次SSL握手
 7. 服务端通知客户端完成SSL握手
+
+## Android 单元测试
+
+工程采用MVP架构时对Presenter的接口进行测试
+
+单元测试使用Junit,AS在创建项目时已经支持,不需要手动导入
+
+__待测试的类__
+
+    public class Calculator {
+        public int add(int one, int another) {
+            // 为了简单起见，暂不考虑溢出等情况。
+            return one + another;
+        }
+
+        public int multiply(int one, int another) {
+            // 为了简单起见，暂不考虑溢出等情况。
+            return one * another;
+        }
+    }
+
+__测试类__
+
+    public class CalculatorTest {
+        Calculator mCalculator;
+
+        @Before
+        public void setup() {
+            mCalculator = new Calculator();
+        }
+
+        @Test
+        public void testAdd() throws Exception {
+            int sum = mCalculator.add(1, 2);
+            assertEquals(3, sum);  //为了简洁，往往会static import Assert里面的所有方法。
+        }
+
+        @Test
+        public void testMultiply() throws Exception {
+            int product = mCalculator.multiply(2, 4);
+            assertEquals(8, product);
+        }
+
+    }
+
+__方法注解__
+
+@Test 是测试方法,运行单元测试时依次执行   
+@Before 是每个测试方法调用之前运行的方法,一般用来进行变量初始化
+@After 每个测试方法结束后调用
+
+__验证结果的方法__
+
+assertEquals(expected, actual)    
+验证expected的值跟actual是一样的，如果是一样的话，测试通过，不然的话，测试失败。如果传入的是object，那么这里的对比用的是equals()
+
+assertEquals(expected, actual, tolerance)    
+这里传入的expected和actual是float或double类型的，大家知道计算机表示浮点型数据都有一定的偏差，所以哪怕理论上他们是相等的，但是用计算机表示出来则可能不是，所以这里运行传入一个偏差值。如果两个数的差异在这个偏差值之内，则测试通过，否者测试失败。
+
+assertTrue(boolean condition)    
+验证contidion的值是true
+
+assertFalse(boolean condition)    
+验证contidion的值是false
+
+assertNull(Object obj)    
+验证obj的值是null
+
+assertNotNull(Object obj)    
+验证obj的值不是null
+
+assertSame(expected, actual)    
+验证expected和actual是同一个对象，即指向同一个对象
+
+assertNotSame(expected, actual)    
+验证expected和actual不是同一个对象，即指向不同的对象
+
+fail()    
+让测试方法失败
+
