@@ -163,6 +163,33 @@ Extras就是额外的数据信息，Intent中有一个Bundle对象存储着各�
     Bundle bundle = this.getIntent().getExtras();
     String value = bundle.getString("key", "");
 
+## startActivityForResult带参数跳转回传
+
+在Android中startActivityForResult主要作用就是:      
+A-Activity需要在B-Activtiy中执行一些数据操作，而B-Activity又要将，执行操作数据的结果返回给A-Activtiy
+
+    //A-Activity跳转
+    Intent intent = new Intent(AddressesActivity.this, AddAddressActivity.class);
+    startActivityForResult(intent, StaticValues.ADDRESS_ACTION_UPDATE);
+
+    //返回A-Activity之后的回调方法
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
+            case StaticValues.ADDRESS_ACTION_UPDATE:
+                Bundle bundle = data.getExtras();
+                break;
+        }
+    }
+
+    //被调用的B-Activtiy返回值
+    Intent intent = new Intent();
+    Bundle bundle = new Bundle();
+    intent.putExtras(bundle);
+    //setResult的参数对应onActivityResult的resultCode和data
+    AddAddressActivity.this.setResult(StaticValues.RESULT_CODE_OK, intent);
+    AddAddressActivity.this.finish();
+
 ### 输出log日志
 
 	import android.util.Log;
@@ -1198,25 +1225,68 @@ Toolbar中可以添加自定义控件
             toolbar.setSubtitle("Subtitle");//设置子标题
 
         }
+    }
 
-        //设置菜单
-        @Override
-        public boolean onCreateOptionsMenu(Menu menu) {
-            // Inflate the menu; this adds items to the action bar if it is present.
-            getMenuInflater().inflate(R.menu.main, menu);
-            return true;
+--------
+
+## Menu相关
+
+Android4.0以上的系统Menu默认在ToolBar的右上
+
+Menu的定义方法
+
+1. 在res/menu下创建一个menu的样式文件.
+
+    <?xml version="1.0" encoding="utf-8"?>
+    <menu xmlns:android="http://schemas.android.com/apk/res/android">
+        <item
+            android:id="@+id/item_1"
+            android:title="ITEM_1"
+            />
+        <item
+            android:id="@+id/item_2"
+            android:title="ITEM_2"
+            />
+        <item
+            android:id="@+id/item_3"
+            android:title="ITEM_3"
+            />
+    </menu>
+
+2. Activity中加载这个menu
+
+    public boolean onCreateOptionsMenu(Menu menu) {
+        super.onCreateOptionsMenu(menu);
+        getMenuInflater().inflate(R.menu.mainpage_menu, menu);
+        return true;
+    }
+
+    //Menu item的点击事件定义
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId())
+        {
+            case R.id.item_1:
+                Toast.makeText(MainActivity.this, "Menu item 1", Toast.LENGTH_SHORT).show();
+                break;
+
+            case R.id.item_2:
+                Toast.makeText(MainActivity.this, "Menu item 2", Toast.LENGTH_SHORT).show();
+                break;
+
+            case R.id.item_3:
+                Toast.makeText(MainActivity.this, "Menu item 3", Toast.LENGTH_SHORT).show();
+                break;
+
         }
+        return super.onOptionsItemSelected(item);
+    }
 
-        @Override
-        public boolean onOptionsItemSelected(MenuItem item) {
-            switch (item.getItemId()) {
-                case R.id.menu_item1:
-                    Toast.makeText(MainActivity.this , "Menu Item 1 Clicked", Toast.LENGTH_SHORT).show();
-                    break;
-            }
+    //动态调整菜单,比如说控制菜单项是否显示
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        MenuItem itemAddressSetDefault = menu.findItem(R.id.action_address_set_default);
+        itemAddressSetDefault.setVisible(false);
 
-            return super.onOptionsItemSelected(item);
-        }
+        return super.onPrepareOptionsMenu(menu);
     }
 
 --------
