@@ -361,6 +361,10 @@ __Android中弱引用与软引用的应用场景__
 线程和进程有什么区别    
 一个进程是一个独立(self contained)的运行环境，它可以被看作一个程序或者一个应用。而线程是在进程中执行的一个任务。线程是进程的子集，一个进程可以有很多线程，每条线程并行执行不同的任务。不同的进程使用不同的内存空间，而所有的线程共享一片相同的内存空间。
 
+类在多线程中的执行过程
+
+多个线程共享一个类对象,这个对象是被创建在主内存(堆内存)中，每个线程都有自己的工作内存(线程栈).工作内存存储了主内存对象的一个副本，当线程操作C对象时，首先从主内存复制对象到工作内存中，然后执行代码最后用工作内存对象刷新主内存对象。当一个对象在多个内存中都存在副本时，如果一个内存修改了共享变量，其它线程也应该能够看到被修改后的值，此为可见性。保证多个线程按照顺序进行，此为有序性
+
 ### 线程同步
 
 synchronized的作用是给代码块加上互斥锁,每个时间点只能有一个线程可以访问.避免线程乱序执行导致的数据的不一致.保证数据一致性
@@ -486,6 +490,37 @@ CallerRunsPolicy
 用户自定义拒绝策略（最常用）
 实现RejectedExecutionHandler
 
+--------
+
+## Callable、Future和FutureTask
+
+Callable与Runnable的区别
+
+Thread,Runnable的方式Runnable执行完成后无法返回结构
+
+    public interface Runnable {  
+        public abstract void run();  
+    }  
+
+Callable使用范型定义返回值
+
+    public interface Callable<V> {   
+        V call() throws Exception;   
+    }
+
+Future<V>接口
+
+Future<V>接口是用来获取异步计算结果的，就是对具体的Runnable或者Callable对象任务执行的结果进行获取(get()),取消(cancel()),判断是否完成等操作。
+
+    public interface Future<V> {  
+        boolean cancel(boolean mayInterruptIfRunning);  
+        boolean isCancelled();  
+        boolean isDone();  
+        V get() throws InterruptedException, ExecutionException;  
+        V get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException;  
+    }  
+
+--------
 ## Socket相关
 
 Socket不是一种协议，而是一个编程调用接口（API），属于传输层（主要解决数据如何在网络中传输）    
@@ -504,4 +539,7 @@ Socket的使用类型主要有两种：
 * Socket属于传输层，因为 TCP / IP协议属于传输层，解决的是数据如何在网络中传输的问题.HTTP协议 属于 应用层，解决的是如何包装数据     
 * Http：采用 请求—响应 方式。即建立网络连接后，当 客户端 向 服务器 发送请求后，服务器端才能向客户端返回数据。
 * Socket：采用 服务器主动发送数据 的方式,即建立网络连接后，服务器可主动发送消息给客户端，而不需要由客户端向服务器发送请求    
+
+--------
+
 
