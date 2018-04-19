@@ -417,10 +417,86 @@ __创建新线程的策略__
 
 __常见的线程池__
 
-* FixedThreadPool 创建线程数量固定大小的线程池,只有核心线程,任务队列大小没有限制.适用于快速响应请求
-* CachedThreadPool 创建一个可根据需要创建新线程的线程池，但是在以前构造的线程可用时将重用它们。只有非核心线程,最大线程数没有限制,适合执行大量耗时较少的任务
+* FixedThreadPool 创建线程数量固定大小的线程池,只有核心线程,任务队列大小没有限制.适用于快速响应请求.创建一个定长线程池，可控制线程最大并发数，超出的线程会在队列中等待。
+
+        ExecutorService fixedThreadPool = Executors.newFixedThreadPool(3);
+        for (int i = 0; i < 10; i++) {
+                final int index = i;
+                fixedThreadPool.execute(new Runnable() {
+                        @Override
+                        public void run() {
+                                try {
+                                        System.out.println(index);
+                                        Thread.sleep(2000);
+                                } catch (InterruptedException e) {
+                                        // TODO Auto-generated catch block
+                                        e.printStackTrace();
+                                }
+                        }
+                });
+        }
+
+* CachedThreadPool 创建一个可根据需要创建新线程的线程池，但是在以前构造的线程可用时将重用它们。只有非核心线程,最大线程数没有限制,适合执行大量耗时较少的任务.线程池为无限大，当执行第二个任务时第一个任务已经完成，会复用执行第一个任务的线程，而不用每次新建线程。
+
+        ExecutorService cachedThreadPool = Executors.newCachedThreadPool();
+        for (int i = 0; i < 10; i++) {
+                final int index = i;
+                try {
+                        Thread.sleep(index * 1000);
+                } catch (InterruptedException e) {
+                        e.printStackTrace();
+                }
+        
+                cachedThreadPool.execute(new Runnable() {
+                        @Override
+                        public void run() {
+                                System.out.println(index);
+                        }
+                });
+        }
+
 * ScheduledThreadPool 核心线程数固定,非核心线程数没有限制，此线程池支持定时以及周期性执行任务的需求。
-* SingleThreadExecutor 创建只有一个线程的线程池
+
+表示延迟3秒执行。
+
+        ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(5);
+        scheduledThreadPool.schedule(new Runnable() {
+        
+                @Override
+                public void run() {
+                        System.out.println("delay 3 seconds");
+                }
+        }, 3, TimeUnit.SECONDS);
+
+表示延迟1秒后每3秒执行一次。
+
+        scheduledThreadPool.scheduleAtFixedRate(new Runnable() {
+                @Override
+                public void run() {
+                        System.out.println("delay 1 seconds, and excute every 3 seconds");
+                }
+        }, 1, 3, TimeUnit.SECONDS);
+
+
+* SingleThreadExecutor 创建一个单线程化的线程池，它只会用唯一的工作线程来执行任务，保证所有任务按照指定顺序(FIFO, LIFO, 优先级)执行。
+
+        ExecutorService singleThreadExecutor = Executors.newSingleThreadExecutor();
+        for (int i = 0; i < 10; i++) {
+                final int index = i;
+                singleThreadExecutor.execute(new Runnable() {
+        
+                        @Override
+                        public void run() {
+                                try {
+                                        System.out.println(index);
+                                        Thread.sleep(2000);
+                                } catch (InterruptedException e) {
+                                        // TODO Auto-generated catch block
+                                        e.printStackTrace();
+                                }
+                        }
+                });
+        }
 
 ### __代码示例__
 
@@ -448,7 +524,7 @@ __常见的线程池__
                 }
         }
 
-线程池创建
+手动创建线程池
 
         private static int produceTaskSleepTime = 2;
         private static int produceTaskMaxNumber = 10;
