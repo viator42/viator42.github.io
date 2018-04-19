@@ -494,7 +494,7 @@ CallerRunsPolicy
 
 ## Callable、Future和FutureTask
 
-Callable与Runnable的区别
+__Callable与Runnable的区别__
 
 Thread,Runnable的方式Runnable执行完成后无法返回结构
 
@@ -508,7 +508,7 @@ Callable使用范型定义返回值
         V call() throws Exception;   
     }
 
-Future<V>接口
+__Future<V>接口__
 
 Future<V>接口是用来获取异步计算结果的，就是对具体的Runnable或者Callable对象任务执行的结果进行获取(get()),取消(cancel()),判断是否完成等操作。
 
@@ -519,6 +519,84 @@ Future<V>接口是用来获取异步计算结果的，就是对具体的Runnable
         V get() throws InterruptedException, ExecutionException;  
         V get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException;  
     }  
+
+接口方法
+
+* cancel方法用来取消任务，如果取消任务成功则返回true，如果取消任务失败则返回false。参数mayInterruptIfRunning表示是否允许取消正在执行却没有执行完毕的任务，如果设置true，则表示可以取消正在执行过程中的任务。如果任务已经完成，则无论mayInterruptIfRunning为true还是false，此方法肯定返回false，即如果取消已经完成的任务会返回false；如果任务正在执行，若mayInterruptIfRunning设置为true，则返回true，若mayInterruptIfRunning设置为false，则返回false；如果任务还没有执行，则无论mayInterruptIfRunning为true还是false，肯定返回true。    
+
+* isCancelled方法表示任务是否被取消成功，如果在任务正常完成前被取消成功，则返回 true。
+
+* isDone方法表示任务是否已经完成，若任务完成，则返回true；
+
+* get()方法用来获取执行结果，这个方法会产生阻塞，会一直等到任务执行完毕才返回；
+
+* get(long timeout, TimeUnit unit)用来获取执行结果，如果在指定时间内，还没获取到结果，就直接返回null。
+
+也就是说Future提供了三种功能：
+
+1. 判断任务是否完成；
+2. 能够中断任务；
+3. 能够获取任务执行结果。
+
+Future只是一个接口，所以是无法直接用来创建对象使用的,应该创建继承了Future接口的FutureTask类    
+FutureTask类实现了RunnableFuture接口
+
+        public interface RunnableFuture<V> extends Runnable, Future<V> {
+                void run();
+        }
+
+可以看出RunnableFuture继承了Runnable接口和Future接口，而FutureTask实现了RunnableFuture接口。所以它既可以作为Runnable被线程执行，又可以作为Future得到Callable的返回值。
+
+### 使用示例
+
+__实现Callble接口的任务__
+
+class Task implements Callable<String> {
+    private String msg;
+
+    public Task(String msg) {
+        this.msg = msg;
+    }
+
+    @Override
+    public String call() throws Exception {
+        System.out.println(msg);
+        return msg + " done";
+    }
+}
+
+__Callable + Future__    
+submit提交一个实现Callable接口的任务，并且返回封装了异步计算结果的Future。
+
+        ExecutorService executor = Executors.newCachedThreadPool();
+        Task task = new Task("Task 01");
+
+        Future<String> future = executor.submit(task);
+        try {
+        String result = future.get();
+        System.out.println(result);
+
+        } catch (InterruptedException e) {
+        e.printStackTrace();
+        } catch (ExecutionException e) {
+        e.printStackTrace();
+        }
+
+__Callable + FutureTask__
+用FutureTask封装一个实现Callable接口的任务,并且返回封装了异步计算结果的Future
+
+        ExecutorService executor = Executors.newCachedThreadPool();
+        Task task = new Task("Task 02");
+        FutureTask<String> futureTask = new FutureTask<String>(task);
+        executor.submit(futureTask);
+        try {
+            String result = futureTask.get();
+            System.out.println(result);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
 
 --------
 ## Socket相关
