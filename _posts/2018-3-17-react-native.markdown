@@ -97,51 +97,6 @@ Align Items
     
 TextInput组件
 
-## ECMAScript基础相关
-
-__定义变量__
-
-var定义的是全局变量,定义之后所有的地方都能引用.let声明的是局部变量,只在代码块范围内有效
-
-const声明一个只读的常量。一旦声明，常量的值就不能改变。const声明的变量不得改变值，这意味着，const一旦声明变量，就必须立即初始化，不能留到以后赋值。
-
-__箭头函数__
-
-函数的定义就是用一个箭头
-
-    x => x * x;
-
-或者写成
-
-    x => {
-        return x * x;
-    }
-
-就相当于
-
-    function (x) {
-        return x * x;
-    };
-
-__import,export引用__
-
-utils.js
-
-    export const param1 = "Test Param from utils";
-    export function plus(x, y) {
-        return x + y;
-    }
-
-App.js
-
-    import * as utils from './utils.js'
-    console.log('utils.add:', utils.plus(123, 456));
-    console.log('utils.param:', utils.param1);
-
-
-箭头左边是参数, 右边是单行的表达式,表达式的结果作为函数返回值.
-如果是多行的话用{}包裹函数体并用return返回结果
-
 ## State
 
 用来控制一个组件,在父组件中指定.组件之间联动的时候需要使用
@@ -216,5 +171,84 @@ App.js
 
     应用全屏的时候会被StatusBar覆盖,所以最外层的View应该设置style margin: StatusBar.currentHeight
 
+## 生命周期
 
+![component-lifecycle](http://7rf9ir.com1.z0.glb.clouddn.com/3-3-component-lifecycle.jpg)
+
+生命周期的各个回调函数
+
+* getDefaultProps()    
+组件创建之前会调用,全局调用一次
+
+* getInitialState()     
+初始化组件的状态
+
+* componentWillMount()    
+组件创建,并被初始化了状态之后调用,在第一次绘制render之前.在这里做一些业务初始化操作,或者设置组件状态.这个函数在生命周期中只调用一次
+
+* render()    
+绘制页面
+
+* componentDidMount()    
+页面构建完成之后调用.在这个函数中可以获取其中的元素和组件
+
+* shouldComponentUpdate()    
+组件的属性prop改变的时候调用,返回true或者false决定是否需要更新组件,默认返回true保证更新流程
+
+* componentWillUpdate() -> render() -> componentDidUpdate()    
+组件状态改变的时候调用的顺序
+
+* componentWillUnmount()
+组件要从屏幕上移除的时候调用,这时候主要做一些清理工作,取消计时器,网络请求等
+
+参考: https://race604.com/react-native-component-lifecycle/
+
+--------
+
+# ECMAScript基础
+
+## 定义变量
+
+var定义的是全局变量,定义之后所有的地方都能引用.let声明的是局部变量,只在代码块范围内有效
+
+const声明一个只读的常量。一旦声明，常量的值就不能改变。const声明的变量不得改变值，这意味着，const一旦声明变量，就必须立即初始化，不能留到以后赋值。
+
+## 箭头函数
+
+函数的定义就是用一个箭头
+
+    x => x * x;
+
+或者写成
+
+    x => {
+        return x * x;
+    }
+
+就相当于
+
+    function (x) {
+        return x * x;
+    };
+
+## import,export引用
+
+utils.js
+
+    export const param1 = "Test Param from utils";
+    export function plus(x, y) {
+        return x + y;
+    }
+
+App.js
+
+    import * as utils from './utils.js'
+    console.log('utils.add:', utils.plus(123, 456));
+    console.log('utils.param:', utils.param1);
+
+
+箭头左边是参数, 右边是单行的表达式,表达式的结果作为函数返回值.
+如果是多行的话用{}包裹函数体并用return返回结果
+
+## 
 
