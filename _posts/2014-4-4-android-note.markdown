@@ -1112,7 +1112,7 @@ activity中实现
 
 --------
 
-### ASyncTask相关
+## ASyncTask相关
 
 一般声明在Activity类中作为内内部类.标注三个参数的类型
 第一个参数表示要执行的任务通常是网络的路径。第二个参数表示进度的刻度，第三个参数表示任务执行的结果。
@@ -1171,7 +1171,88 @@ ASyncTask的缺点: 后台线程只有一个,多个任务线性执行
 https://segmentfault.com/a/1190000002872278    
 http://www.infoq.com/cn/articles/android-asynctask    
 
+## ASyncTask源码整理
 
+主要使用的技术是ThreadPoll线程池和Handler Looper实现
+
+ASyncTask构造函数中创建FutureTask, WorkerRunnable<Params, Result>对象     
+WorkerRunnable继承了Runnable接口,call方法调用doInBackground()方法,结果返回Result对象,最后调用postResult方法返回结果
+FutureTask实现了done方法在任务完成时调用postResultIfNotInvoked() -> postResult()返回结果
+
+execute()方法执行    
+
+调用execute() -> executeOnExecutor()
+
+executeOnExecutor()    
+
+    onPreExecute()
+    mWorker.mParams = params;   //Callable对象参数赋值
+    exec.execute(mFuture);  //线程添加到线程池
+
+WorkerRunnable的对象中
+
+    mWorker = new WorkerRunnable<Params, Result>() {
+            public Result call() throws Exception {
+                mTaskInvoked.set(true);
+                Result result = null;
+                try {
+                    Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
+                    //noinspection unchecked
+                    result = doInBackground(mParams);
+                    Binder.flushPendingCommands();
+                } catch (Throwable tr) {
+                    mCancelled.set(true);
+                    throw tr;
+                } finally {
+                    postResult(result);
+                }
+                return result;
+            }
+        };
+
+postResult方法会把使用Handler Messageer把结果发送给主线程
+
+    private Result postResult(Result result) {
+        @SuppressWarnings("unchecked")
+        Message message = getHandler().obtainMessage(MESSAGE_POST_RESULT,
+                new AsyncTaskResult<Result>(this, result));
+        message.sendToTarget();
+        return result;
+    }
+
+主线程Handler接收返回的结果
+
+    private static class InternalHandler extends Handler {
+        public InternalHandler() {
+            super(Looper.getMainLooper());
+        }
+
+        @SuppressWarnings({"unchecked", "RawUseOfParameterizedType"})
+        @Override
+        public void handleMessage(Message msg) {
+            AsyncTaskResult<?> result = (AsyncTaskResult<?>) msg.obj;
+            switch (msg.what) {
+                case MESSAGE_POST_RESULT:
+                    // There is only one result
+                    result.mTask.finish(result.mData[0]);
+                    break;
+                case MESSAGE_POST_PROGRESS:
+                    result.mTask.onProgressUpdate(result.mData);
+                    break;
+            }
+        }
+    }
+
+finish() -> onPostExecute()
+
+    private void finish(Result result) {
+        if (isCancelled()) {
+            onCancelled(result);
+        } else {
+            onPostExecute(result);
+        }
+        mStatus = Status.FINISHED;
+    }
 
 --------
 
