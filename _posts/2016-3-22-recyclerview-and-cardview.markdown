@@ -257,3 +257,20 @@ setRefreshing用于显示/隐藏loading动画.
 2. notifyItemInserted(int)             通知位置position的Item的数据插入
 3. notifyItemRemoved(int)              通知位置position的Item的数据移除
 4. notifyDataSetChanged()              跟ListView兼容,但没有动画效果
+
+## RecyclerView和ListView的区别
+
+1. 添加LayoutManager单独管理布局方式,默认包含三种布局方式
+
+* LinearLayoutManager，可以支持水平和竖直方向上滚动的列表。
+* StaggeredGridLayoutManager，可以支持交叉网格风格的列表，类似于瀑布流或者Pinterest。
+* GridLayoutManager，支持网格展示，可以水平或者竖直滚动，如展示图片的画廊。
+
+2. 强制使用ViewHolder来保存视图引用
+
+3. 列表项添加,删除,移动的时候可以添加动画
+
+4. ListView通过AdapterView.OnItemClickListener接口来探测点击事件。而RecyclerView则通过RecyclerView.OnItemTouchListener接口来探测触摸事件
+
+
+
