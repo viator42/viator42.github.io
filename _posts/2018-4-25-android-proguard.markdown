@@ -1,9 +1,53 @@
 ---
 layout: post
-title:  "Android代码的反编译混淆实践"
-date:   2015-07-02
+title:  "Android ProGuard相关"
+date:   2018-04-25
 categories: Android
 ---
+
+## 代码混淆过程
+
+* 压缩
+移除代码中无用的类,字段,方法,特性
+
+* 优化
+对字节码进行优化,移除无用的指令
+
+* 混淆
+使用a,b,c...这种简短的名称对类,方法,变量进行重命名
+
+* 预检
+对处理后的代码进行预检
+
+## 编写ProGuard.cfg文件
+
+-dontusemixedcaseclassnames    
+指定混淆的类名称不使用大小写混合
+
+-skipnonpubliclibraryclasses    
+跳过非公开的类
+
+-keepattributes *Annotation*    
+保护代码中的Annotation不被混淆
+
+-keepattributes Exceptions,InnerClasses,Signature,Deprecated,SourceFile,LineNumberTable,*Annotation*,EnclosingMethod
+
+## 保留不被混淆的东西
+
+保护某些包下的类不被混淆
+
+    -keep public * extends com.viator42.sampleapp
+
+实体类保留get,set方法不被混淆
+
+    -keep public class com.brand.ushopping.model {
+        public void set* (***);
+        public *** get* ();
+        public *** is* ();
+    }
+
+--------
+
 
 由于项目要发布,所以花了半天时间对代码的反编译和混淆进行下研究.
 
