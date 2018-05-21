@@ -5,7 +5,9 @@ date:   2018-5-19
 categories: Python
 ---
 
-## 文件模板
+## 文件头结构定义     
+
+Python解释器的路径和定义使用utf-8字符集
 
     #!/usr/bin/env python
     # -*- coding: utf-8 -*-
