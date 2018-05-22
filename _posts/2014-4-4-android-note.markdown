@@ -543,6 +543,43 @@ listView onClick事件设置
 
     }
 
+### ScrollTo方法操作
+
+    mListView.scrollTo(x, y)
+
+把显示区域移动到x, y坐标处
+
+scrollTo和scrollBy的区别    
+
+scrollTo是距离起始位置的偏移量,scrollBy是根据当前位置的移动
+
+android scrollview 自动滚动到顶部或者底部
+
+    //设置默认滚动到顶部
+    scrollView.post(new Runnable() {
+    
+    @Override
+    public void run() {
+        // TODO Auto-generated method stub
+        scrollView.fullScroll(ScrollView.FOCUS_UP);
+    }
+    });
+
+    //设置默认滚动到底部
+    scrollView.post(new Runnable() {
+    
+    @Override
+    public void run() {
+        // TODO Auto-generated method stub
+        scrollView.fullScroll(ScrollView.FOCUS_DOWN);
+    }
+    });
+
+    View中有EditText的时候页面加载焦点会自动放到第一个EditText上,取消方法是在跟节点添加以下属性
+
+    android:focusable="true"
+    android:focusableInTouchMode="true" 
+
 --------
 
 ### 使用SimpleAddpter
@@ -2115,3 +2152,15 @@ adb命令
     activityManager.getLargeMemoryClass()
 
 如果在AndroidManifest.xml中的<application>标签下添加属性android:largeHeap=“true” ,将启用大堆内存模式
+
+## viewGroup和子控件
+
+自己定义的GridView,ListView点击时会没有反应,是因为其中的Item项中有Button，CheckBox等子控件占据了焦点事件    
+解决方法是在Item布局的根布局上定义android:descendantFocusability属性来控制    
+属性值为
+
+* beforeDescendants：viewgroup会优先其子类控件而获取到焦点   
+* afterDescendants：viewgroup只有当其子类控件不需要获取焦点时才获取焦点   
+* blocksDescendants：viewgroup会覆盖子类控件而直接获得焦点   
+
+

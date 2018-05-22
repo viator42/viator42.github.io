@@ -250,5 +250,171 @@ App.js
 箭头左边是参数, 右边是单行的表达式,表达式的结果作为函数返回值.
 如果是多行的话用{}包裹函数体并用return返回结果
 
-## 
+## 页面跳转 ReactNavigation
+
+__安装__
+
+    yarn add react-navigation
+    # or with npm
+    # npm install --save react-navigation
+
+__顶部工具栏StackNavigator__
+
+    import { createStackNavigator } from 'react-navigation';
+
+    export class App extends React.Component {
+    //导航栏的属性(文字居中)
+    static navigationOptions = {
+        headerTitle: 'HomeScreen',
+        headerTitleStyle: { 
+        width: '80%',
+        textAlign: 'center',
+        },
+        headerRight: (<View />),
+        headerLeft: (<View />),
+    };
+
+    render() {
+        return (
+        <View style={styles.container}>
+            <Text>Open up App.js to start working on your app!</Text>
+            <Button
+            title="Go to Details"
+            onPress={() => this.props.navigation.navigate('Details', {msg: "msg to details"})}
+            />
+        </View>
+        
+        );
+    }
+    }
+
+    class DetailsScreen extends React.Component {
+    render() {
+        const { navigation } = this.props;
+        const msg = navigation.getParam('msg', 'some default value');
+
+        return (
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+            <Text>{msg}</Text>
+        </View>
+        );
+    }
+    }
+
+    //设置导航器
+    export default createStackNavigator({
+    //所有导航需要的画面
+    Home: App,
+    Details: DetailsScreen,
+
+    }, {
+    initialRouteName: 'Home',   //初始画面
+    });
+
+__底部Tab栏__
+
+    import { createBottomTabNavigator } from 'react-navigation';
+
+    export class App extends React.Component {
+    static navigationOptions = {
+        headerTitle: 'HomeScreen',
+        headerTitleStyle: { 
+        width: '80%',
+        textAlign: 'center',
+        },
+        headerRight: (<View />),
+        headerLeft: (<View />),
+    };
+
+    render() {
+        return (
+        <View style={styles.container}>
+            <Text>Open up App.js to start working on your app!</Text>
+            <Button
+            title="Go to Details"
+            onPress={() => this.props.navigation.navigate('Details', {msg: "msg to details"})}
+            />
+        </View>
+        
+        );
+    }
+    }
+
+    class Tab2Screen extends React.Component {
+    render() {
+        const { navigation } = this.props;
+        const msg = navigation.getParam('msg', 'some default value');
+
+        return (
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+            <Text>{msg}</Text>
+        </View>
+        );
+    }
+    }
+
+    export default createBottomTabNavigator({
+    Home: App,
+    Tab2: Tab2Screen,
+    });
+
+
+__侧边导航栏__
+
+    import { createDrawerNavigator } from 'react-navigation';
+    
+    export class App extends React.Component {
+    render() {
+        return (
+        <View style={styles.container}>
+            <Text>Open up App.js to start working on your app!</Text>
+        </View>
+        
+        );
+    }
+    }
+
+    class MyNotificationsScreen extends React.Component {
+    static navigationOptions = {
+        drawerLabel: 'Notifications',
+        drawerIcon: ({ tintColor }) => (
+        <Image
+            source={require('./chats-icon.png')}
+            style={[styles.icon, {tintColor: tintColor}]}
+        />
+        ),
+    };
+
+    render() {
+        return (
+        <Button
+            onPress={() => this.props.navigation.goBack()}
+            title="Go back home"
+        />
+        );
+    }
+    }
+
+    export default createDrawerNavigator({
+    Home: {
+        screen: App,
+    },
+    Notifications: {
+        screen: MyNotificationsScreen,
+    },
+    });
+
+    const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: '#fff',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    icon: {
+        width: 24,
+        height: 24,
+    },
+    });
+
 
