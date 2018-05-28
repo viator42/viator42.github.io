@@ -255,8 +255,79 @@ A-Activity需要在B-Activtiy中执行一些数据操作，而B-Activity又要�
 
 ### Fragment (Android4 以上)
 
-Fragment生命周期
+__Fragment生命周期__
 ![Fragment Lifescycle](http://indy-world.net/wp-content/uploads/2014/08/fragment_lifecycle.png "Fragment Lifescycle")
+
+__Fragment的生命周期和Activity的生命周期关系__
+
+onAttach()    
+在Fragment和Activity关联时调用
+
+onActivityCreated()        
+在 Activity 的 onCreate() 方法已返回时调用
+
+onDestroyView()    
+Fragment从屏幕上移除的时候调用
+
+onDetach()    
+在取消Fragment与Activity的关联时调用
+
+__实际演示__
+
+ 场景演示 : 切换到该Fragment
+
+11-29 14:26:35.095: D/AppListFragment(7649): onAttach    
+11-29 14:26:35.095: D/AppListFragment(7649): onCreate    
+11-29 14:26:35.095: D/AppListFragment(7649): onCreateView    
+11-29 14:26:35.100: D/AppListFragment(7649): onActivityCreated    
+11-29 14:26:35.120: D/AppListFragment(7649): onStart    
+11-29 14:26:35.120: D/AppListFragment(7649): onResume    
+
+屏幕灭掉：
+
+11-29 14:27:35.185: D/AppListFragment(7649): onPause    
+11-29 14:27:35.205: D/AppListFragment(7649): onSaveInstanceState    
+11-29 14:27:35.205: D/AppListFragment(7649): onStop    
+
+
+屏幕解锁
+
+11-29 14:33:13.240: D/AppListFragment(7649): onStart    
+11-29 14:33:13.275: D/AppListFragment(7649): onResume    
+
+
+切换到其他Fragment:
+11-29 14:33:33.655: D/AppListFragment(7649): onPause    
+11-29 14:33:33.655: D/AppListFragment(7649): onStop    
+11-29 14:33:33.660: D/AppListFragment(7649): onDestroyView    
+
+
+切换回本身的Fragment:
+
+11-29 14:33:55.820: D/AppListFragment(7649): onCreateView    
+11-29 14:33:55.825: D/AppListFragment(7649): onActivityCreated    
+11-29 14:33:55.825: D/AppListFragment(7649): onStart    
+11-29 14:33:55.825: D/AppListFragment(7649): onResume    
+
+回到桌面
+
+11-29 14:34:26.590: D/AppListFragment(7649): onPause    
+11-29 14:34:26.880: D/AppListFragment(7649): onSaveInstanceState    
+11-29 14:34:26.880: D/AppListFragment(7649): onStop    
+
+回到应用
+
+11-29 14:36:51.940: D/AppListFragment(7649): onStart    
+11-29 14:36:51.940: D/AppListFragment(7649): onResume    
+
+
+退出应用
+
+11-29 14:37:03.020: D/AppListFragment(7649): onPause    
+11-29 14:37:03.155: D/AppListFragment(7649): onStop    
+11-29 14:37:03.155: D/AppListFragment(7649): onDestroyView    
+11-29 14:37:03.165: D/AppListFragment(7649): onDestroy    
+11-29 14:37:03.165: D/AppListFragment(7649): onDetach    
 
 Fragment类定义
 HelloFragment.java
