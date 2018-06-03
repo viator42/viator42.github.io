@@ -19,6 +19,52 @@ categories: android
 https://expo.io/    
 在这个网站下载App,扫二维码查看运行的项目
 
+    Success! Created ugo at D:\RNWorks\ugo
+    Inside that directory, you can run several commands:
+
+    yarn start
+        Starts the development server so you can open your app in the Expo
+        app on your phone.
+
+    yarn run ios
+        (Mac only, requires Xcode)
+        Starts the development server and loads your app in an iOS simulator.
+
+    yarn run android
+        (Requires Android build tools)
+        Starts the development server and loads your app on a connected Android
+        device or emulator.
+
+
+    yarn test
+        Starts the test runner.
+
+    yarn run eject
+        Removes this tool and copies build dependencies, configuration files
+        and scripts into the app directory. If you do this, you can’t go back!
+
+
+使用国内镜像加速npm和yarn
+
+    npm config set registry=https://registry.npm.taobao.org
+    yarn config set registry https://registry.npm.taobao.org
+    下载cnpm：npm install -g cnpm –registry=https://registry.npm.taobao.org
+
+如果出现something went wrong的提示一般是npm源连接不上,解决方法是设置国内源或者安装自带国内源的cnpm,cyarn
+
+__模拟器运行__
+
+使用Android Studio创建虚拟机
+
+列出所有的Android虚拟机
+
+    emulator -avd NAME
+
+运行虚拟机
+    android list avd
+ 
+
+
 ## 文件结构
 App.js为入口文件
 
@@ -417,4 +463,14 @@ __侧边导航栏__
     },
     });
 
+SectionView 带滚动条的Container,内容需要手动设置
 
+    <ScrollView 
+      contentContainerStyle={styles.contentContainer}
+      horizontal={true} >
+        ....
+    </ScrollView>
+
+__图片ImageView__
+
+<Image source={require('./res/drawables/dummy.jpg')} />
