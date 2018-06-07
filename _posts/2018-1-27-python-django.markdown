@@ -78,50 +78,62 @@ admin用户模块使用
 
     你可以通过命令 python manage.py createsuperuser 来创建超级用户
 
-项目部署(以Nginx作为服务器)
+--------
+
+## Django项目部署
+
+### 准备工作
 
     yum install python-devel
+    pip install django
     pip install uwsgi
 
-uwsgi 配置
+如果是Python3的项目,记得使用pip3    
+新版的uwsgi可以自动识别Python3的版本不需要单独运行uwsgi3    
 
-创建配置文件/etc/uwsgi9000.ini
+### 添加wsgi配置文件
+
+在Django项目中寻找wsgi.py文件    
+然后在同级目录下创建uwsgi.ini文件,内容如下
 
     [uwsgi]
-    socket = 127.0.0.1:9090
-    master = true         //主进程
-    vhost = true          //多站模式
-    no-site = true        //多站模式时不设置入口模块和文件
-    workers = 2           //子进程数
-    reload-mercy = 10     
-    vacuum = true         //退出、重启时清理文件
-    max-requests = 1000   
-    limit-as = 512
-    buffer-size = 30000
-    pidfile = /var/run/uwsgi9090.pid    //pid文件，用于下面的脚本启动、停止该进程
-    daemonize = /website/uwsgi9090.log
+    vhost = false
+    socket = 127.0.0.1:9000
+    master = true
+    enable-threads = true
+    workers = 4
+    wsgi-file = wsgi.py
 
-Nginx 配置
+运行uwsgi,并在参数中指明uwsgi.ini文件的位置
+uwsgi --ini /opt/sdqqsntd/sdqqsntd/uwsgi.ini &
 
-找到nginx的安装目录（如：/usr/local/nginx/），打开conf/nginx.conf文件，修改server配置：
+可以把这条命令添加到/etc/rc.local目录中
 
-    server {
-        listen       80;
-        server_name  localhost;
-        
-        location / {            
+### 配置Nginx
+
+    server  {
+            listen 80;
+            server_name     www.sdqqsntd.com;
+
+            location / {
             include  uwsgi_params;
-            uwsgi_pass  127.0.0.1:9000;              //必须和uwsgi中的设置一致
-            uwsgi_param UWSGI_SCRIPT demosite.wsgi;  //入口文件，即wsgi.py相对于项目根目录的位置，“.”相当于一层目录
-            uwsgi_param UWSGI_CHDIR /demosite;       //项目根目录
+            uwsgi_pass  127.0.0.1:9000;
+            uwsgi_param UWSGI_SCRIPT sdqqsntd.wsgi;
+            uwsgi_param UWSGI_CHDIR /opt/sdqqsntd;
             index  index.html index.htm;
             client_max_body_size 35m;
+            }
+
+            location /static/ {
+                        alias  /opt/sdqqsntd/static/; }
         }
-    }
 
-设置完成后，在终端运行：
+由于wsgi和nginx是使用socket进行通信,端口必须设置成相同的    
+静态文件目录也需要单独设置    
 
-    uwsgi --ini /etc/uwsgi9000.ini &
+重新启动Nginx,配置完成
+
+--------
 
 Python3相关
 
