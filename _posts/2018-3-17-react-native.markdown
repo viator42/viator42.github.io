@@ -474,3 +474,136 @@ SectionView 带滚动条的Container,内容需要手动设置
 __图片ImageView__
 
 <Image source={require('./res/drawables/dummy.jpg')} />
+
+__StackNavigation导航栏标题居中 以及定制样式__
+
+    const deviceWidth = Dimensions.get('window').width;      //设备的宽度
+
+headerTitle返回一个View,设置Style为宽度等于屏幕宽度减去左右按钮的宽度,然后alignItems:'center'
+
+    export default class GoodsDetail extends React.Component {
+    static navigationOptions = {
+        headerTitle: (
+        <View
+            style={{width:StaticValues.deviceWidth-100,alignItems:'center'}} >
+            <Text>商品详情Title</Text>
+        </View>
+        ),
+        // title: '商品详情Title',
+        // headerTitle: '商品详情headerTitle',
+        headerStyle: {
+        backgroundColor: '#f4511e',
+        },
+        headerTintColor: '#fff',
+        headerTitleStyle: {
+        fontWeight: 'bold',
+        textAlign: 'center',
+        },
+        // headerLeft: <Text> headerLeft </Text>,
+        // headerRight: <Text> headerRight </Text>,
+    };
+
+__tabNavigation设置图标__
+
+    class Main extends React.Component {
+        static navigationOptions = {
+            tabBarLabel: '主页',
+            headeTitle: 'Main',
+        };
+    }
+
+    export default createBottomTabNavigator(
+    {
+      Main: Main,
+      Brands: Brands,
+      Theme: Theme,
+      Mine: Mine,
+    },
+    {
+      navigationOptions: ({ navigation }) => ({
+        tabBarIcon: ({ focused, tintColor }) => {
+          const { routeName } = navigation.state;
+          if(routeName === 'Main') {
+            return <Image source={require('./res/drawables/tab1.png')} />;
+          }
+          if(routeName === 'Brands') {
+            return <Image source={require('./res/drawables/dummy.jpg')} />;
+          }
+          
+        },
+      }),
+      tabBarOptions: {
+        activeTintColor: 'tomato',
+        inactiveTintColor: 'gray',
+      },
+    }
+  );
+
+## React Native - 持久化存储（AsyncStorage）
+
+
+相关方法
+（1）根据键来获取值，获取的结果会放在回调函数中。
+
+    static getItem(key: string, callback:(error, result))
+
+（2）根据键来设置值。
+
+    static setItem(key: string, value: string, callback:(error))
+
+（3）根据键来移除项。
+    
+    static removeItem(key: string, callback:(error))
+
+（4）合并现有值和输入值。
+
+    static mergeItem(key: string, value: string, callback:(error))
+
+（5）清除所有的项目
+
+    static clear(callback:(error))
+
+（6）获取所有的键
+
+    static getAllKeys(callback:(error, keys))
+
+（7）清除所有进行中的查询操作。
+
+    static flushGetRequests()
+
+（8）获取多项，其中 keys 是字符串数组，比如：['k1', 'k2']
+
+    static multiGet(keys, callback:(errors, result))
+
+（9）设置多项，其中 keyValuePairs 是字符串的二维数组，比如：[['k1', 'val1'], ['k2', 'val2']]
+
+    static multiSet(keyValuePairs, callback:(errors))
+
+（10）删除多项，其中 keys 是字符串数组，比如：['k1', 'k2']
+
+    static multiRemove(keys, callback:(errors))
+
+（11）多个键值合并，其中 keyValuePairs 是字符串的二维数组，比如：[['k1', 'val1'], ['k2', 'val2']]
+	
+    static multiMerge(keyValuePairs, callback:(errors))
+
+参考代码:
+
+    var user = [
+        ['userId', data.userId],
+        ['sessionid', data.sessionid],
+        ['userName', data.userName],
+        ['mobile', data.mobile],
+        ['headImg', data.headImg],
+    ];
+
+    AsyncStorage.multiSet(user, function(errs) {
+        if(errs) {
+            console.log("存储成功");
+        }
+        else {
+            console.log("存储失败");
+        }
+    });
+
+参考链接: http://www.hangge.com/blog/cache/detail_1567.html
