@@ -215,38 +215,6 @@ TextInput组件
 
     应用全屏的时候会被StatusBar覆盖,所以最外层的View应该设置style margin: StatusBar.currentHeight
 
-## 生命周期
-
-![component-lifecycle](http://7rf9ir.com1.z0.glb.clouddn.com/3-3-component-lifecycle.jpg)
-
-生命周期的各个回调函数
-
-* getDefaultProps()    
-组件创建之前会调用,全局调用一次
-
-* getInitialState()     
-初始化组件的状态
-
-* componentWillMount()    
-组件创建,并被初始化了状态之后调用,在第一次绘制render之前.在这里做一些业务初始化操作,或者设置组件状态.这个函数在生命周期中只调用一次
-
-* render()    
-绘制页面
-
-* componentDidMount()    
-页面构建完成之后调用.在这个函数中可以获取其中的元素和组件
-
-* shouldComponentUpdate()    
-组件的属性prop改变的时候调用,返回true或者false决定是否需要更新组件,默认返回true保证更新流程
-
-* componentWillUpdate() -> render() -> componentDidUpdate()    
-组件状态改变的时候调用的顺序
-
-* componentWillUnmount()
-组件要从屏幕上移除的时候调用,这时候主要做一些清理工作,取消计时器,网络请求等
-
-参考: https://race604.com/react-native-component-lifecycle/
-
 --------
 
 # ECMAScript基础
@@ -607,6 +575,7 @@ __tabNavigation设置图标__
 参考链接: http://www.hangge.com/blog/cache/detail_1567.html
 
 --------
+<<<<<<< HEAD
 ## JSX语法
 
 注释
@@ -614,3 +583,44 @@ __tabNavigation设置图标__
     {/**/}
 
 -------
+=======
+
+## 生命周期
+
+![component-lifecycle](http://7rf9ir.com1.z0.glb.clouddn.com/3-3-component-lifecycle.jpg)
+
+生命周期的各个回调函数
+
+### 初始化调用的方法
+
+* getDefaultProps()        
+组件实例创建前调用，多个实例间共享引用,用来初始化组件的状态,注意：如果父组件传递过来的Props和你在该函数中定义的Props的key一样，将会被覆盖。    
+全局调用一次    
+
+* getInitialState()     
+组件示例创建的时候调用的第一个函数。主要用于初始化state。注意：为了在使用中不出现空值，建议初始化state的时候尽可能给每一个可能用到的值都赋一个初始值。    
+全局调用一次
+
+* componentWillMount()    
+组件创建,并被初始化了状态之后调用,在第一次绘制render之前.在这里做一些业务初始化操作,或者设置组件状态.这个函数在生命周期中只调用一次
+
+* render()    
+绘制页面
+
+* componentDidMount()    
+页面构建完成之后调用.在这个函数中可以获取其中的元素和组件
+
+### 页面更新调用的方法
+
+* componentWillReceiveProps(nextProps)    
+如果组件收到新的属性（props）的时候调用    
+
+* shouldComponentUpdate()    
+组件的属性prop改变的时候调用,返回true或者false决定是否需要更新组件,默认返回true保证更新流程
+如果返回true则按照 componentWillUpdate() -> render() -> componentDidUpdate() 的顺序调用
+
+* componentWillUnmount()
+组件要从屏幕上移除的时候调用,这时候主要做一些清理工作,取消计时器,网络请求等
+
+参考: https://race604.com/react-native-component-lifecycle/
+>>>>>>> 254c7d1fce298ba4d9f8e48dd784f76dc99def19
