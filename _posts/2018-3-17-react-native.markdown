@@ -62,8 +62,6 @@ __模拟器运行__
 
 运行虚拟机
     android list avd
- 
-
 
 ## 文件结构
 App.js为入口文件
@@ -607,3 +605,12 @@ __tabNavigation设置图标__
     });
 
 参考链接: http://www.hangge.com/blog/cache/detail_1567.html
+
+--------
+## JSX语法
+
+注释
+
+    {/**/}
+
+-------
