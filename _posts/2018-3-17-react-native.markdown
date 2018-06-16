@@ -575,7 +575,6 @@ __tabNavigation设置图标__
 参考链接: http://www.hangge.com/blog/cache/detail_1567.html
 
 --------
-<<<<<<< HEAD
 ## JSX语法
 
 注释
@@ -583,7 +582,6 @@ __tabNavigation设置图标__
     {/**/}
 
 -------
-=======
 
 ## 生命周期
 
@@ -623,4 +621,3 @@ __tabNavigation设置图标__
 组件要从屏幕上移除的时候调用,这时候主要做一些清理工作,取消计时器,网络请求等
 
 参考: https://race604.com/react-native-component-lifecycle/
->>>>>>> 254c7d1fce298ba4d9f8e48dd784f76dc99def19
