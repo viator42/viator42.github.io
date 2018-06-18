@@ -621,3 +621,29 @@ __tabNavigation设置图标__
 组件要从屏幕上移除的时候调用,这时候主要做一些清理工作,取消计时器,网络请求等
 
 参考: https://race604.com/react-native-component-lifecycle/
+
+--------
+
+__React Native Warning Failed child context type: Invalid child context ‘virtualizedCell.cellKey’__
+
+FlatList每一个cell的key值必须是string类型,否则会报警告
+
+解决方法:
+
+<FlatList
+    ......
+    keyExtractor={ (item, index) => index.toString() }
+    />
+
+__Each child in an array or iterator should have a unique "key" prop. Check the top-level render call using__
+
+解决方法:
+
+在View中循环添加子view的时候加入key属性
+
+    <View
+        ...
+        key={activity['id']}>
+        ...
+        </View>
+
