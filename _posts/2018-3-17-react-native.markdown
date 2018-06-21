@@ -624,6 +624,48 @@ __tabNavigation设置图标__
 
 --------
 
+## 动画相关
+
+React Native提供了两个互补的动画系统：用于全局的布局动画LayoutAnimation，和用于创建更精细的交互控制的动画Animated。
+
+###  Animated
+
+Animated旨在以声明的形式来定义动画的输入与输出，在其中建立一个可配置的变化函数，然后使用简单的start/stop方法来控制动画按顺序执行。 Animated仅封装了四个可以动画化的组件：View、Text、Image和ScrollView
+
+    export default class FadeInView extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            fadeAnim: new Animated.Value(0),          // 设置动画变化的变量值
+        };
+    }
+    componentDidMount() {
+        // 动画开始运行
+        Animated.timing(                            // 随时间变化而执行的动画类型
+        this.state.fadeAnim,                      // 动画中的变量值
+        {
+            toValue: 1,                             // 透明度最终变为1，即完全不透明
+        }
+        ).start();                                  // 开始执行动画
+    }
+    render() {
+        return (
+        <Animated.View                            // 可动画化的视图组件
+            style={{
+            ...this.props.style,
+            opacity: this.state.fadeAnim,          // 将透明度指定为动画变量值
+            }}
+        >
+            {this.props.children}
+        </Animated.View>
+        );
+    }
+    }
+
+--------
+
+## 常见WARNING解决
+
 __React Native Warning Failed child context type: Invalid child context ‘virtualizedCell.cellKey’__
 
 FlatList每一个cell的key值必须是string类型,否则会报警告
