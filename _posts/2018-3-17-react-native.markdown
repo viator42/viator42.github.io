@@ -691,3 +691,162 @@ __Each child in an array or iterator should have a unique "key" prop. Check the 
 
 ## 集成到Android原生应用
 
+先创建ReactNative项目,在RN目录下创建android项目
+
+在RN项目根目录下创建一个名为package.json的空文本文件，然后填入以下内容：
+
+    {
+        "name": "MyReactNativeApp",
+        "version": "0.0.1",
+        "private": true,
+        "scripts": {
+            "start": "node node_modules/react-native/local-cli/cli.js start"    //重点修改这里
+        },
+        "dependencies": {
+            "react": "16.0.0-alpha.6",
+            "react-native": "0.44.3"
+        }
+    }
+
+Android项目的配置
+
+app/build.gradle
+
+    android {
+        ...
+        defaultConfig {
+            ...
+            ndk {
+                abiFilters "armeabi-v7a", "x86"
+            }
+
+            packagingOptions {
+                exclude "lib/arm64-v8a/libgnustl_shared.so"
+            }
+
+        }
+    }
+
+    dependencies {
+        ...
+        compile "com.facebook.react:react-native:+" // From node_modules.
+    }
+
+    configurations.all {
+        resolutionStrategy.force 'com.google.code.findbugs:jsr305:2.0.1'
+    }
+
+在项目的 build.gradle 文件中为 React Native 添加一个 maven 依赖的入口，必须写在 "allprojects" 代码块中:
+
+    allprojects {
+        repositories {
+            ...
+            maven {
+                // All of React Native (JS, Android binaries) is installed from npm
+                url "$rootDir/../node_modules/react-native/android"
+            }
+        }
+        ...
+    }
+
+androidManife.xml修改
+
+    <?xml version="1.0" encoding="utf-8"?>
+    <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+        package="com.viator42.nativeconnect">
+        <uses-permission android:name="android.permission.INTERNET" />  //声明网络权限
+
+        <application
+            android:allowBackup="true"
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/ic_launcher_round"
+            android:supportsRtl="true"
+            android:theme="@style/AppTheme">
+
+            <activity android:name="com.facebook.react.devsupport.DevSettingsActivity" />   //开发者菜单页面
+
+            <activity
+                android:name=".MainActivity"
+                android:theme="@style/Theme.AppCompat.Light.NoActionBar">   //Style修改
+                <intent-filter>
+                    <action android:name="android.intent.action.MAIN" />
+                    <category android:name="android.intent.category.LAUNCHER" />
+                </intent-filter>
+            </activity>
+        </application>
+
+    </manifest>
+
+RN端创建index.js入口文件
+
+    import React from 'react';
+    import {
+    AppRegistry,
+    StyleSheet,
+    Text,
+    View
+    } from 'react-native';
+
+    class HelloWorld extends React.Component {
+    render() {
+        return (
+        <View style={styles.container}>
+            <Text style={styles.hello}>Hello, World</Text>
+        </View>
+        )
+    }
+    }
+    var styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        justifyContent: 'center',
+    },
+    hello: {
+        fontSize: 20,
+        textAlign: 'center',
+        margin: 10,
+    },
+    });
+
+    AppRegistry.registerComponent('MyReactNativeApp', () => HelloWorld);
+
+
+MainActivity.java
+
+    public class MainActivity extends AppCompatActivity implements DefaultHardwareBackBtnHandler {
+        private ReactRootView mReactRootView;
+        private ReactInstanceManager mReactInstanceManager;
+
+        @Override
+        protected void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            setContentView(R.layout.activity_main);
+
+            mReactRootView = new ReactRootView(this);
+            mReactInstanceManager = ReactInstanceManager.builder()
+                    .setApplication(getApplication())
+                    .setBundleAssetName("index.android.bundle")
+                    .setJSMainModulePath("index")
+                    .addPackage(new MainReactPackage())
+                    .setUseDeveloperSupport(BuildConfig.DEBUG)
+                    .setInitialLifecycleState(LifecycleState.RESUMED)
+                    .build();
+
+            // 注意这里的MyReactNativeApp必须对应“index.js”中的
+            // “AppRegistry.registerComponent()”的第一个参数
+            mReactRootView.startReactApplication(mReactInstanceManager, "MyReactNativeApp", null);
+
+            setContentView(mReactRootView);
+
+        }
+
+        @Override
+        public void invokeDefaultOnBackPressed() {
+            super.onBackPressed();
+        }
+    }
+
+## 与原生项目交互
+
+
