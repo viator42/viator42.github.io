@@ -689,3 +689,5 @@ __Each child in an array or iterator should have a unique "key" prop. Check the 
         ...
         </View>
 
+## 集成到Android原生应用
+
