@@ -849,4 +849,110 @@ MainActivity.java
 
 ## 与原生项目交互
 
+1. 创建模块类
+
+    public class ShowerModule extends ReactContextBaseJavaModule {
+        public ShowerModule(ReactApplicationContext reactContext) {
+            super(reactContext);
+        }
+
+        @Override
+        public String getName() {
+            return "ShowerModule";
+        }
+
+        @ReactMethod
+        public void show(String content) {
+            Log.v("ShowerModule showToast", content);
+            Toast.makeText(getReactApplicationContext(), content, Toast.LENGTH_SHORT);
+        }
+    }
+
+getName()方法返回模块的名称,就是在RN端调用时引用的名称    
+被调用的方法必须添加@ReactMethod注解,无返回值    
+
+2. 创建Package注册模块
+
+    public class ExampleReactPackage implements ReactPackage {
+        @Override
+        public List<NativeModule> createNativeModules(ReactApplicationContext reactContext) {
+            List<NativeModule> modules = new ArrayList<NativeModule>();
+            modules.add(new ShowerModule(reactContext));
+
+            return modules;
+        }
+
+        @Override
+        public List<ViewManager> createViewManagers(ReactApplicationContext reactContext) {
+            return Collections.emptyList();
+        }
+    }
+
+createNativeModules()方法返回一个List,其中添加module的对象
+
+3. Activity中使用模块
+
+    public class MainActivity extends AppCompatActivity implements DefaultHardwareBackBtnHandler {
+        private ReactRootView mReactRootView;
+        private ReactInstanceManager mReactInstanceManager;
+
+        @Override
+        protected void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            setContentView(R.layout.activity_main);
+
+            mReactRootView = new ReactRootView(this);
+            mReactInstanceManager = ReactInstanceManager.builder()
+                    .setApplication(getApplication())
+                    .setBundleAssetName("index.android.bundle")
+                    .setJSMainModulePath("index")
+                    .addPackage(new MainReactPackage())
+                    .addPackage(new ExampleReactPackage())  //在这里添加注册的模块Package
+                    .setUseDeveloperSupport(BuildConfig.DEBUG)
+                    .setInitialLifecycleState(LifecycleState.RESUMED)
+                    .build();
+
+            // 注意这里的MyReactNativeApp必须对应“index.js”中的
+            // “AppRegistry.registerComponent()”的第一个参数
+            mReactRootView.startReactApplication(mReactInstanceManager, "MyReactNativeApp", null);
+
+            setContentView(mReactRootView);
+        }
+
+        @Override
+        public void invokeDefaultOnBackPressed() {
+            super.onBackPressed();
+        }
+    }
+
+4. RN端的实现
+
+    import React from 'react';
+    import {
+    AppRegistry,
+    StyleSheet,
+    Text,
+    View,
+    Button,
+    NativeModules
+    } from 'react-native';
+
+    class HelloWorld extends React.Component {
+        render() {
+            return (
+            <View style={styles.container}>
+                <Text style={styles.hello}>Hello, RN in android</Text>
+                <Button 
+                    style={styles.button}
+                    title='Toast show' 
+                    onPress={() => {
+                    console.log("show toast");
+                    NativeModules.ShowerModule.show('aaaaaa');  //根据 NativeModules.模块名.方法名 调用
+                    }}/>
+            </View>
+            )
+        }
+    }
+
+    AppRegistry.registerComponent('MyReactNativeApp', () => HelloWorld);
 
