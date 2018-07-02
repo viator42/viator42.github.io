@@ -689,6 +689,8 @@ __Each child in an array or iterator should have a unique "key" prop. Check the 
         ...
         </View>
 
+--------
+
 ## 集成到Android原生应用
 
 先创建ReactNative项目,在RN目录下创建android项目
@@ -849,7 +851,7 @@ MainActivity.java
 
 ## 与原生项目交互
 
-1. 创建模块类
+__创建模块类__
 
     public class ShowerModule extends ReactContextBaseJavaModule {
         public ShowerModule(ReactApplicationContext reactContext) {
@@ -871,17 +873,16 @@ MainActivity.java
 getName()方法返回模块的名称,就是在RN端调用时引用的名称    
 被调用的方法必须添加@ReactMethod注解,无返回值    
 
-2. 创建Package注册模块
+__创建Package注册模块__
 
     public class ExampleReactPackage implements ReactPackage {
         @Override
         public List<NativeModule> createNativeModules(ReactApplicationContext reactContext) {
             List<NativeModule> modules = new ArrayList<NativeModule>();
             modules.add(new ShowerModule(reactContext));
-
             return modules;
         }
-
+        
         @Override
         public List<ViewManager> createViewManagers(ReactApplicationContext reactContext) {
             return Collections.emptyList();
@@ -890,7 +891,7 @@ getName()方法返回模块的名称,就是在RN端调用时引用的名称
 
 createNativeModules()方法返回一个List,其中添加module的对象
 
-3. Activity中使用模块
+__Activity中使用模块__
 
     public class MainActivity extends AppCompatActivity implements DefaultHardwareBackBtnHandler {
         private ReactRootView mReactRootView;
@@ -925,7 +926,7 @@ createNativeModules()方法返回一个List,其中添加module的对象
         }
     }
 
-4. RN端的实现
+__RN端的实现__
 
     import React from 'react';
     import {
@@ -955,4 +956,8 @@ createNativeModules()方法返回一个List,其中添加module的对象
     }
 
     AppRegistry.registerComponent('MyReactNativeApp', () => HelloWorld);
+
+### RN端和Android原生的数据交互
+
+RN端到原生端可以使用方法参数传递值,原生到RN不能使用方法返回值,因为调用是异步的.可以使用回调方法或者Promise机制
 
