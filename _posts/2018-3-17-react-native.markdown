@@ -961,3 +961,55 @@ __RN端的实现__
 
 RN端到原生端可以使用方法参数传递值,原生到RN不能使用方法返回值,因为调用是异步的.可以使用回调方法或者Promise机制
 
+Android原生端
+
+    public class ShowerModule extends ReactContextBaseJavaModule {
+
+        public ShowerModule(ReactApplicationContext reactContext) {
+            super(reactContext);
+        }
+
+        @Override
+        public String getName() {
+            return "ShowerModule";
+        }
+
+        @ReactMethod
+        public void testAndroidCallbackMethod(String param, Callback callback) {
+            Log.v("callback", param);
+            callback.invoke("This is callback result");
+        }
+
+        @ReactMethod
+        public void textAndroidPromiseMethod(String param, Promise promise) {
+            Log.v("promise", param);
+            promise.resolve("This is promise result");
+        }
+    }
+
+RN端
+
+    <Button 
+        style={styles.button}
+        title='Toast show' 
+        onPress={() => {
+            console.log("show toast");
+            NativeModules.ShowerModule.testAndroidCallbackMethod('this is callback param', (result) => {
+            console.log(result);
+            });
+
+        }}/>
+
+    <Button 
+        style={styles.button}
+        title='Toast show' 
+        onPress={() => {
+            console.log("show toast");
+            NativeModules.ShowerModule.textAndroidPromiseMethod('this is promise param').then((result) => {
+            console.log(result);
+            }).catch((error) => {
+            console.log(error);
+            });
+
+        }}/>
+
