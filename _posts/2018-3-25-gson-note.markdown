@@ -161,5 +161,7 @@ FieldNamingPolicy 自定义转换的json命名格式
 
 参考: https://futurestud.io/tutorials/gson-advanced-custom-serialization-part-1
 
+## 自定义序列化,反序列化,TypeAdapter使用
+
 
 
