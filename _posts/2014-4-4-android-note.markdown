@@ -2234,4 +2234,206 @@ adb命令
 * afterDescendants：viewgroup只有当其子类控件不需要获取焦点时才获取焦点   
 * blocksDescendants：viewgroup会覆盖子类控件而直接获得焦点   
 
+--------
+
+## Recycler View添加滚动到底部自动加载更多
+
+RecyclerView没有提供滚动到底部加载更多的功能,需要自己实现    
+
+自定义一个OnScrollListener
+
+    public abstract class EndlessRecyclerOnScrollListener extends RecyclerView.OnScrollListener {
+        public static String TAG = EndlessRecyclerOnScrollListener.class.getSimpleName();
+
+        private int previousTotal = 0; // The total number of items in the dataset after the last load
+        private boolean loading = true; // True if we are still waiting for the last set of data to load.
+        private int visibleThreshold = 5; // The minimum amount of items to have below your current scroll position before loading more.
+        int firstVisibleItem, visibleItemCount, totalItemCount;
+
+        private int current_page = 1;
+
+        private GridLayoutManager layoutManager;
+
+        public EndlessRecyclerOnScrollListener(GridLayoutManager layoutManager) {
+            this.layoutManager = layoutManager;
+        }
+
+        @Override
+        public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+            super.onScrolled(recyclerView, dx, dy);
+
+            visibleItemCount = recyclerView.getChildCount();
+            totalItemCount = layoutManager.getItemCount();
+            firstVisibleItem = layoutManager.findFirstVisibleItemPosition();
+
+            if (loading) {
+                if (totalItemCount > previousTotal) {
+                    loading = false;
+                    previousTotal = totalItemCount;
+                }
+            }
+            if (!loading && (totalItemCount - visibleItemCount)
+                    <= (firstVisibleItem + visibleThreshold)) {
+                // End has been reached
+
+                // Do something
+                current_page++;
+
+                onLoadMore(current_page);
+
+                loading = true;
+            }
+        }
+
+        public abstract void onLoadMore(int current_page);
+    }
+
+GridView和RecyclerView只有LayoutManager不同
+
+    public abstract class EndlessGridRecyclerOnScrollListener extends
+            RecyclerView.OnScrollListener {
+
+        private int previousTotal = 0;
+        private boolean loading = true;
+        int firstVisibleItem, visibleItemCount, totalItemCount;
+
+        private int currentPage = 1;
+
+        private GridLayoutManager gridLayoutManager;
+
+        public EndlessGridRecyclerOnScrollListener(
+                GridLayoutManager gridLayoutManager) {
+            this.gridLayoutManager = gridLayoutManager;
+        }
+
+        @Override
+        public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+            super.onScrolled(recyclerView, dx, dy);
+
+            CommonUtils.log(String.valueOf(dx) + " " + String.valueOf(dy) );
+
+            visibleItemCount = recyclerView.getChildCount();
+            totalItemCount = gridLayoutManager.getItemCount();
+            firstVisibleItem = gridLayoutManager.findFirstVisibleItemPosition();
+
+
+            if (loading) {
+                if (totalItemCount > previousTotal) {
+                    loading = false;
+                    previousTotal = totalItemCount;
+                }
+            }
+            if (!loading && (totalItemCount - visibleItemCount) <= firstVisibleItem) {
+                currentPage++;
+                onLoadMore(currentPage);
+                loading = true;
+            }
+        }
+
+        public abstract void onLoadMore(int currentPage);
+    }
+
+在Activity中使用
+
+    listView.addOnScrollListener(new EndlessGridRecyclerOnScrollListener(layoutManager) {
+        @Override
+        public void onLoadMore(int currentPage) {
+            loadPage();
+        }
+    });
+
+如果RecyclerView包裹在NestedScrollView中,添加ScrollListener必须添加到NestedScrollView上,不然会出现RecyclerView不响应事件,无限循环加载的问题.
+
+    <android.support.v4.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior=    "@string/appbar_scrolling_view_behavior"
+        tools:context=".module.branddetail.BrandDetailActivity"
+        tools:showIn="@layout/activity_brand_detail"
+        android:id="@+id/scroll_view">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/brand_goods_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:nestedScrollingEnabled="false"
+            />
+
+    </android.support.v4.widget.NestedScrollView>
+
+继承NestedScrollView.OnScrollChangeListener
+
+    public abstract class EndlessParentScrollListener implements NestedScrollView.OnScrollChangeListener {
+        // The current offset index of data you have loaded
+        private int currentPage = 0;
+        // The total number of items in the dataset after the last load
+        private int previousTotalItemCount = 0;
+        // True if we are still waiting for the last set of data to load.
+        private boolean loading = true;
+        // Sets the starting page index
+        private int startingPageIndex = 0;
+        // The minimum amount of pixels to have below your current scroll position
+        // before loading more.
+        private int visibleThresholdDistance = 300;
+
+        GridLayoutManager mLayoutManager;
+
+        public EndlessParentScrollListener(GridLayoutManager layoutManager) {
+            this.mLayoutManager = layoutManager;
+        }
+
+        @Override
+        public void onScrollChange(NestedScrollView scrollView, int x, int y, int oldx, int oldy) {
+            // We take the last son in the scrollview
+            View view = scrollView.getChildAt(scrollView.getChildCount() - 1);
+            int distanceToEnd = (view.getBottom() - (scrollView.getHeight() + scrollView.getScrollY()));
+
+            int totalItemCount = mLayoutManager.getItemCount();
+            // If the total item count is zero and the previous isn't, assume the
+            // list is invalidated and should be reset back to initial state
+            if (totalItemCount < previousTotalItemCount) {
+                this.currentPage = this.startingPageIndex;
+                this.previousTotalItemCount = totalItemCount;
+                if (totalItemCount == 0) {
+                    this.loading = true;
+                }
+            }
+
+            // If it’s still loading, we check to see if the dataset count has
+            // changed, if so we conclude it has finished loading and update the current page
+            // number and total item count.
+            if (loading && (totalItemCount > previousTotalItemCount)) {
+                loading = false;
+                previousTotalItemCount = totalItemCount;
+            }
+
+            // If it isn’t currently loading, we check to see if we have breached
+            // the visibleThreshold and need to reload more data.
+            // If we do need to reload some more data, we execute onLoadMore to fetch the data.
+            // threshold should reflect how many total columns there are too
+            if (!loading && distanceToEnd <= visibleThresholdDistance) {
+                currentPage++;
+                onLoadMore(currentPage, totalItemCount);
+                loading = true;
+            }
+        }
+
+        // Defines the process for actually loading more data based on page
+        public abstract void onLoadMore(int page, int totalItemsCount);
+    }
+
+Activity中使用
+
+    nestedScrollView.setOnScrollChangeListener(new EndlessParentScrollListener(gridLayoutManager) {
+        @Override
+        public void onLoadMore(int page, int totalItemsCount) {
+            load();
+        }
+    });
+
 
