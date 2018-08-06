@@ -89,21 +89,21 @@ View类继承TasksContract.View接口,实现方法
 
 Presenter类继承TasksContract.Presenter接口并实现方法
 
-public class TasksPresenter implements TasksContract.Presenter {
-    private final TasksContract.View mTasksView;
+    public class TasksPresenter implements TasksContract.Presenter {
+        private final TasksContract.View mTasksView;
 
-    public TasksPresenter(@NonNull TasksRepository tasksRepository, @NonNull TasksContract.View tasksView) {
-        mTasksRepository = checkNotNull(tasksRepository, "tasksRepository cannot be null");
-        mTasksView = checkNotNull(tasksView, "tasksView cannot be null!");
-        mTasksView.setPresenter(this);
+        public TasksPresenter(@NonNull TasksRepository tasksRepository, @NonNull TasksContract.View tasksView) {
+            mTasksRepository = checkNotNull(tasksRepository, "tasksRepository cannot be null");
+            mTasksView = checkNotNull(tasksView, "tasksView cannot be null!");
+            mTasksView.setPresenter(this);
+        }
+
+
+        @Override
+        public void loadTasks(boolean forceUpdate) {
+            // Simplification for sample: a network reload will be forced on first load.
+            loadTasks(forceUpdate || mFirstLoad, true);
+            mFirstLoad = false;
+        }
+        
     }
-
-
-     @Override
-    public void loadTasks(boolean forceUpdate) {
-        // Simplification for sample: a network reload will be forced on first load.
-        loadTasks(forceUpdate || mFirstLoad, true);
-        mFirstLoad = false;
-    }
-    
-}
