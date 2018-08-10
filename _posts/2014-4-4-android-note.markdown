@@ -2438,5 +2438,79 @@ Activity中使用
 
 --------
 
+## View注入框架ButterKnife
 
+对一个成员变量使用@BindView注解，并传入一个View ID， ButterKnife 就能够帮你找到对应的View，并自动的进行转换       
+ButterKnife通过编译时对代码处理来执行View的查找,不占用性能
+
+### 使用方法
+
+导入库,添加依赖
+
+    dependencies {
+    implementation 'com.jakewharton:butterknife:8.8.1'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
+    }
+
+Activity中使用
+
+    //声明view的时候添加@InjectView注解
+    @BindView(R.id.ok_btn) //控件对应的ID
+    Button mBtn;
+
+    @BindView(R.id.title_text)
+    TextView mTitleTextView;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.main_activity);
+
+        //ButterKnife初始化
+        ButterKnife.inject(this);
+
+        //这样之后就可以直接使用变量了
+        mTitleTextView.setText("test");
+    }
+
+Fragment的和adapter里也可以用，不过调用时要多加一个root view参数。    
+Fragegment使用时记得同时继承onDestroyView，并在其中将ButterKnife.reset    
+
+    public class FancyFragment extends Fragment {
+    @BindView(R.id.button1) Button button1;
+    @BindView(R.id.button2) Button button2;
+
+    @Override View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fancy_fragment, container, false);
+        //添加root view参数
+        ButterKnife.inject(this, view);
+        return view;
+    }
+    }
+
+    @Override void onDestroyView() {
+        super.onDestroyView();
+        ButterKnife.reset(this);
+    }
+
+还能绑定String,Drawable,Color,Dimen资源
+
+    @BindString(R.string.title) String title;
+    @BindDrawable(R.drawable.graphic) Drawable graphic;
+    @BindColor(R.color.red) int red; // int or ColorStateList field
+    @BindDimen(R.dimen.spacer) Float spacer;
+
+一次绑定多个资源的操作,使用@BindViews
+
+    @BindViews({ R.id.first_name, R.id.middle_name, R.id.last_name })
+    List<EditText> nameViews;
+
+View绑定点击事件到方法
+
+    @OnClick(R.id.submit)
+    public void submit(View view) {
+        // TODO submit data to server...
+    }
+
+---------
 
