@@ -53,25 +53,103 @@ px 实际像素数,在不同分辨率设备上显示效果不同,不推荐使用
 
 	Button btn1 = findViewById(R.id.btn1);
 
+----------
+
 ## Activity 相关
 
 ### Activity的生命周期
 
+![Activity Lifescycle](http://android.okhelp.cz/wp-content/uploads/lifecycle-activity-android.png "Activity Lifescycle")
+
+__调用顺序__
+
 activity第一次创建时调用onCreate(), 经过onStart() 、onResume()变成foreground process（前景模式）。 弹出对话框时activity变成visible process（可见模式）,调用onPause().对话框交互结束调用onResume()返回前景模式.跳转到其他activity的时候调用onStop().跳转回来的时候经过
 onRestart(), onStart() 、onResume().Activity被结束的时候调用onDestroy().
 
+__方法解释__
+
+* onCreate() 方法实现一些初始化的工作,比如加载setContentView加载界面布局资源    
+* onStart() Activity正在被启动,但还没出现在前台,无法和用户交互    
+* onRestart() activity正在被重新启动,从桌面或者其他activity回来的时候调用    
+* onResume() activity已经可见,而且出现在前台并开始活动
+
+__Activity全屏__
+    
+    requestWindowFeature(Window.FEATURE_NO_TITLE);  //隐藏应用的ActionBar
+    getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+            WindowManager.LayoutParams.FLAG_FULLSCREEN);    //应用全屏,隐藏android的标题栏
+
+__activity启动模式__
+
+* standard (标准模式) 默认的启动模式,每次启动一个新的activity都创建一个新的实例到栈中,不管这个实例是否已经存在
+* singleTop (栈顶复用模式) 创建activity的时候如果栈顶已经是该活动,就直接使用不会重复创建.这个activity的onCreate,onStart不会被系统调用,因为它并没有发生改变
+* singleTask (栈内复用模式) 如果栈中已经有此activity则把这个活动之上的所有活动出栈.
+* singleInstance (单实例模式) 这个模式下的Activity单独在一个task栈中。这个栈只有一个Activity。
+
+设置方法
+
+    <activity
+    android:launchMode="singleTop"/>
+
+__activity跳转(带参数)__
+
+	Intent intent = new Intent(activity.this, MainActivity.class);
+    Bundle bundle = new Bundle();
+    Bundle bundle = new Bundle();
+    bundle.putString("key", "value");
+	startActivity(intent);
+	finish();
+
+    Bundle bundle = this.getIntent().getExtras();
+    String value = bundle.getString("key", "");
+
+__Intent的组成__
+
+Intent由6部分信息组成：Component Name、Action、Data、Category、Extras、Flags。根据信息的作用用于，又可分为三类:   
+
+* Component Name、Action、Data、Category为一类，这4中信息决定了Android会启动哪个组件，其中Component Name用于在显式Intent中使用，Action、Data、Category、Extras、Flags用于在隐式Intent中使用。
+
+* Extras为一类，里面包含了具体的用于组件实际处理的数据信息。
+* Flags为一类，其是Intent的元数据，决定了Android对其操作的一些行为
+
+Component Name是在显式Intent中指定目标Activity    
+Action是表示了要执行操作的字符串，比如查看或选择，其对应着Intent Filter中的action标签<action />    
+Data指的是Uri对象和数据的MIME类型，其对应着Intent Filter中的data标签<data />一个完整的Uri由scheme、host、port、path组成，格式是<scheme>://<host>:<port>/<path>，例如content://com.example.project:200/folder/subfolder/etc。    
+Category包含了关于组件如何处理Intent的一些其他信息，虽然可以在Intent中加入任意数量的category，但是大多数的Intent其实不需要category。
+Extras就是额外的数据信息，Intent中有一个Bundle对象存储着各种键值对，接收该Intent的组件可以从中读取出所需要的信息以便完成相应的工作。
+
+参考链接: http://lib.csdn.net/article/android/62966
+
+__startActivityForResult带参数跳转回传__
+
+在Android中startActivityForResult主要作用就是:      
+A-Activity需要在B-Activtiy中执行一些数据操作，而B-Activity又要将，执行操作数据的结果返回给A-Activtiy
+
+    //A-Activity跳转
+    Intent intent = new Intent(AddressesActivity.this, AddAddressActivity.class);
+    startActivityForResult(intent, StaticValues.ADDRESS_ACTION_UPDATE);
+
+    //返回A-Activity之后的回调方法
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
+            case StaticValues.ADDRESS_ACTION_UPDATE:
+                Bundle bundle = data.getExtras();
+                break;
+        }
+    }
+
+    //被调用的B-Activtiy返回值
+    Intent intent = new Intent();
+    Bundle bundle = new Bundle();
+    intent.putExtras(bundle);
+    //setResult的参数对应onActivityResult的resultCode和data
+    AddAddressActivity.this.setResult(StaticValues.RESULT_CODE_OK, intent);
+    AddAddressActivity.this.finish();
+
 Actitity之间跳转,分为显式跳转和隐式跳转
 
-### OnSavedInstance
-
-不算生命周期方法,作用是当发生异常(内存不足,强行退出,屏幕旋转)由系统销毁一个Activity的时候会调用onSaveInstanceState()方法,用来保存当前实例的状态.比如存储数据到sharedFeference中
-
-__调用时机__
-
-onSaveInstanceState()在Activity快要销毁的时候提前调用,比如按home键退出,屏幕旋转,back键返回都会调用    
-onRestoreInstanceState()在onStart() 和 onPostCreate(Bundle)之间调用。用来恢复现场    
-
-### 显式跳转
+__显式跳转__
 
     Intent intent=new Intent(this,OtherActivity.class);  //方法1
 
@@ -82,7 +160,7 @@ onRestoreInstanceState()在onStart() 和 onPostCreate(Bundle)之间调用。用�
     intent2.setComponent(new ComponentName(this, OtherActivity.class));  //方法4
     startActivity(intent2);
 
-### 隐式跳转（只要action、category、data和要跳转到的Activity在AndroidManifest.xml中设置的匹配就OK
+__隐式跳转（只要action、category、data和要跳转到的Activity在AndroidManifest.xml中设置的匹配就OK__
 
 隐式跳转不指定启动特定的Activity,需要判断action和category找到匹配的Actitity启动     
 AndroidManifest.xml文件中为每一个Activity中设置intent-filter来指定
@@ -113,82 +191,27 @@ AndroidManifest.xml文件中为每一个Activity中设置intent-filter来指定
 
 Android可以根据Intent所携带的信息去查找要启动的组件，Intent还携带了一些数据信息以便要启动的组件根据Intent中的这些数据做相应的处理。
 
-### Intent的组成
+__Intent filter的匹配规则__
 
-Intent由6部分信息组成：Component Name、Action、Data、Category、Extras、Flags。根据信息的作用用于，又可分为三类:   
+1. action的匹配规则    
+一个过滤规则中有多个action,Intent中的action和规则中的任一一个匹配成功即可.没有的话匹配失败
 
-* Component Name、Action、Data、Category为一类，这4中信息决定了Android会启动哪个组件，其中Component Name用于在显式Intent中使用，Action、Data、Category、Extras、Flags用于在隐式Intent中使用。
+2. category的匹配规则        
+入宫Intent中含有category,那么所有的category必须和过滤规则中的其中一个category相同.Intent中没有category也能匹配成功.系统在调用startActivity()的时候默认会添加"android.intent.category.DEFAULT"
 
-* Extras为一类，里面包含了具体的用于组件实际处理的数据信息。
-* Flags为一类，其是Intent的元数据，决定了Android对其操作的一些行为
+3. data的匹配原则    
+filter中定义了data,intent中也必须定义data.data包括scheme,host,port,path,pathPrefix,pathPattern参数.
 
-Component Name是在显式Intent中指定目标Activity    
-Action是表示了要执行操作的字符串，比如查看或选择，其对应着Intent Filter中的action标签<action />    
-Data指的是Uri对象和数据的MIME类型，其对应着Intent Filter中的data标签<data />一个完整的Uri由scheme、host、port、path组成，格式是<scheme>://<host>:<port>/<path>，例如content://com.example.project:200/folder/subfolder/etc。    
-Category包含了关于组件如何处理Intent的一些其他信息，虽然可以在Intent中加入任意数量的category，但是大多数的Intent其实不需要category。
-Extras就是额外的数据信息，Intent中有一个Bundle对象存储着各种键值对，接收该Intent的组件可以从中读取出所需要的信息以便完成相应的工作。
+### OnSavedInstance
 
-参考链接: http://lib.csdn.net/article/android/62966
+不算生命周期方法,作用是当发生异常(内存不足,强行退出,屏幕旋转)由系统销毁一个Activity的时候会调用onSaveInstanceState()方法,用来保存当前实例的状态.比如存储数据到sharedFeference中
 
-### Activity全屏    
-    
-    requestWindowFeature(Window.FEATURE_NO_TITLE);  //隐藏应用的ActionBar
-    getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-            WindowManager.LayoutParams.FLAG_FULLSCREEN);    //应用全屏,隐藏android的标题栏
+__调用时机__
 
-### activity的生命周期
+onSaveInstanceState()在Activity快要销毁的时候提前调用,比如按home键退出,屏幕旋转,back键返回都会调用    
+onRestoreInstanceState()在onStart() 和 onPostCreate(Bundle)之间调用。用来恢复现场    
 
-![Activity Lifescycle](http://android.okhelp.cz/wp-content/uploads/lifecycle-activity-android.png "Activity Lifescycle")
-
-### activity启动模式
-
-* standard 默认的启动模式,每次启动一个新的activity都创建一个新的实例到栈中.
-* singleTop 创建activity的时候如果栈顶已经是该活动,就直接使用不会重复创建.
-* singleTask 如果栈中已经有此activity则把这个活动之上的所有活动出栈.
-
-设置方法
-
-    <activity
-    android:launchMode="singleTop"/>
-
-### activity跳转(带参数)
-
-	Intent intent = new Intent(activity.this, MainActivity.class);
-    Bundle bundle = new Bundle();
-    Bundle bundle = new Bundle();
-    bundle.putString("key", "value");
-	startActivity(intent);
-	finish();
-
-    Bundle bundle = this.getIntent().getExtras();
-    String value = bundle.getString("key", "");
-
-## startActivityForResult带参数跳转回传
-
-在Android中startActivityForResult主要作用就是:      
-A-Activity需要在B-Activtiy中执行一些数据操作，而B-Activity又要将，执行操作数据的结果返回给A-Activtiy
-
-    //A-Activity跳转
-    Intent intent = new Intent(AddressesActivity.this, AddAddressActivity.class);
-    startActivityForResult(intent, StaticValues.ADDRESS_ACTION_UPDATE);
-
-    //返回A-Activity之后的回调方法
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        switch (requestCode) {
-            case StaticValues.ADDRESS_ACTION_UPDATE:
-                Bundle bundle = data.getExtras();
-                break;
-        }
-    }
-
-    //被调用的B-Activtiy返回值
-    Intent intent = new Intent();
-    Bundle bundle = new Bundle();
-    intent.putExtras(bundle);
-    //setResult的参数对应onActivityResult的resultCode和data
-    AddAddressActivity.this.setResult(StaticValues.RESULT_CODE_OK, intent);
-    AddAddressActivity.this.finish();
+--------
 
 ### 输出log日志
 
@@ -203,6 +226,8 @@ A-Activity需要在B-Activtiy中执行一些数据操作，而B-Activity又要�
 * Log.i();  调试信息,对应级别info
 * Log.w();  警告信息,对应级别warning
 * Log.e();  错误信息,对应级别error
+
+--------
 
 ### RelativeLayout属性
 
