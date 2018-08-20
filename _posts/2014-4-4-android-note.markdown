@@ -235,9 +235,333 @@ __多进程模式__
 * Application多次创建
 * SharedReference可靠性下降
 
+__进程间通信,使用AIDL__
 
+实现一个运行在另一个进程中的Service
+
+AndroidManifest.xml
+
+    <service
+        android:name=".BookManagerService"
+        android:enabled="true"
+        android:process=":remote"
+        android:exported="true"></service>
+
+被传输bean类需要实现Parcelable接口
+
+    public class Book implements Parcelable {
+        public int id;
+        public String name;
+
+        public Book(int id, String name) {
+            this.id = id;
+            this.name = name;
+        }
+
+        protected Book(Parcel in) {
+            id = in.readInt();
+            name = in.readString();
+        }
+
+        public static final Creator<Book> CREATOR = new Creator<Book>() {
+            @Override
+            public Book createFromParcel(Parcel in) {
+                return new Book(in);
+            }
+
+            @Override
+            public Book[] newArray(int size) {
+                return new Book[size];
+            }
+        };
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(Parcel dest, int flags) {
+            dest.writeInt(id);
+            dest.writeString(name);
+        }
+    }
+
+创建一个AIDL文件,定义接口和接口方法
+
+    interface IBookManagerInterface {
+        List getBookList();
+        void addBook(in int id, in String name);
+    }
+
+调用侧Activity
+
+    public class MainActivity extends AppCompatActivity {
+
+        private IBookManagerInterface iBookManagerInterface;
+
+        private ServiceConnection serviceConnection = new ServiceConnection() {
+            @Override
+            public void onServiceConnected(ComponentName name, IBinder service) {
+                iBookManagerInterface = IBookManagerInterface.Stub.asInterface(service);
+            }
+
+            @Override
+            public void onServiceDisconnected(ComponentName name) {
+
+            }
+        };
+
+        protected void onCreate(Bundle savedInstanceState) {
+            ...
+            // 创建服务
+            Intent intent = new Intent(this, BookManagerService.class);
+            //绑定服务和ServiceConnection
+            bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
+        }
+
+        iBookManagerInterface.addBook(5, "New Book 005");
+        List<Book> bookList = iBookManagerInterface.getBookList();
+    }
+
+被调用侧Service
+
+    public class BookManagerService extends Service {
+        public BookManagerService() {
+        }
+
+        private CopyOnWriteArrayList<Book> bookList;
+
+        @Override
+        public void onCreate() {
+            super.onCreate();
+
+            bookList = new CopyOnWriteArrayList<Book>();
+            bookList.add(new Book(1, "Book 001"));
+            bookList.add(new Book(2, "Book 002"));
+            bookList.add(new Book(3, "Book 003"));
+            bookList.add(new Book(4, "Book 004"));
+
+        }
+
+        //创建Binder
+        private Binder mBinder = new IBookManagerInterface.Stub() {
+            //实现AIDL中的接口方法
+            @Override
+            public List getBookList() throws RemoteException {
+                return bookList;
+            }
+
+            @Override
+            public void addBook(int id, String name) throws RemoteException {
+                bookList.add(new Book(id, name));
+            }
+        };
+
+        //绑定Binder
+        @Override
+        public IBinder onBind(Intent intent) {
+            return mBinder;
+        }
+    }
 
 --------
+
+### Android 手势相关
+
+首先定义GestureDetector
+
+    GestureDetector mGestureDetector = new GestureDetector(this, new GestureDetector.OnGestureListener() {
+        @Override
+        //当手指按下的时候触发下面的方法
+        public boolean onDown(MotionEvent e) {
+            Toast.makeText(MainActivity.this, "Press Down", Toast.LENGTH_SHORT).show();
+            return true;
+        }
+
+        @Override
+        //当用户手指在屏幕上按下,而且还未移动和松开的时候触发这个方法
+        public void onShowPress(MotionEvent e) {
+
+        }
+
+        @Override
+        //当手指在屏幕上轻轻点击的时候触发下面的方法
+        public boolean onSingleTapUp(MotionEvent e) {
+            return false;
+        }
+
+        @Override
+        //当手指在屏幕上滚动的时候触发这个方法
+        public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+            return false;
+        }
+
+        @Override
+        //当用户手指在屏幕上长按的时候触发下面的方法
+        public void onLongPress(MotionEvent e) {
+            Toast.makeText(MainActivity.this, "Long pressed", Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        //当用户的手指在触摸屏上拖过的时候触发下面的方法,velocityX代表横向上的速度,velocityY代表纵向上的速度
+        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+            return false;
+        }
+    });
+
+组件应用touch事件, 将touch事件交给gesture处理
+
+    button = (Button) findViewById(R.id.test_btn);
+    button.setOnTouchListener(new View.OnTouchListener() {
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            mGestureDetector.onTouchEvent(event);
+            return true;
+        }
+    });
+
+--------
+
+## View绘制的过程
+
+各种组件都是ViewGroup的子类,ViewGroup是View的子类,view结构如下
+
+![view结构](http://zhaowen.io/post/Android_Dive_Deep_In_View/decor_view.jpg)
+
+Android的UI界面是一个树形结构,View的嵌套.子View在父View中，这些View都经过一个相同的流程最终显示到屏幕上    
+每一个View的绘制都有Measure,Layout,Draw三个步骤的过程
+
+measure -> onMeasure() -> layout -> onLayout() -> draw -> onDraw()
+
+* Measure()    
+测量视图的大小
+
+* Layout()    
+计算视图的位置
+
+* Draw()    
+视图绘制到屏幕上
+
+meaure会经历performMeaure -> meaure -> onMeaure 的调用过程,其他两个也是同样    
+视图绘制过程中会回调onMeasure(), onLayout(), onDraw()方法,自定义View的时候需要重写这三个方法    
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+    }
+
+    @Override
+    protected void onLayout(boolean changed, int l, int t, int r, int b) {
+        super.onLayout(changed, l, t, r, b);
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+    }
+
+点击屏幕的事件顺序 DOWN->UP
+滑动屏幕的事件顺序 DOWN->MOVE...->UP
+
+widthMeasureSpec和heightMeasureSpec是测量的view的尺寸    
+其中高两位是模式    
+模式分为一下三种    
+
+* EXACTLY 当View的layout_width和layout_height设置的是固定值的时候
+* AT_MOST 控件的layout_width和layout_height设置成wrap_content的时候,控件的大小随着子控件的大小变化.
+* UNSPECIFIED 不指定测量的大小
+
+__重写onMeasure__
+
+    //widthMeasureSpec和heightMeasureSpec是当前的测量宽高
+    onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        //getMode用来获取测量模式
+        int wMode = MeasureSpec.getMode(widthMeasureSpec);
+        int hMode = MeasureSpec.getMode(widthMeasureSpec);
+
+        //getSize用来从Spec中获取尺寸
+        int width = MeasureSpec.getSize(widthMeasureSpec);
+        int height = MeasureSpec.getSize(heightMeasureSpec);
+
+        getPaddingLeft/Right/Top/Bottom获取Padding尺寸,需要在view中手动减去padding否则设置的padding值无效
+
+        //mode和size重新组合成Spec
+        int resultWidthMeasureSpec = MeasureSpec.makeMeasureSpec(width, wMode);
+        int resultHeightMeasureSpec = MeasureSpec.makeMeasureSpec(height, hMode);
+
+        //返回设置的尺寸
+        super.onMeasure(resultWidthMeasureSpec, resultHeightMeasureSpec);
+    }
+
+__重写onLayout__
+
+onLayout方法确定ViewGroup所有的子元素的位置
+
+__自定义View需要注意的地方__
+
+* View支持wrap_content    
+* View支持padding,就是设置padding值的时候onMeasure函数返回的尺寸减去padding值    
+* 使用post方法来传递信息,尽量不使用Handler   
+* onDetatchedFromVindow方法加载动画和线程,onDetachedFromWindow方法停止动画和线程,防止一直占用系统资源导致OOM   
+* View有滑动时处理滑动冲突
+
+## View的事件分发机制
+
+每一个view都有三个方法来处理点击事件
+
+* dispatchTouchEvent 用于事件的分发,如果传递到当前view,一定会调用这个   
+* onInterruptTouchEvent 用于判断是否拦截某个事件,被dispatchTouchEvent调用
+* onTouchEvent 拦截之后处理点击事件,被onInterruptTouchEvent调用
+
+点击事件是递归传递的按顺序为 Activity -> Window -> View,从顶级ViewGroup一级一级向下直到目标view进行处理.    
+每个view收到点击事件后会寻找遍历自己的子view分发事件.如果子view能处理则由子view处理,没有的话就由当前view进行处理.    
+判断的依据是 1.能处理click事件 2.点击的坐标在view的范围内 3.view设置的允许响应事件enable=true.   
+
+如果View设置了touchListener,onTouch的返回值(boolean)决定onTouchEvent是否会被回调.如果onTouch返回了false,则会调用上级的onTouchEvent
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        return super.dispatchTouchEvent(ev);
+    }
+
+MotionEvent 是手指触控屏幕产生的一系列事件, 主要有以下几种
+
+* ACTION_DOWN    
+* ACTION_UP    
+* ACTION_MOVE    
+
+### 处理滑动冲突的问题
+
+* 内外滑动方向一致的情况
+* 内外滑动方向不一致的情况
+
+__解决方法__
+
+1. 重写父容器的onInterruptTouchEvent方法, 判断是否拦截事件.    
+2. 父容器不拦截任何的方法,
+
+## 自定义控件的实现过程
+
+* 自定义属性的声明和获取    
+    分析需要的自定义属性
+    在res/values/attrs.xml定义声明
+    在layout文件中进行使用
+    在View的构造方法中进行获取
+
+* 测量onMeasure
+
+* 布局onLayout(ViewGroup)
+
+* 绘制onDraw
+
+* onTouchEvent
+
+* onInterceptTouchEvent(ViewGroup)
+
+* 状态的恢复与保存
+
+---------
 
 ### 输出log日志
 
@@ -1535,60 +1859,6 @@ Menu的定义方法
 
 --------
 
-### Android 手势相关
-
-首先定义GestureDetector
-
-    GestureDetector mGestureDetector = new GestureDetector(this, new GestureDetector.OnGestureListener() {
-        @Override
-        //当手指按下的时候触发下面的方法
-        public boolean onDown(MotionEvent e) {
-            Toast.makeText(MainActivity.this, "Press Down", Toast.LENGTH_SHORT).show();
-            return true;
-        }
-
-        @Override
-        //当用户手指在屏幕上按下,而且还未移动和松开的时候触发这个方法
-        public void onShowPress(MotionEvent e) {
-
-        }
-
-        @Override
-        //当手指在屏幕上轻轻点击的时候触发下面的方法
-        public boolean onSingleTapUp(MotionEvent e) {
-            return false;
-        }
-
-        @Override
-        //当手指在屏幕上滚动的时候触发这个方法
-        public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-            return false;
-        }
-
-        @Override
-        //当用户手指在屏幕上长按的时候触发下面的方法
-        public void onLongPress(MotionEvent e) {
-            Toast.makeText(MainActivity.this, "Long pressed", Toast.LENGTH_SHORT).show();
-        }
-
-        @Override
-        //当用户的手指在触摸屏上拖过的时候触发下面的方法,velocityX代表横向上的速度,velocityY代表纵向上的速度
-        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-            return false;
-        }
-    });
-
-组件应用touch事件, 将touch事件交给gesture处理
-
-    button = (Button) findViewById(R.id.test_btn);
-    button.setOnTouchListener(new View.OnTouchListener() {
-        @Override
-        public boolean onTouch(View v, MotionEvent event) {
-            mGestureDetector.onTouchEvent(event);
-            return true;
-        }
-    });
-
 ### 定时器Timer和TimerTask
 
 在开发中我们有时会有这样的需求，即在固定的每隔一段时间执行某一个任务。比如UI上的控件需要随着时间改变，我们可以使用Java为我们提供的计时器的工具类，即Timer和TimerTask。   
@@ -1689,144 +1959,6 @@ Timer就是一个线程，使用schedule方法完成对TimerTask的调度，多�
             }  
         };  
     }  
-
-## View绘制的过程
-
-各种组件都是ViewGroup的子类,ViewGroup是View的子类,view结构如下
-
-![view结构](http://zhaowen.io/post/Android_Dive_Deep_In_View/decor_view.jpg)
-
-Android的UI界面是一个树形结构,View的嵌套.子View在父View中，这些View都经过一个相同的流程最终显示到屏幕上    
-每一个View的绘制都有Measure,Layout,Draw三个步骤的过程
-
-measure -> onMeasure() -> layout -> onLayout() -> draw -> onDraw()
-
-* Measure()    
-测量视图的大小
-
-* Layout()    
-计算视图的位置
-
-* Draw()    
-视图绘制到屏幕上
-
-meaure会经历performMeaure -> meaure -> onMeaure 的调用过程,其他两个也是同样    
-视图绘制过程中会回调onMeasure(), onLayout(), onDraw()方法,自定义View的时候需要重写这三个方法    
-
-    @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-    }
-
-    @Override
-    protected void onLayout(boolean changed, int l, int t, int r, int b) {
-        super.onLayout(changed, l, t, r, b);
-    }
-
-    @Override
-    protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-    }
-
-点击屏幕的事件顺序 DOWN->UP
-滑动屏幕的事件顺序 DOWN->MOVE...->UP
-
-widthMeasureSpec和heightMeasureSpec是测量的view的尺寸    
-其中高两位是模式    
-模式分为一下三种    
-
-* EXACTLY 当View的layout_width和layout_height设置的是固定值的时候
-* AT_MOST 控件的layout_width和layout_height设置成wrap_content的时候,控件的大小随着子控件的大小变化.
-* UNSPECIFIED 不指定测量的大小
-
-__重写onMeasure__
-
-    //widthMeasureSpec和heightMeasureSpec是当前的测量宽高
-    onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        //getMode用来获取测量模式
-        int wMode = MeasureSpec.getMode(widthMeasureSpec);
-        int hMode = MeasureSpec.getMode(widthMeasureSpec);
-
-        //getSize用来从Spec中获取尺寸
-        int width = MeasureSpec.getSize(widthMeasureSpec);
-        int height = MeasureSpec.getSize(heightMeasureSpec);
-
-        getPaddingLeft/Right/Top/Bottom获取Padding尺寸,需要在view中手动减去padding否则设置的padding值无效
-
-        //mode和size重新组合成Spec
-        int resultWidthMeasureSpec = MeasureSpec.makeMeasureSpec(width, wMode);
-        int resultHeightMeasureSpec = MeasureSpec.makeMeasureSpec(height, hMode);
-
-        //返回设置的尺寸
-        super.onMeasure(resultWidthMeasureSpec, resultHeightMeasureSpec);
-    }
-
-__重写onLayout__
-
-onLayout方法确定ViewGroup所有的子元素的位置
-
-__自定义View需要注意的地方__
-
-* View支持wrap_content    
-* View支持padding,就是设置padding值的时候onMeasure函数返回的尺寸减去padding值    
-* 使用post方法来传递信息,尽量不使用Handler   
-* onDetatchedFromVindow方法加载动画和线程,onDetachedFromWindow方法停止动画和线程,防止一直占用系统资源导致OOM   
-* View有滑动时处理滑动冲突
-
-## View的事件分发机制
-
-每一个view都有三个方法来处理点击事件
-
-* dispatchTouchEvent 用于事件的分发,如果传递到当前view,一定会调用这个   
-* onInterruptTouchEvent 用于判断是否拦截某个事件,被dispatchTouchEvent调用
-* onTouchEvent 拦截之后处理点击事件,被onInterruptTouchEvent调用
-
-点击事件是递归传递的按顺序为 Activity -> Window -> View,从顶级ViewGroup一级一级向下直到目标view进行处理.    
-每个view收到点击事件后会寻找遍历自己的子view分发事件.如果子view能处理则由子view处理,没有的话就由当前view进行处理.    
-判断的依据是 1.能处理click事件 2.点击的坐标在view的范围内 3.view设置的允许响应事件enable=true.   
-
-如果View设置了touchListener,onTouch的返回值(boolean)决定onTouchEvent是否会被回调.如果onTouch返回了false,则会调用上级的onTouchEvent
-
-    @Override
-    public boolean dispatchTouchEvent(MotionEvent ev) {
-        return super.dispatchTouchEvent(ev);
-    }
-
-MotionEvent 是手指触控屏幕产生的一系列事件, 主要有以下几种
-
-* ACTION_DOWN    
-* ACTION_UP    
-* ACTION_MOVE    
-
-### 处理滑动冲突的问题
-
-* 内外滑动方向一致的情况
-* 内外滑动方向不一致的情况
-
-__解决方法__
-
-1. 重写父容器的onInterruptTouchEvent方法, 判断是否拦截事件.    
-2. 父容器不拦截任何的方法,
-
-## 自定义控件的实现过程
-
-* 自定义属性的声明和获取    
-    分析需要的自定义属性
-    在res/values/attrs.xml定义声明
-    在layout文件中进行使用
-    在View的构造方法中进行获取
-
-* 测量onMeasure
-
-* 布局onLayout(ViewGroup)
-
-* 绘制onDraw
-
-* onTouchEvent
-
-* onInterceptTouchEvent(ViewGroup)
-
-* 状态的恢复与保存
 
 __Android平台从其它线程访问主线程主要有以下几种方式：__
 
