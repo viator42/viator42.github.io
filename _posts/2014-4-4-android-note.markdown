@@ -213,6 +213,32 @@ onRestoreInstanceState()在onStart() 和 onPostCreate(Bundle)之间调用。用�
 
 --------
 
+## IPC机制
+
+IPC为跨进程通信
+
+跨进程通信使用的时机: 1.破解单个应用所使用的最大内存数的限制,把耗内存的操作放到单独的进程中运行. 2.ContentProvider实际也是使用的进程间通信
+
+__多进程模式__
+
+开启多进程模式
+
+    <activity
+        ...
+        android:process:":remote">
+    >
+
+添加了process属性之后这个activity就相当于运行在了一个单独的进程中,跟单进程相比
+
+* 静态成员,单例模式失效
+* 线程同步机制失效
+* Application多次创建
+* SharedReference可靠性下降
+
+
+
+--------
+
 ### 输出log日志
 
 	import android.util.Log;
@@ -260,7 +286,9 @@ onRestoreInstanceState()在onStart() 和 onPostCreate(Bundle)之间调用。用�
   android:layout_marginRight 离某元素右边缘的距离    
   android:layout_marginTop 离某元素上边缘的距离    
 
-### SharedReference
+--------
+
+## SharedReference
 
 	//获取SharedPreferences实例     第一个参数是名称, 第二个是作用域
 	SharedPreferences ref = getSharedPreferences("user", Context.MODE_PRIVATE);
@@ -278,7 +306,9 @@ onRestoreInstanceState()在onStart() 和 onPostCreate(Bundle)之间调用。用�
 	//完成后提交修改
 	editor.commit();
 
-### Fragment (Android4 以上)
+--------
+
+## Fragment (Android4 以上)
 
 __Fragment生命周期__
 ![Fragment Lifescycle](http://indy-world.net/wp-content/uploads/2014/08/fragment_lifecycle.png "Fragment Lifescycle")
