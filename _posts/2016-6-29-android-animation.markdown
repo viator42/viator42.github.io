@@ -5,8 +5,13 @@ date:   2016-06-29
 categories: android
 ---
 
+Android动画分为View动画,帧动画和视图动画    
+
+---------
+
 ## 视图动画
-视图动画有两种定义方法,一种是xml定义,另一种是通过代码生成
+View动画只支持平移,缩放,旋转,透明度的变换效果,通过状态的渐变来产生动画效果.        
+View动画有两种定义方法,一种是xml定义,另一种是通过代码生成    
 
 ### xml定义    
 在res/anim下创建动画定义的xml文件,格式如下    
@@ -92,39 +97,9 @@ categories: android
     alphaAnimation.setDuration(200);
     v.startAnimation(alphaAnimation);
 
-## 属性动画
+__View动画可以在ViewGroup中控制子元素的出场效果,或者Activity之间的切换效果__
 
-Android 3.0之后出现了属性动画.    
-视图动画(补间动画)只能作用于View对象,而且只有移动,旋转,尺寸变化,透明度四种效果.只改变View的显示外观不能修改属性
-属性动画是通过对目标对象不断的修改属性来实现动画效果
-
-__有关类__
-
-ValueAnimator    
-属性动画的运行机制是通过不断地对值进行操作来实现的，而初始值和结束值之间的动画过渡就是由ValueAnimator这个类来负责计算的。相当于一个计数器
-
-    ValueAnimator valueAnimator = ValueAnimator.ofInt(0,100);
-    valueAnimator.setDuration(1000);
-    valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-        @Override
-        public void onAnimationUpdate(ValueAnimator animation) {
-            Log.v("AnimateValue", String.valueOf(animation.getAnimatedValue()));
-        }
-    });
-    valueAnimator.start();
-
-ObjectAnimator    
-对任意的对象进行动画操作的类
-
-    ObjectAnimator animator = ObjectAnimator.ofFloat(destTextView, "alpha", 1f, 0f, 1f);
-    animator.setDuration(5000);
-    animator.start();
-
-参数: 执行动画的view, 改变的属性, 之后的数字是属性值的变化列表,属性值会按次序改变
-
-
-
-## Activity 跳转动画
+#### Activity跳转的动画效果
 
 在startActivity后面调用overridePendingTransition,两个参数代表新Activty进入和旧Activty退出的动画,两个动画注意时间必须相等
 
@@ -139,7 +114,7 @@ Activty退出的时候也可以使用动画,在onBackPressed方法中使用
         overridePendingTransition(R.anim.wrap_exit_in,R.anim.wrap_exit_out);
     }
 
-#### 动画示例
+__示例__
 
 新Activity向左滑动进入,向右滑动退出
 
@@ -174,6 +149,42 @@ Activty退出的时候也可以使用动画,在onBackPressed方法中使用
         android:fromXDelta="0%p"
         android:toXDelta="100%p"
         android:fillAfter="true"/>
+
+--------
+
+## 属性动画
+
+Android 3.0之后出现了属性动画.    
+视图动画(补间动画)只能作用于View对象,而且只有移动,旋转,尺寸变化,透明度四种效果.只改变View的显示外观不能修改属性
+属性动画是通过对目标对象不断的修改属性来实现动画效果
+
+__有关类__
+
+ValueAnimator    
+属性动画的运行机制是通过不断地对值进行操作来实现的，通过不断控制值的变化，再不断手动赋给对象的属性，从而实现动画效果。而初始值和结束值之间的动画过渡就是由ValueAnimator这个类来负责计算的。相当于一个计数器
+
+    ValueAnimator valueAnimator = ValueAnimator.ofInt(0,100);
+    valueAnimator.setDuration(1000);
+    valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+        @Override
+        public void onAnimationUpdate(ValueAnimator animation) {
+            Log.v("AnimateValue", String.valueOf(animation.getAnimatedValue()));
+        }
+    });
+    valueAnimator.start();
+
+ObjectAnimator    
+对任意的对象进行动画操作的类
+
+    ObjectAnimator animator = ObjectAnimator.ofFloat(destTextView, "alpha", 1f, 0f, 1f);
+    animator.setDuration(5000);
+    animator.start();
+
+参数: 执行动画的view, 改变的属性, 之后的数字是属性值的变化列表,属性值会按次序改变
+
+ValueAnimator类    
+属性动画机制中 最核心的一个类    
+实现动画的原理：通过不断控制 值 的变化，再不断 手动 赋给对象的属性，从而实现动画效果。
 
 ### 多重动画
 
