@@ -173,6 +173,48 @@ ValueAnimator
     });
     valueAnimator.start();
 
+ValueAnimator类    
+属性动画机制中 最核心的一个类    
+实现动画的原理：通过不断控制 值 的变化，再不断 手动 赋给对象的属性，从而实现动画效果。
+
+ValueAnimatior类的方法
+
+ofInt()       
+ofFloat()
+ofObject()    
+
+ifInt(0, 100, 0) 参数为任意多个整形数,赋给对象的值在这些范围内变化,从开始值过渡到结束值,ofFloat同理
+
+ofObject() 将初始值以对象的形式过渡到结束值
+
+使用object类型作为动画数值范围需要自定义TypeEvaluator(估值器)
+
+    TypeEvaluator<Point> typeEvaluator = new TypeEvaluator<Point>() {
+        @Override
+        public Point evaluate(float fraction, Point startValue, Point endValue) {
+            long newX = (long) (fraction * (endValue.x - startValue.x));
+            long newY = (long) (fraction * (endValue.y - startValue.y));
+
+            return new Point(newX, newY);
+        }
+    };
+
+    Point p1 = new Point(0, 0);
+    Point p2 = new Point(30, 50);
+    ValueAnimator valueAnimator1 = ValueAnimator.ofObject(typeEvaluator, p1, p2);
+    valueAnimator1.setDuration(1000);
+    valueAnimator1.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+        @Override
+        public void onAnimationUpdate(ValueAnimator animation) {
+            Point point = (Point) animation.getAnimatedValue();
+            Log.v("ValueAnimator", point.toString());
+
+        }
+    });
+    valueAnimator1.start();
+
+--------
+
 ObjectAnimator    
 对任意的对象进行动画操作的类
 
@@ -182,9 +224,55 @@ ObjectAnimator
 
 参数: 执行动画的view, 改变的属性, 之后的数字是属性值的变化列表,属性值会按次序改变
 
-ValueAnimator类    
-属性动画机制中 最核心的一个类    
-实现动画的原理：通过不断控制 值 的变化，再不断 手动 赋给对象的属性，从而实现动画效果。
+ObjectAnimator与 ValueAnimator类的区别：    
+
+* ValueAnimator 类是先改变值，然后 手动赋值 给对象的属性从而实现动画；是 间接 对对象属性进行操作；
+* ObjectAnimator 类是先改变值，然后 自动赋值 给对象的属性从而实现动画；是 直接 对对象属性进行操作；
+
+### 组合动画AnimationSet类
+
+* AnimatorSet.play(Animator anim) ：播放当前动画 
+* AnimatorSet.after(long delay) ：将现有动画延迟x毫秒后执行 
+* AnimatorSet.with(Animator anim) ：将现有动画和传入的动画同时执行 
+* AnimatorSet.after(Animator anim) ：将现有动画插入到传入的动画之后执行 
+* AnimatorSet.before(Animator anim) ： 将现有动画插入到传入的动画之前执行
+
+组合动画使用
+
+AnimatorSet animSet = new AnimatorSet();    //创建Animationset  
+animSet.play(anim1).with(anim2).before(anim3);  //组合播放动画的策略
+animSet.setDuration(5000);  //播放动画
+animSet.start();
+
+或者说在xml文件中定义动画集合
+
+__set_animation.xml__
+
+    <set android:ordering="together" > 
+        // 下面的动画同时进行 
+        <objectAnimator 
+            android:duration="2000" 
+            android:propertyName="translationX" 
+            android:valueFrom="0"
+            android:valueTo="300"
+            android:valueType="floatType" > 
+        </objectAnimator>
+        <objectAnimator 
+            android:duration="3000" 
+            android:propertyName="rotation"
+            android:valueFrom="0" 
+            android:valueTo="360" 
+            android:valueType="floatType" > 
+            </objectAnimator> 
+    </set>
+
+使用动画集合
+
+    AnimatorSet animator = (AnimatorSet) AnimatorInflater.loadAnimator(this, R.animator.set_animation);
+    animator.setTarget(targetView);
+    animator.start();
+
+---------
 
 ### 多重动画
 
@@ -210,6 +298,8 @@ ValueAnimator类
 
                 }
             });
+
+--------
 
 ## 逐帧动画
 
