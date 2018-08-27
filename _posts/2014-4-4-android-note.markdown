@@ -506,6 +506,8 @@ __自定义View需要注意的地方__
 * onDetatchedFromVindow方法加载动画和线程,onDetachedFromWindow方法停止动画和线程,防止一直占用系统资源导致OOM   
 * View有滑动时处理滑动冲突
 
+---------
+
 ## View的事件分发机制
 
 每一个view都有三个方法来处理点击事件
@@ -529,7 +531,9 @@ MotionEvent 是手指触控屏幕产生的一系列事件, 主要有以下几种
 
 * ACTION_DOWN    
 * ACTION_UP    
-* ACTION_MOVE    
+* ACTION_MOVE
+
+--------
 
 ### 处理滑动冲突的问题
 
@@ -540,6 +544,48 @@ __解决方法__
 
 1. 重写父容器的onInterruptTouchEvent方法, 判断是否拦截事件.    
 2. 父容器不拦截任何的方法,
+
+解决滑动冲突的一个示例
+
+    public class ViewPagerX extends ViewPager {
+        private int lastX;
+        private int lastY;
+
+        public ViewPagerX(Context context, AttributeSet attrs) {
+            super(context, attrs);
+        }
+
+        @Override
+        public boolean dispatchTouchEvent(MotionEvent ev) {
+            int x = (int) ev.getX();
+            int y = (int) ev.getY();
+
+            switch (ev.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    super.requestDisallowInterceptTouchEvent(true);
+                    break;
+
+                case MotionEvent.ACTION_MOVE:
+                    int deltaX = x - lastX;
+                    int deltaY = y - lastY;
+
+                    if (Math.abs(deltaX) < Math.abs(deltaY)) {
+                        super.requestDisallowInterceptTouchEvent(false);
+                    }
+                    break;
+
+                case MotionEvent.ACTION_UP:
+                    super.requestDisallowInterceptTouchEvent(false);
+                    break;
+            }
+            lastX = x;
+            lastY = y;
+
+            return super.dispatchTouchEvent(ev);
+        }
+    }
+
+--------
 
 ## 自定义控件的实现过程
 
