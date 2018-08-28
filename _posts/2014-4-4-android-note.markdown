@@ -423,6 +423,17 @@ AndroidManifest.xml
 
 --------
 
+## View滑动相关
+
+一般有三种方法实现View滑动,ScrollTo或者ScrollBy方法,使用动画效果,通过改变LayoutParams使View重新布局
+
+ScrollTo()和ScrollBy()的区别
+
+* scrollTo的两个参数x,y表示的移动的具体位置(目标位置x,y)，scrollTo实现了基于传递参数的绝对滑动。
+* scrollBy的两个参数x,y表示移动的偏移量，scrollBy实现了基于传递参数的相对滑动。
+
+--------
+
 ## View绘制的过程
 
 各种组件都是ViewGroup的子类,ViewGroup是View的子类,view结构如下
@@ -493,6 +504,13 @@ __重写onMeasure__
         //返回设置的尺寸
         super.onMeasure(resultWidthMeasureSpec, resultHeightMeasureSpec);
     }
+
+__ViewGroup的Measure过程__
+
+ViewGroup除了测量自己的尺寸还要测量所有子元素的尺寸.
+
+    getChildCount();    //获取子元素的个数
+    View view = getChildAt(index); //获取子元素
 
 __重写onLayout__
 
