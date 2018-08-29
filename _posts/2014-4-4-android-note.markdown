@@ -2996,3 +2996,9 @@ Dagger是Android使用的依赖注入框架
 
     ClothComponent clothComponent = DaggerClothComponent.create();
             clothComponent.inject(this);
+
+--------
+
+## Window和WindowManager相关
+
+
