@@ -378,7 +378,143 @@ AndroidManifest.xml
 广播机制是一个发布-订阅模式,发布者负责发送广播,接收者监听广播.发布方不管接收方是否收到广播    
 广播分为发送的Broadcast,接收的BroadcastReceiver和传递信息的Intent
 
+广播分为普通广播,有序广播,本地广播,sticky广播
 
+### 普通广播示例
+
+AndroidManifest.xml定义
+
+    <receiver android:name=".TesterBroadcastReceiver" >
+        <intent-filter>
+            <action android:name="intent.action.ACTION_TESTER"></action>
+        </intent-filter>
+    </receiver>
+
+创建广播接收器BroadcastReceiver类
+
+    public class TesterBroadcastReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Bundle bundle = intent.getExtras();
+            Log.v("TesterBroadcastReceiver", bundle.getString("msg"));
+        }
+    }
+
+注册广播
+
+    testerBroadcastReceiver = new TesterBroadcastReceiver();
+    registerReceiver(testerBroadcastReceiver, new IntentFilter("intent.action.ACTION_TESTER"));
+
+发送广播
+
+    Intent intent = new Intent("intent.action.ACTION_TESTER");
+    Bundle bundle = new Bundle();
+    bundle.putString("msg", "This is an Recv msg");
+    intent.putExtras(bundle);
+
+    sendBroadcast(new Intent(intent));
+
+__有序广播__
+
+通过sendOrderedBroadcast()发送,
+
+AndroidManifest定义中加上priority, 数字越大优先级越高
+
+    <receiver android:name=".TesterBroadcastReceiver" >
+            <intent-filter android:priority="100">
+                <action android:name="intent.action.ACTION_TESTER"></action>
+            </intent-filter>
+        </receiver>
+
+发送广播使用sendOrderedBroadcast, 其中第二个参数是设置权限，即接收器必须具有相应的权限才能正常接收到广播,权限可以是系统权限也可以是自定义权限。
+
+    sendOrderedBroadcast(new Intent(intent), null);
+
+__本地广播__
+
+其他的广播是全局的,发送后所有的应用都能接收到,本地广播是只限进程内能收到    
+通常用法是关闭应用的时候发一条本地广播,每个Activity收到后执行finish()
+
+__Sticky__
+
+--------
+
+## ContentProvider
+
+### 作用    
+为应用提供对外的CURD接口.系统或者其他应用可以通过此接口进行数据的查询添加删除操作.
+
+### 实现
+
+#### 定义Provider类    
+
+    public class TesterProvider extends ContentProvider {
+        public TesterProvider() {
+        }
+
+        @Override
+        public int delete(Uri uri, String selection, String[] selectionArgs) {
+            // Implement this to handle requests to delete one or more rows.
+            Log.v("Provider", "delete "+uri + selection);
+            throw new UnsupportedOperationException("Not yet implemented");
+        }
+
+        @Override
+        public String getType(Uri uri) {
+            // TODO: Implement this to handle requests for the MIME type of the data
+            // at the given URI.
+            throw new UnsupportedOperationException("Not yet implemented");
+        }
+
+        @Override
+        public Uri insert(Uri uri, ContentValues values) {
+            // TODO: Implement this to handle requests to insert a new row.
+            throw new UnsupportedOperationException("Not yet implemented");
+        }
+
+        @Override
+        public boolean onCreate() {
+            // TODO: Implement this to initialize your content provider on startup.
+            return false;
+        }
+
+        @Override
+        public Cursor query(Uri uri, String[] projection, String selection,
+                            String[] selectionArgs, String sortOrder) {
+            // TODO: Implement this to handle query requests from clients.
+            Log.v("Provider", "query "+uri);
+
+            return null;
+        }
+
+        @Override
+        public int update(Uri uri, ContentValues values, String selection,
+                        String[] selectionArgs) {
+            // TODO: Implement this to handle requests to update one or more rows.
+            throw new UnsupportedOperationException("Not yet implemented");
+        }
+    }
+
+#### 在AndroidManifest.xml文件中注册Provider.
+
+    </application>
+        <provider
+        android:name=".TesterProvider"
+        android:authorities="com.viator42.provider.tester"
+        android:enabled="true"
+        android:exported="true"></provider>
+    </application>
+
+
+#### 使用ContentResolver调用Provider    
+
+    ContentResolver contentResolver = getContentResolver();
+    Uri uri = Uri.parse("content://com.viator42.provider.tester");
+    contentResolver.query(uri, null, null, null, null);
+
+###注意    
+* 调用的url应该加上content://前缀
+* ContentProvider无法传入Content对象,应用不一定处在运行状态
 
 --------
 
@@ -2435,7 +2571,25 @@ assertNotSame(expected, actual)
 fail()    
 让测试方法失败
 
-## Android 内存机制和优化方法
+--------
+
+## 优化相关
+
+### UI界面优化
+
+* include布局
+* merge标签
+* ViewStub视图
+* 使用RelativeLayout减少视图树层级
+
+### 内存优化
+
+* 加载Bitmap
+* 使用ProGuard进行代码压缩
+* 对最终的apk使用zipalign
+* 使用多进程
+
+### Android 内存机制
 
 Dalvik内存堆(Heap)栈(Stack)
 
@@ -2497,6 +2651,8 @@ adb命令
     activityManager.getLargeMemoryClass()
 
 如果在AndroidManifest.xml中的<application>标签下添加属性android:largeHeap=“true” ,将启用大堆内存模式
+
+--------
 
 ## viewGroup和子控件
 
