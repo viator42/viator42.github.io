@@ -237,6 +237,12 @@ __多进程模式__
 
 __进程间通信,使用AIDL__
 
+AIDL(接口描述语言)是一种接口描述语言,常用于进程间通信      
+就是定义一个接口,调用端调用bindService与被调用端建立一个连接,连接建立时返回一个IBinder对象,该对象时被调用端的BinderProxy,    
+通过asInterface方法把Binder Proxy包装成本地Proxy并就能调用接口定义的方法了   
+被调用端则是根据AIDL文件创建Binder对象,实现接口方法.再用Service的onBind方法绑定Binder    
+
+
 实现一个运行在另一个进程中的Service
 
 AndroidManifest.xml
@@ -364,6 +370,15 @@ AndroidManifest.xml
             return mBinder;
         }
     }
+
+--------
+
+## Broadcast广播机制
+
+广播机制是一个发布-订阅模式,发布者负责发送广播,接收者监听广播.发布方不管接收方是否收到广播    
+广播分为发送的Broadcast,接收的BroadcastReceiver和传递信息的Intent
+
+
 
 --------
 
@@ -2092,7 +2107,15 @@ RGB_565 代表8位RGB位图
 
 ## Service相关
 
-__定义Service类__
+Service分为普通Service和IntentService    
+普通Service的调用方法是onCreate(),然后onStartCommand(),服务就会保持运行状态,直到执行stopService()销毁        
+IntentService是将用户的请求执行在一个子线程中,用户只需重写onHandleIntent方法进行操作,任务执行完毕之后IntentService会自动销毁
+
+__Service和Activity在同一个线程吗__ 
+
+如果是activity中启动的service那么在同一个线程中.activity退出service随之结束.如果需要service保持运行就需要新开一个线程启动service或者service运行在其他的进程中.    
+
+### 定义Service类
 
 类继承Service (android.app.Service)    
      onCreate: 创建的时候调用的方法     

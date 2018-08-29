@@ -41,9 +41,5 @@ Activity的状态通常情况下系统会自动保存的，只有当我们需要
 singleTop 跟standard 模式比较类似。唯一的区别就是，当跳转的对象是位于栈顶的activity（应该可以理解为用户眼前所 看到的activity）时，程序将不会生成一个新的activity实例，而是直接跳到现存于栈顶的那个activity实例。拿上面的例子来说，当Act1 为 singleTop 模式时，执行跳转后栈里面依旧只有一个实例，如果现在按返回键程序将直接退出。
 	singleTask模式和singleInstance模式都是只创建一个实例的。在这种模式下，无论跳转的对象是不是位于栈顶的activity，程序都不会生成一个新的实例（当然前提是栈里面已经有这个实例）。这种模式相当有用，在以后的多activity开发中，常会因为跳转的关系导致同个页面生成多个实例，这个在用户体验上始终有点不好，而如果你将对应的activity声明为singleTask 模式，这种问题将不复存在。在主页的Activity很常用
 
-### Service和Activity在同一个线程吗 
-
-如果是activity中启动的service那么在同一个线程中.activity退出service随之结束.如果需要service保持运行就需要新开一个线程启动service或者service运行在其他的进程中.    
-
 ### 爱爱爱
 
