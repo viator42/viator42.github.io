@@ -3001,4 +3001,52 @@ Dagger是Android使用的依赖注入框架
 
 ## Window和WindowManager相关
 
+WindowManagerService 就是位于 Framework 层的窗口管理服务，它的职责就是管理系统中的所有窗口。    
+Window是一个抽象类,具体实现是PhoneWindow,创建Window依赖于WindowManager    
+View,Dialog,Toast都有一个Window     
+WindowManger的作用是管理View,提供的方法:添加View,更新View,删除View.
+Android所有的View都是附加在Window上的.Window是View的直接管理者.事件分发机制是由Window传递给DecorView再向下分发到子View.WindowManager 是一个接口，它的真正实现是 WindowManagerImpl 类
+
+    @Override
+    public void addView(View view, ViewGroup.LayoutParams params){
+        mGlobal.addView(view, params, mDisplay, mParentWindow);
+    }
+
+    @Override
+    public void updateViewLayout(View view, ViewGroup.LayoutParams params){
+        mGlobal.updateViewLayout(view, params);
+    }
+
+    @Override
+    public void removeView(View view){
+        mGlobal.removeView(view, false);
+    }
+
+WindowManagerImpl实现了WindowManager的接口方法,但转交给了WindowManagerGlobal处理,WindowManagerGlobal以工厂模式提供自己的实例.     
+
+WindowManagerGlobal内部有如下几个列表
+
+    private final ArrayList<View> mViews = new ArrayList<View>();
+    private final ArrayList<ViewRootImpl> mRoots = new ArrayList<ViewRootImpl>();
+    private final ArrayList<WindowManager.LayoutParams> mParams = new ArrayList<WindowManager.LayoutParams>();
+    private final ArraySet<View> mDyingViews = new ArraySet<View>();
+
+mViews储存所有的对应View    
+mRoots储存所有Window对应的ViewRootImpl    
+mParams 所有Window所对应的布局参数    
+mDyingViews 正在被删除的View对象    
+
+### 创建Window的过程
+
+创建Window的过程通过WindowManager的addView来实现,WindowManagerImpl实现了WindowManager的接口方法,又转交WindowManagerGlobal来处理.
+
+WindowManagerGlobal的处理方式有以下几步
+
+* 创建ViewRootImpl    
+* 通过ViewRootImpl来更新界面完成Window的添加过程    
+
+--------
+
+## Activity的启动过程
+
 
