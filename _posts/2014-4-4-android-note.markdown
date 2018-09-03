@@ -3049,4 +3049,95 @@ WindowManagerGlobal的处理方式有以下几步
 
 ## Activity的启动过程
 
+__涉及类的定义__
+
+* ActivityManagerServices，简称AMS，服务端对象，负责系统中所有Activity的生命周期
+
+* ActivityThread，App的真正入口。当开启App之后，会调用main()开始运行，开启消息循环队列，这就是传说中的UI线程或者叫主线程。与ActivityManagerServices配合，一起完成Activity的管理工作
+
+* ApplicationThread，用来实现ActivityManagerService与ActivityThread之间的交互。在ActivityManagerService需要管理相关Application中的Activity的生命周期时，通过ApplicationThread的代理对象与ActivityThread通讯。
+
+* ApplicationThreadProxy，是ApplicationThread在服务器端的代理，负责和客户端的ApplicationThread通讯。AMS就是通过该代理与ActivityThread进行通信的。
+
+* Instrumentation，每一个应用程序只有一个Instrumentation对象，每个Activity内都有一个对该对象的引用。Instrumentation可以理解为应用进程的管家，
+ActivityThread要创建或暂停某个Activity时，都需要通过Instrumentation来进行具体的操作。
+
+* ActivityStack，Activity在AMS的栈管理，用来记录已经启动的Activity的先后关系，状态信息等。通过ActivityStack决定是否需要启动新的进程。
+
+* ActivityRecord，ActivityStack的管理对象，每个Activity在AMS对应一个ActivityRecord，来记录Activity的状态以及其他的管理信息。其实就是服务器端的Activity对象的映像。
+
+* TaskRecord，AMS抽象出来的一个“任务”的概念，是记录ActivityRecord的栈，一个“Task”包含若干个ActivityRecord。AMS用TaskRecord确保Activity启动和退出的顺序。如果你清楚Activity的4种launchMode，那么对这个概念应该不陌生。
+
+* zygote Android系统里面，zygote是一个进程的名字。
+
+__简要启动流程__
+
+用户在Launcher程序里点击应用图标时，会通知ActivityManagerService启动应用的入口Activity，ActivityManagerService发现这个应用还未启动，则会通知Zygote进程孵化出应用进程，然后在这个dalvik应用进程里执行ActivityThread的main方法。应用进程接下来通知ActivityManagerService应用进程已启动，ActivityManagerService保存应用进程的一个代理对象，这样ActivityManagerService可以通过这个代理对象控制应用进程，然后ActivityManagerService通知应用进程创建入口Activity的实例，并执行它的生命周期方法。
+
+__Activity启动时的概要交互流程__
+
+用户从Launcher程序点击应用图标可启动应用的入口Activity，Activity启动时需要多个进程之间的交互，Android系统中有一个zygote进程专用于孵化Android框架层和应用层程序的进程。还有一个system_server进程，该进程里运行了很多binder service，例如ActivityManagerService，PackageManagerService，WindowManagerService，这些binder service分别运行在不同的线程中，其中ActivityManagerService负责管理Activity栈，应用进程，task。
+
+Activity启动时的概要交互流程如下图如下所示
+
+![Activity启动时的概要交互流程](http://www.cloudchou.com/wp-content/uploads/2015/05/activity_start_flow.png)
+
+用户在Launcher程序里点击应用图标时，会通知ActivityManagerService启动应用的入口Activity，ActivityManagerService发现这个应用还未启动，则会通知Zygote进程孵化出应用进程，然后在这个dalvik应用进程里执行ActivityThread的main方法。应用进程接下来通知ActivityManagerService应用进程已启动，ActivityManagerService保存应用进程的一个代理对象，这样ActivityManagerService可以通过这个代理对象控制应用进程，然后ActivityManagerService通知应用进程创建入口Activity的实例，并执行它的生命周期方法。
+
+参考: http://www.cloudchou.com/android/post-788.html
+
+__调用过程__
+
+ 当我们调用startActivity()启动一个Activity的时候，首先他会调到startActivityForResult()方法：
+
+    @Override
+    public void startActivity(Intent intent, @Nullable Bundle options) {
+        if (options != null) {
+            startActivityForResult(intent, -1, options);
+        } else {
+            // Note we want to go through this call for compatibility with
+            // applications that may have overridden the method.
+            startActivityForResult(intent, -1);
+        }
+    }
+
+接下来由Instrumentation类调用execStartActivity方法,Instrumentation类用来辅助Activity完成启动Activity的过程
+
+    public void startActivityForResult(@RequiresPermission Intent intent, int requestCode,
+            @Nullable Bundle options) {
+        if (mParent == null) {
+            options = transferSpringboardActivityOptions(options);
+            Instrumentation.ActivityResult ar =
+                mInstrumentation.execStartActivity(
+                    this, mMainThread.getApplicationThread(), mToken, this,
+                    intent, requestCode, options);
+            if (ar != null) {
+                mMainThread.sendActivityResult(
+                    mToken, mEmbeddedID, requestCode, ar.getResultCode(),
+                    ar.getResultData());
+            }
+            if (requestCode >= 0) {
+                // If this start is requesting a result, we can avoid making
+                // the activity visible until the result is received.  Setting
+                // this code during onCreate(Bundle savedInstanceState) or onResume() will keep the
+                // activity hidden during this time, to avoid flickering.
+                // This can only be done when a result is requested because
+                // that guarantees we will get information back when the
+                // activity is finished, no matter what happens to it.
+                mStartedActivity = true;
+            }
+
+            cancelInputsAndStartExitTransition(options);
+            // TODO Consider clearing/flushing other event sources and events for child windows.
+        } else {
+            if (options != null) {
+                mParent.startActivityFromChild(this, intent, requestCode, options);
+            } else {
+                // Note we want to go through this method for compatibility with
+                // existing applications that may have overridden it.
+                mParent.startActivityFromChild(this, intent, requestCode);
+            }
+        }
+    }
+
 
