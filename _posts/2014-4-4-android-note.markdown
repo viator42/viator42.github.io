@@ -3005,7 +3005,9 @@ WindowManagerService 就是位于 Framework 层的窗口管理服务，它的职
 Window是一个抽象类,具体实现是PhoneWindow,创建Window依赖于WindowManager    
 View,Dialog,Toast都有一个Window     
 WindowManger的作用是管理View,提供的方法:添加View,更新View,删除View.
-Android所有的View都是附加在Window上的.Window是View的直接管理者.事件分发机制是由Window传递给DecorView再向下分发到子View.WindowManager 是一个接口，它的真正实现是 WindowManagerImpl 类
+Android所有的View都是附加在Window上的.Window是View的直接管理者.事件分发机制是由Window传递给DecorView再向下分发到子View.
+
+对Window的操作依赖WindowManager,WindowManager是一个接口，它的真正实现是 WindowManagerImpl 类
 
     @Override
     public void addView(View view, ViewGroup.LayoutParams params){
@@ -3044,6 +3046,74 @@ WindowManagerGlobal的处理方式有以下几步
 
 * 创建ViewRootImpl    
 * 通过ViewRootImpl来更新界面完成Window的添加过程    
+
+Window 有三种类型，分别是应用 Window、子 Window 和系统 Window。应用类 Window 对应一个 Acitivity，子 Window 不能单独存在，需要依附在特定的父 Window 中，比如常见的一些 Dialog 就是一个子 Window。系统 Window是需要声明权限才能创建的 Window，比如 Toast 和系统状态栏都是系统 Window。 
+
+__一个应用存在多少个Window__
+
+View是Android 中的视图的呈现方式,但是View不能单独存在，它必须附着在Window这个抽象的概念上面，因此有视图的地方就有 Window。哪些地方有视图呢？Android可以提供视图的地方有Activity、Dialog、Toast，除此之外，还有一些依托 Window 而实现的视图，比如 PopUpWindow（自定义弹出窗口）、菜单，它们也是视图，有视图的地方就有 Window，因此 Activity、Dialog、Toast 等视图都对应着一个 Window。
+
+Window是一个抽象类,他的实现类是PhoneWindow.
+
+一个应用的Window数包括所有的Activity,Dialog,Toast的数量
+
+### 创建Window的过程
+
+__Activity的Window创建过程__
+
+Window本质就是一块显示区域,所以关于Activity的Window创建应该发生在Activity的启动过程中.Activity最终会由 ActivityThread中的performLaunchActivity()来完成整个启动过程，在这个方法内部会通过类加载器创建Activity的实例对象，并调用其attach方法为其关联运行过程中所依赖的一系列上下文环境变量。
+
+Activity 的 Window 创建就发生在 attach 方法里，系统会创建 Activity 所属的 Window 对象并为其设置回调接口
+
+    mWindow = PolicyManager.makeNewWindow(this)；
+    mWindow.setCallback(this);
+    mWindow.setOnWindowDismissedCallback(this);
+    mWindow.getLayoutInflater().setPrivateFactory(this);
+
+Window对象的创建是通过PolicyManager的makeNewWindow方法实现的，由于Activity实现了Window的Callback 接口，因此当 Window接受到外界的状态改变时就会回调Activity的方法。Callback接口中的方法很多有几个是我们非常熟悉的，如onAttachedToWindow、onDetachedFromWindow、dispatchTouchEvent等等。
+
+PolicyManager主要用于创建Window类、LayoutInflater类和WindowManagerPolicy类
+
+再回到Window的创建，可以看到Activity的Window是通过PolicyManager的一个工厂方法来创建的，但是在PolicyManager的实际调用中，PolicyManager的真正实现是Policy类，Policy类中的makeNewWindow方法的实现如下：
+
+    public Window makeNewWindow(Context context){
+        return new PhoneWindow(context);
+    }
+
+makeNewWindow生成的就是Window的子类PhoneWindow.到这里 Window 以及创建完成了，下面分析 Activity 的视图是怎么附属到 Window 上的，而 Activity 的视图由 setContentView 提供，所以从 setContentView 入手，它的源码如下：
+
+    public void setContentView(int layoutResID){
+        getWindow().setContentView(layoutResID);
+        initWindowDecorActionBar();
+    }
+
+可以看到，Activity 将具体实现交给了 Window，而 Window 的具体实现是 PhoneWindow，所以只需要看 PhoneWindow 的相关逻辑即可，它的处理步骤如下：
+
+1. 创建DecorView,DecorView 是 Activity 中的顶级 View，是一个 FrameLayout，一般来说它的内部包含标题栏和内容栏.内容栏是一定存在的，并且有固定的 id：”android.R.id.content”，在 PhoneWindow 中，通过 generateDecor 方法创建 DecorView，通过 generateLayout 初始化主题有关布局。
+
+2. 将 View 添加到 DecorView 的 mContentParent 中,就是把布局xml文件添加到 DecorView 的 mContentParent 中
+
+3. 回调 Activity 的 onContentChanged 方法通知 Activity 视图已经发生改变
+
+__Dialog的Window创建过程__
+
+1. 创建Window
+
+Dialog中Window同样是通过PolicyManager的makeNewWindow方法来完成的，创建后的对象也是PhoneWindow。
+
+2. 初始化DecorView并将Dialog的视图添加到DecorView中
+
+这个过程也和 Activity 类似，都是通过 Window 去添加指定布局文件：
+
+    public void setContentView(int layoutResID){
+    mWindow.setContentView(layoutResID);
+    }
+
+3. 将DecorView添加到Window中并显示
+
+__Toast的Window创建过程__
+
+Toast也是基于Window来实现的，但是由于Toast具有定时取消这一功能，所以系统采用了Handler。
 
 --------
 
@@ -3139,5 +3209,44 @@ __调用过程__
             }
         }
     }
+
+--------
+
+## Android Loader 相关
+
+Android的装载器（loader）是从Android 3.0新引入的API , 主要完成单线程耗时数据异步装载功能，并在数据有更新自动通知UI刷新的作用。业内也叫加载器，装载机。
+
+Loader用途
+
+Loader一般用在Activity和fragment异步加载数据，无需重新启动一个线程来执行数据加载，异步加载可以用asyncTask, 但是loader自带数据结果监听机制，可以方便优雅的进行UI更新。
+
+作用和优点：
+
+* 提供异步加载数据功能；
+* 对数据源变化进行监听，实时更新数据；
+* 在Activity配置发生变化（如横竖屏切换）时不避免数据重复加载；
+* 适用于任何Activity和Fragment；
+
+--------
+
+## 异步处理AsyncTask和Handler的优缺点
+
+ASyncTask
+
+实现机制是线程池进行调度,线程池有5个核心工作线程.最多能产生128个工作线程 线程等待队列是10个   
+
+线程池中的工作线程少于5个时,创建新的工作线程执行异步任务    
+已经有5个线程的时候再添加任务就会被放到缓冲队列      
+缓冲队列满了之后再添加任务,线程池就会新开工作线程执行异步任务    
+线程池中已经有128个线程,缓冲队列已满,再添加任务就会被拒绝,抛出RejectedExecutionException    
+
+优点: 实现了异步任务的封装,结构清晰,只要实现postExecute,preExecute,doInBackground这几个方法即可      
+缺点: 并行工作的线程数量有限,并发数量多的情况下效率低.比如列表加载大量图片的情况下    
+
+Handler
+
+实现异步的流程是主线程启动子线程,运行并生成Message-Looper获取Messagebing传递给Handler,Handler获取Looper中的Message,并进行UI变更.ASyncTask用到了Handler机制.在子线程任务完成之后向UI线程返回结果.
+
+数据简单的时候用ASyncTask,数据结构复杂的情况下用Handler.
 
 
