@@ -1311,9 +1311,186 @@ SimpleAdapter构造函数的参数分别为
 	
 	AppContext context =  (AppContext)activity.getApplication();
 
-### Handler和Message
+--------
 
-从网络上下载图片的示例.
+## Handler,Looper和Message
+
+作用 用于在线程之间传递信息,子线程向主线程传递结果,进度信息.
+
+Message：封装的消息体.    
+其中包含了消息ID，消息处理对象以及处理的数据等，由MessageQueue统一列队，终由Handler处理。
+
+参数:
+* what 自定义消息id
+* arg1, arg2 消息参数
+* obj 消息内容,可以为任意类型
+          
+Handler：处理者，负责Message的发送及处理。在接收消息的地方定义.重写handleMessage(Message msg)方法来处理消息.
+
+MessageQueue：消息队列，用来存放Handler发送过来的消息，并按照FIFO规则执行。当然，存放Message并非实际意义的保存，而是将Message以链表的方式串联起来的，等待Looper的抽取。内部封装的类,使用时不可见.
+
+Looper：消息泵，不断地从MessageQueue中抽取Message执行。因此，一个MessageQueue需要一个Looper。UI线程自带Looper不需要定义.
+子线程在定义Hander的时候需要先初始化Looper,初始化Hander的代码写在Looper.prepare();和Looper.loop();之间.
+
+ThreadLocal: ThreadLocal是一个线程内部的数据存储类，通过它可以在指定的线程中存储数据，数据存储以后，只有在指定线程中可以获取到存储的数据。 不同的线程存取获取的是不同的数据相互不会混淆.
+
+### 运行原理
+
+Handler的运行需要MessageQueue和Looper的支持.Handler创建之后就会使用当前线程的Looper和MessageQueue.然后通过handler的send方法,把封装好数据的Message对象放到MessageQueue消息队列中.Looper不断的检查消息队列里的消息.发现有消息到来时就会取出并处理消息.最终handler的handleMessage方法被调用.
+
+主线程运行MessageQueue和Looper用来获取消息,handler在子线程中的引用把消息存入到队列中.主线程的Looper收到消息后交由Handler处理
+
+__主线程和子线程通过Handler交互的实例__
+
+    public class MainActivity extends AppCompatActivity {
+        private Button startThreadBtn;
+        private Button pushMsgToSubBtn;
+        private TextView msgTextView;
+        private Handler toSubThreadHandler;
+        private Handler toMainThreadHandler;
+        private final static int MSG_TO_MAIN = 1;
+        private final static int MSG_TO_SUB = 2;
+
+        @Override
+        protected void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            setContentView(R.layout.activity_main);
+            msgTextView = (TextView) findViewById(R.id.msg);
+            startThreadBtn = (Button) findViewById(R.id.start_thread);
+            startThreadBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    SubThread subThread = new SubThread();
+                    subThread.start();
+
+                    pushMsgToSubBtn.setEnabled(true);
+                }
+            });
+
+            pushMsgToSubBtn = (Button) findViewById(R.id.push_msg_to_sub);
+            pushMsgToSubBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Message message1 = Message.obtain();
+                    String msg1 = "This is an message to sub thread";
+                    message1.obj = msg1;
+                    message1.what = MSG_TO_SUB;
+                    toMainThreadHandler.sendMessage(message1);
+                }
+            });
+            pushMsgToSubBtn.setEnabled(false);
+
+            toSubThreadHandler = new Handler() {
+                @Override
+                public void handleMessage(Message msg) {
+                    super.handleMessage(msg);
+
+                    switch (msg.what)
+                    {
+                        case MSG_TO_MAIN:
+                            msgTextView.setText((String) msg.obj);
+                            break;
+                    }
+                }
+            };
+        }
+
+        private class SubThread extends Thread
+        {
+            @Override
+            public void run() {
+                super.run();
+
+                Message toMainThreadMsg = new Message();
+                toMainThreadMsg.what = 1;
+                String msg = "A Messgae to Main Thread";
+                toMainThreadMsg.obj = msg;
+
+                toSubThreadHandler.sendMessage(toMainThreadMsg);
+
+                Looper.prepare();
+                toMainThreadHandler = new Handler(){
+                    @Override
+                    public void handleMessage(Message msg) {
+                        super.handleMessage(msg);
+                        switch (msg.what)
+                        {
+                            case MSG_TO_SUB:
+                                Toast.makeText(MainActivity.this, (String) msg.obj, Toast.LENGTH_SHORT).show();
+                                break;
+                        }
+                    }
+                };
+                Looper.loop();
+            }
+        }
+    }
+
+
+发送Message消息方法
+
+* 第一种方法
+
+	Message message = Message.obtain();
+	message.obj = data;
+	message.what = IS_END;
+	handler.sendMessage(message);
+
+* 第二种方法, 新建message对象指定handler
+
+    Message message = Message.obtain(handler);
+    message.obj = data;
+    message.what = IS_END;
+    message.sendToTarget();
+
+* 第三种方法, 新建message对象指定handler和what参数
+	
+	Message message = Message.obtain(handler, 1);
+    message.obj = data;
+    message.what = IS_END;
+    message.sendToTarget();
+
+### Looper对象
+
+Activity中有一个默认的Looper对象,来处理子线程发送的消息.所以主线程接收子线程发送的消息就补需要定义looper
+如果子线程需要获取主线程发送的消息就必须定义Lopper.
+
+定义一个Handler对象
+
+	private Handler handler;
+
+主线程发送Message消息
+
+	Message message = Message.obtain();
+	message.obj = "Jack";
+	handler.sendMessage(message);
+
+子线程定义Loop消息队列并接收消息.
+	public class MyThread implements Runnable
+    {
+
+        @Override
+        public void run() {
+            Looper.prepare();//循环消息队列
+
+            handler = new Handler()
+            {
+                @Override
+                public void handleMessage(Message msg) {
+                    super.handleMessage(msg);
+                    Log.v("--supai", "从UI主线程中获取消息-->" + msg.obj);
+
+                }
+            };
+
+            Looper.loop();//直到消息队列循环结束
+
+        }
+    }
+
+### 示例
+
+__从网络上下载图片的示例__
 
 AndroidManifest.xml添加网络访问权限
 
@@ -1405,66 +1582,7 @@ Activity类中新建一个Handler类并重写handleMessage方法.
         }
     }
 
-发送Message消息方法
-
-* 第一种方法
-
-	Message message = Message.obtain();
-	message.obj = data;
-	message.what = IS_END;
-	handler.sendMessage(message);
-
-* 第二种方法, 新建message对象指定handler
-
-    Message message = Message.obtain(handler);
-    message.obj = data;
-    message.what = IS_END;
-    message.sendToTarget();
-
-* 第三种方法, 新建message对象指定handler和what参数
-	
-	Message message = Message.obtain(handler, 1);
-    message.obj = data;
-    message.what = IS_END;
-    message.sendToTarget();
-
-### Looper对象
-
-Activity中有一个默认的Looper对象,来处理子线程发送的消息.所以主线程接收子线程发送的消息就补需要定义looper
-如果子线程需要获取主线程发送的消息就必须定义Lopper.
-
-定义一个Handler对象
-
-	private Handler handler;
-
-主线程发送Message消息
-
-	Message message = Message.obtain();
-	message.obj = "Jack";
-	handler.sendMessage(message);
-
-子线程定义Loop消息队列并接收消息.
-	public class MyThread implements Runnable
-    {
-
-        @Override
-        public void run() {
-            Looper.prepare();//循环消息队列
-
-            handler = new Handler()
-            {
-                @Override
-                public void handleMessage(Message msg) {
-                    super.handleMessage(msg);
-                    Log.v("--supai", "从UI主线程中获取消息-->" + msg.obj);
-
-                }
-            };
-
-            Looper.loop();//直到消息队列循环结束
-
-        }
-    }
+--------
 
 ### 查看SHA1签名
 
@@ -2190,13 +2308,6 @@ post方法会创建一个Runnable,但还是在主线程/UI线程中执行的.
 主要用途是获取view的宽高尺寸,如果直接获取的话值为0,因为measure过程还没有完成
 
     msgTextView.setText(String.valueOf(costomWidget.getMeasuredWidth()) + "  " + String.valueOf(costomWidget.getMeasuredHeight()));
-
-
-### Activity的创建过程
-
-## ASyncTask的源码
-
-## HandlerLooper的实现机制
 
 ## ImageView
 
