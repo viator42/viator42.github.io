@@ -1000,5 +1000,69 @@ Visitor模式中,数据结构和处理被分开.编写一个访问者类访问�
 
 ### 职责链模式
 
+### Momento 备忘录模式
 
+用于保存一个类的状态,并可以从保存的状态中恢复现场.
+
+Momento类保存目标类的数据
+
+        public class Momento {
+                public int value;
+        }
+
+目标类定义创建备忘录和从备忘录恢复两个方法
+
+        public class Target {
+                public int value;
+
+                public Momento createMomento() {
+                        Momento m = new Momento();
+                        m.value = value;
+                        return value;
+                }
+
+                public void restoreMomento(Momento m) {
+                        value = m.value;
+                }
+        }
+
+### State状态模式
+
+### Proxy 代理模式
+
+代理类和被代理的类共同继承同一个接口,代理类中有被代理对象的引用
+
+代理类和被代理的类共同继承的接口
+
+        public interface Proxyable {
+                public void doAction();
+        }
+
+实际调用的类,被代理
+
+        public class Real implements Proxyable {
+                public void doAction() {
+                        //实际操作
+                }
+        }
+
+代理类,包含被代理类的引用
+
+        public class Proxy implements Proxyable {
+                public Real real;
+
+                public void doAction() {
+                        real.doAction();
+                }
+
+        }
+
+使用
+        Real real = new Real();
+        Proxy proxy = new Proxy();
+        proxy.real = real;
+
+        proxy.doAction();
+
+### FlyWeight模式
 
