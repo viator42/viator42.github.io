@@ -19,6 +19,8 @@ categories: android
 | Ctrl-Shift-Backspace | 跳转到上一次修改的地方 |
 | Ctrl+F12 | 显示文件结构 |
 | Ctrl+H | 显示类结构 |
+| ctrl + shift + enter | 补全当前行,添加括号,并跳转到下一行 |
+| shift + enter | 跳转到下一行 |
 
 #### 查找
 
