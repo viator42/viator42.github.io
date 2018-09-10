@@ -957,4 +957,48 @@ public abstract class OperatorImpl {
 
 Java中装饰器应用较多的是java.io输入输出流相关的类
 
+### Visitor 访问者模式
+
+Visitor模式中,数据结构和处理被分开.编写一个访问者类访问数据中的元素,并把元素的处理交给访问者类.当增加新的处理时.只需要编写新的访问者,然后让数据接受新的访问者的访问即可.
+
+创建Visitor访问者接口
+
+        public abstract class Visitor {
+                public abstract void visit(Enity enity);
+                public abstract void visit(Enity2 enity);       //如果需要访问多个目标类,就重载visit方法
+        }
+
+扩展Visitor类,实现访问方法
+
+        public class EnityVisitor extends Visitor {
+                public void visit(Enity enity) {
+                        //visitor对数据类进行访问操作
+                }
+                public void visit(Enity2 enity) {
+                        //visitor对数据类进行访问操作
+                }
+        }
+
+被访问的数据类,需要定义一个方法传入访问者
+
+        public interface Element {
+                public abstract void accept(Visitor v);
+        }
+
+        public class Enity implements Element {
+                private String name;
+                ...
+                public void accept(Visitor v) {
+                        v.visit(this);
+                }
+        }
+
+使用
+
+        Enity enity = new Enity();
+        enity.accept(new EnityVisitor());
+
+### 职责链模式
+
+
 
