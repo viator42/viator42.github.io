@@ -5,6 +5,42 @@ date:   2018-2-24
 categories: Java
 ---
 
+## HashMap遍历
+
+第一种:
+
+　　Map map = new HashMap();
+　　Iterator iter = map.entrySet().iterator();
+　　while (iter.hasNext()) {
+        　　Map.Entry entry = (Map.Entry) iter.next();
+        　　Object key = entry.getKey();
+        　　Object val = entry.getValue();
+　　}
+
+效率高,以后一定要使用此种方式！
+
+第二种:
+
+　　Map map = new HashMap();
+　　Iterator iter = map.keySet().iterator();
+　　while (iter.hasNext()) {
+        　　Object key = iter.next();
+        　　Object val = map.get(key);
+　　}
+
+效率低,以后尽量少使用！
+
+## Set遍历
+
+        Set set = new HashSet();
+        set.add(new String("11"));
+        set.add(new String("222"));
+        Iterator i = set.iterator();//先迭代出来
+        while(i.hasNext()){//遍历
+                System.out.println(i.next());
+        }
+
+--------
 
 ##Java反射机制
 
