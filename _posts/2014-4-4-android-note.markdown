@@ -32,9 +32,152 @@ dp (dip)设备独立像素,不依赖于实际的分辨率,根据屏幕密度自�
 sp (scaled pixels)（放大像素）主要用于字体显示（best for textsize）,跟dp不同的是可以根据用户的字体大小首选项进行缩放    
 px 实际像素数,在不同分辨率设备上显示效果不同,不推荐使用    
 
-## 图片显示fitScale的定义
+--------
 
-### Fresco
+## 图片加载库 Glide使用
+
+创建文件GlideApp.java
+
+    package com.viator42.ugo.utils;
+
+    import android.annotation.SuppressLint;
+    import android.app.Activity;
+    import android.content.Context;
+    import android.support.annotation.NonNull;
+    import android.support.annotation.Nullable;
+    import android.support.annotation.VisibleForTesting;
+    import android.support.v4.app.Fragment;
+    import android.support.v4.app.FragmentActivity;
+    import android.view.View;
+    import com.bumptech.glide.Glide;
+    import com.bumptech.glide.GlideBuilder;
+    import java.io.File;
+    import java.lang.Deprecated;
+    import java.lang.String;
+
+    /**
+    * The entry point for interacting with Glide for Applications
+    *
+    * <p>Includes all generated APIs from all
+    * {@link com.bumptech.glide.annotation.GlideExtension}s in source and dependent libraries.
+    *
+    * <p>This class is generated and should not be modified
+    * @see Glide
+    */
+    public final class GlideApp {
+        private GlideApp() {
+        }
+
+        /**
+        * @see Glide#getPhotoCacheDir(Context)
+        */
+        @Nullable
+        public static File getPhotoCacheDir(@NonNull Context context) {
+            return Glide.getPhotoCacheDir(context);
+        }
+
+        /**
+        * @see Glide#getPhotoCacheDir(Context, String)
+        */
+        @Nullable
+        public static File getPhotoCacheDir(@NonNull Context context, @NonNull String string) {
+            return Glide.getPhotoCacheDir(context, string);
+        }
+
+        /**
+        * @see Glide#get(Context)
+        */
+        @NonNull
+        public static Glide get(@NonNull Context context) {
+            return Glide.get(context);
+        }
+
+        /**
+        * @see Glide#init(Glide)
+        */
+        @Deprecated
+        @VisibleForTesting
+        @SuppressLint("VisibleForTests")
+        public static void init(Glide glide) {
+            Glide.init(glide);
+        }
+
+        /**
+        * @see Glide#init(Context, GlideBuilder)
+        */
+        @VisibleForTesting
+        @SuppressLint("VisibleForTests")
+        public static void init(@NonNull Context context, @NonNull GlideBuilder builder) {
+            Glide.init(context, builder);
+        }
+
+        /**
+        * @see Glide#tearDown()
+        */
+        @VisibleForTesting
+        @SuppressLint("VisibleForTests")
+        public static void tearDown() {
+            Glide.tearDown();
+        }
+
+        /**
+        * @see Glide#with(Context)
+        */
+        @NonNull
+        public static GlideRequests with(@NonNull Context context) {
+            return (GlideRequests) Glide.with(context);
+        }
+
+        /**
+        * @see Glide#with(Activity)
+        */
+        @NonNull
+        public static GlideRequests with(@NonNull Activity activity) {
+            return (GlideRequests) Glide.with(activity);
+        }
+
+        /**
+        * @see Glide#with(FragmentActivity)
+        */
+        @NonNull
+        public static GlideRequests with(@NonNull FragmentActivity activity) {
+            return (GlideRequests) Glide.with(activity);
+        }
+
+        /**
+        * @see Glide#with(Fragment)
+        */
+        @NonNull
+        public static GlideRequests with(@NonNull Fragment fragment) {
+            return (GlideRequests) Glide.with(fragment);
+        }
+
+        /**
+        * @see Glide#with(Fragment)
+        */
+        @Deprecated
+        @NonNull
+        public static GlideRequests with(@NonNull android.app.Fragment fragment) {
+            return (GlideRequests) Glide.with(fragment);
+        }
+
+        /**
+        * @see Glide#with(View)
+        */
+        @NonNull
+        public static GlideRequests with(@NonNull View view) {
+            return (GlideRequests) Glide.with(view);
+        }
+    }
+
+加载图片
+
+    GlideApp.with(context)
+        .load(url)
+        .centerCrop()
+        .into(imgView);
+
+### 图片显示fitScale的定义
 
 * center 	居中，无缩放。
 * centerCrop 	保持宽高比缩小或放大，使得两边都大于或等于显示边界，且宽或高契合显示边界。居中显示。
@@ -45,6 +188,8 @@ px 实际像素数,在不同分辨率设备上显示效果不同,不推荐使用
 * fitEnd 	同fitCenter， 但不居中，和显示边界右下对齐。
 * fitXY 	不保存宽高比，填充满显示边界。
 * none 	如要使用tile mode显示, 需要设置为none
+
+--------
 
 ### 获取界面组件
 
@@ -2136,25 +2281,23 @@ Android4.0以上的系统Menu默认在ToolBar的右上
 
 Menu的定义方法
 
-1. 在res/menu下创建一个menu的样式文件.
+1.在res/menu下创建一个menu的样式文件.
 
-    <?xml version="1.0" encoding="utf-8"?>
-    <menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <menu xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:android="http://schemas.android.com/apk/res/android">
         <item
             android:id="@+id/item_1"
+            android:showAsAction="never"
+            android:icon="@drawable/ic_plus_white_24dp"
             android:title="ITEM_1"
             />
         <item
             android:id="@+id/item_2"
             android:title="ITEM_2"
             />
-        <item
-            android:id="@+id/item_3"
-            android:title="ITEM_3"
-            />
     </menu>
 
-2. Activity中加载这个menu
+2.Activity中加载这个menu
 
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
@@ -2162,7 +2305,8 @@ Menu的定义方法
         return true;
     }
 
-    //Menu item的点击事件定义
+Menu item的点击事件定义
+    
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId())
         {
