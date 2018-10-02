@@ -191,7 +191,7 @@ __merge方法__
 
 用来合并多个Observable
 
--------------------------------------------------------------------------------------
+--------
 
 ## Retrofit笔记
 
@@ -211,36 +211,43 @@ buildGradle,需要加载retrofit, converter-gson, gson, okhttp, okio
 
 ### 使用方法
 
-1.创建Retrofit对象
+__创建Retrofit对象__
 
 需要设置数据解析器
 
     Retrofit retrofit = new Retrofit.Builder()
-        .baseUrl(StaticValues.SERVER_PATH)
+        .baseUrl(StaticValues.SERVER_PATH)  //服务器地址
         .addConverterFactory(GsonConverterFactory.create())
         .build();
 
-2.定义接口文件
+__定义接口文件__
 
 一组网络操作可以放到一个接口文件中,每个方法都是一个网络操作
 
     public interface MyGetActionInterfaces {
+
+        //get请求 使用参数拼接url
         @GET("main/test/get/{param1}/{param2}")
         Call<GetTesterRestult> getTest(
                 @Path("param1") String param1,
                 @Path("param2") String param2
         );
 
+        //post请求,方法参数作为表单值
         @POST("main/test/post/")
         @FormUrlEncoded
         Call<List<User>> postTest(@Field("params") String postParams);
+
+        //POJO类作为请求参数
+        @POST("users/new")
+        Call<User> createUser(@Body User user);
 
     }
 
 Retrofit大量使用@注解来定义属性
 GET把参数拼接到url中,POST使用表单
 
-3.网络访问
+__网络访问__
 
 GET请求
 
@@ -284,7 +291,8 @@ POST请求
 
 返回值直接从json格式映射成对象
 
---------------------------------------------------------------------------------------
+--------
+
 ## Retrofit和RxJava结合
 
 ### 导入库
