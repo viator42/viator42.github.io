@@ -3504,4 +3504,42 @@ Handler
 
 数据简单的时候用ASyncTask,数据结构复杂的情况下用Handler.
 
+--------
+
+## Android 底部控件，随软键盘弹出，跟着上移
+
+
+androidManifest.xml activity添加属性
+
+    <activity android:name=".MainActivity"
+        ...
+        android:windowSoftInputMode="adjustResize|stateHidden">
+    </activity>
+
+android:windowSoftInputMode属性
+
+activity主窗口与软键盘的交互模式，可以用来避免输入法面板遮挡问题    
+这个属性能影响两件事情：    
+1. 当有焦点产生时，软键盘是隐藏还是显示    
+2. 是否减少活动主窗口大小以便腾出空间放软键盘
+
+各值的含义：
+
+【A】stateUnspecified：软键盘的状态并没有指定，系统将选择一个合适的状态或依赖于主题的设置
+
+【B】stateUnchanged：当这个activity出现时，软键盘将一直保持在上一个activity里的状态，无论是隐藏还是显示
+
+【C】stateHidden：用户选择activity时，软键盘总是被隐藏
+
+【D】stateAlwaysHidden：当该Activity主窗口获取焦点时，软键盘也总是被隐藏的
+
+【E】stateVisible：软键盘通常是可见的
+
+【F】stateAlwaysVisible：用户选择activity时，软键盘总是显示的状态
+
+【G】adjustUnspecified：默认设置，通常由系统自行决定是隐藏还是显示
+
+【H】adjustResize：该Activity总是调整屏幕的大小以便留出软键盘的空间
+
+【I】adjustPan：当前窗口的内容将自动移动以便当前焦点从不被键盘覆盖和用户能总是看到输入内容的部分
 

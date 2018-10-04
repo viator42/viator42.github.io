@@ -123,15 +123,15 @@ __示例__
     wrap_enter_in.xml
     <translate
         android:duration="250"
-        android:fromXDelta="0%p"
-        android:toXDelta="-100%p"
+        android:fromXDelta="100%p"
+        android:toXDelta="0%p"
         android:fillAfter="true"/>
 
     wrap_enter_out.xml
     <translate
         android:duration="250"
-        android:fromXDelta="100%p"
-        android:toXDelta="0%p"
+        android:fromXDelta="0%p"
+        android:toXDelta="-100%p"
         android:fillAfter="true"/>
 
 退出动画
