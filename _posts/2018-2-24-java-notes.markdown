@@ -1260,3 +1260,51 @@ Java的内存模型包括主内存和工作内存
 * 可见性 一个线程修改了共享变量的值,其他的线程能够立即得知这个修改
 * 有序性 线程内所有的指令执行都是有序的,线程之间的指令操作是乱序的.使用synchronize指令保证线程之间的操作是有序的,原理是通过给变量加互斥锁,同一时间只能有一个线程操作变量.先加锁操作完成之后解锁等待下一个线程使用.
 
+### 线程安全
+
+多个线程之间需要共享数据的情况下才需要考虑线程安全.
+
+实现线程安全的方式
+
+基本数据类型使用final关键字修饰保证不被修改    
+使用synchronize    
+使用java.util.concurrent.atomic包里面AtomicBoolean、AtomicInteger、AtomicLong、AtomicReference这些原子类    
+
+### java.util.concurrent.atomic包的使用
+
+Atomic包的作用：    
+方便程序员在多线程环境下，无锁的进行原子操作
+
+Atomic包核心：    
+Atomic包里的类基本都是使用Unsafe实现的包装类，核心操作是CAS原子操作
+
+CAS(compare and swap)比较和替换技术，将预期值与当前变量的值比较(compare)，如果相等则使用新值替换(swap)当前变量，否则不作操作
+
+使用示例
+
+        package cn.com.example.concurrent.atomic;
+        import java.util.concurrent.atomic.AtomicInteger;
+        
+        public class AtomicIntegerTest extends Thread {
+                private AtomicInteger atomicInteger;
+                
+                public AtomicIntegerTest(AtomicInteger atomicInteger) {
+                        this.atomicInteger = atomicInteger;
+                }
+                
+                @Override
+                public void run() {
+                        int i = atomicInteger.incrementAndGet();
+                        System.out.println("generated  out number:" + i);
+                }
+                
+                public static void main(String[] args) {
+                        AtomicInteger counter = new AtomicInteger();
+                        for (int i = 0; i < 10; i++) {//10个线程
+                        new AtomicIntegerTest(counter).start();
+                        }
+                }
+        }
+
+
+
