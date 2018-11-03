@@ -5,6 +5,95 @@ date:   2018-2-24
 categories: Java
 ---
 
+---------
+
+## Java基础
+
+### 三元操作符if-else
+
+boolean-exp ? value-true : value-false;
+
+示例:
+
+        int a = 100, b = 102;
+        int result = a > b ? a : b;
+
+### enum枚举类型
+
+定义枚举类型
+
+        public static enum colors {RED, BLUE, YELLOW};
+
+ordinal方法输出ini值    
+
+        colors c = colors.BLUE;
+        System.out.println(c.ordinal());
+
+遍历
+
+        for (colors c : colors.values()) {
+            System.out.println((c));
+        }
+
+在switch语句中使用
+
+        colors c = colors.BLUE;
+        switch (c) {
+            case BLUE:
+                System.out.println("enum blue called");
+                break;
+        }
+
+
+### 类访问修饰词    
+
+* friendly      同一个类和同一个包中的类可以访问
+* public        其他所有类都可以访问
+* protected     同一个类和同一个包中的类可以访问,同一个包或者不同包的子类可以访问
+* private       只有同一个类中可以访问
+
+---------
+
+## 泛型
+
+类属性的类型可以作为一个参数自定义
+
+public class Holder<T, B> {     //参数的类型
+    private T t;        //属性的类型用符合代替
+    private B b;
+
+    public B getB() {
+        return b;
+    }
+
+    public void setB(B b) {
+        this.b = b;
+    }
+
+    public T getT() {
+        return t;
+    }
+
+    public void setT(T t) {
+        this.t = t;
+    }
+
+    public static void main(String[] args) {
+        System.out.println("Class Tester");
+
+        Holder<String, Integer> holder = new Holder<>();
+
+        holder.setT("aaaaa");
+        System.out.println(holder.getT());
+
+        holder.setB(123);
+        System.out.println(holder.getB());
+
+    }
+}
+
+---------
+
 ## HashMap遍历
 
 第一种:
@@ -42,7 +131,7 @@ categories: Java
 
 --------
 
-##Java反射机制
+## Java反射机制
 
 包名： java.lang.reflect    
 作用: 反射机制就是可以把一个类,类的成员(函数,属性),当成一个对象来操作,希望读者能理解,也就是说,类,类的成员,我们在运行的时候还可以动态地去操作他们.获取程序运行时的内部结构并进行交互    
