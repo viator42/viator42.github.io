@@ -7,9 +7,7 @@ categories: Java
 
 ---------
 
-## Java基础
-
-### 三元操作符if-else
+## 三元操作符if-else
 
 boolean-exp ? value-true : value-false;
 
@@ -18,7 +16,7 @@ boolean-exp ? value-true : value-false;
         int a = 100, b = 102;
         int result = a > b ? a : b;
 
-### enum枚举类型
+## enum枚举类型
 
 定义枚举类型
 
@@ -44,13 +42,37 @@ ordinal方法输出ini值
                 break;
         }
 
+--------
 
-### 类访问修饰词    
+## 类成员的访问权限    
 
-* friendly      同一个类和同一个包中的类可以访问
+* friendly      (不加修饰符的默认) 同一个类和同一个包中的类可以访问
 * public        其他所有类都可以访问
 * protected     同一个类和同一个包中的类可以访问,同一个包或者不同包的子类可以访问
 * private       只有同一个类中可以访问
+
+### 类class的访问权限
+
+类的访问修饰符public,friendly,private的区别
+
+* public        可以在任何地方被引用,所在的包或者其他包,每个java文件有一个public类与文件同名,作为访问接口
+* friendly      (不加修饰符的默认) 只能被同一个包的类引用,包外无法访问
+* private       无法被之外的其他的类访问
+
+---------
+
+## 继承
+
+final修饰符    
+
+类属性: 常量,初始化时必须复制,不允许改变
+方法:   不允许子类覆盖
+类:     不允许其他类继承这个类
+
+继承类构造方法的调用
+
+对于没有参数的默认构造方法,初始化子类的时候会自动调用父类的构造方法.顺序是自顶向下依次调用    
+带参数的构造方法需要子类使用super();调用父类的构造方法
 
 ---------
 
@@ -303,6 +325,7 @@ public class Holder<T, B> {     //参数的类型
 4. 访问一些不能访问的变量或属性：破解别人代码
 
 --------
+
 ## 注解Annotations
 
 ### 什么是Annotation?
@@ -338,13 +361,16 @@ c. 运行时动态处理，如得到注解信息
 * path 在类路径、源文件路径等中有不存在的路径时的警告
 * all 对以上所有情况的警告
 
-### 元Annotation
+### 元注解
 
-包括@Retention, @Target, @Inherited, @Documented，元 Annotation 是指用来定义 Annotation 的 Annotation
+包括@Retention, @Target, @Inherited, @Documented，自定义注解的时候使用
 
-@Documented 是否会保存到 Javadoc 文档中    
-@Retention 保留时间，可选值 SOURCE（源码时），CLASS（编译时），RUNTIME（运行时），默认为 CLASS，值为 SOURCE 大都为 Mark    Annotation，这类 Annotation 大都用来校验，比如 Override, Deprecated, SuppressWarnings     
-@Target 可以用来修饰哪些程序元素，如 TYPE, METHOD, CONSTRUCTOR, FIELD, PARAMETER 等，未标注则表示可修饰所有    
+* @Documented 是否会保存到 Javadoc 文档中    
+* @Retention 表示注解在哪一个阶段可用，可选值 SOURCE（源码时），CLASS（编译时），RUNTIME（运行时），默认为 CLASS
+* @Target 可以用来修饰哪些程序元素，如 TYPE, METHOD, CONSTRUCTOR, FIELD, PARAMETER 等，未标注则表示可修饰所有    
+* @Inherited 是否可以被继承，默认为 false
+
+@Target的可选值
 
 * @Target(ElementType.ANNOTATION_TYPE)：指定该该策略的Annotation只能修饰Annotation.
 * @Target(ElementType.TYPE) //接口、类、枚举、注解
@@ -355,13 +381,13 @@ c. 运行时动态处理，如得到注解信息
 * @Target(ElementType.LOCAL_VARIABLE)//局部变量
 * @Target(ElementType.PACKAGE) ///修饰包定义
 
-@Inherited 是否可以被继承，默认为 false
+### 自定义注解
 
-### 自定义Annotation
+自定义注解表示自己根据需要定义的注解，定义时需要用到上面的元注解
 
-自定义 Annotation 表示自己根据需要定义的 Annotation，定义时需要用到上面的元 Annotation
+#### 只有一个属性的时候
 
-* Annotation只有一个属性的时候
+__定义注解__
 
     @Target(ElementType.FIELD)
     @Retention(RetentionPolicy.RUNTIME)
@@ -369,6 +395,8 @@ c. 运行时动态处理，如得到注解信息
     public @interface Anno1 {
         String value() default "defaultName";
     }
+
+__使用注解__
 
     public class AnnoClass {
         @Anno1("param1 Annotation Value")
@@ -378,7 +406,7 @@ c. 运行时动态处理，如得到注解信息
         public String param2;
     }
 
-* Annotation有多个属性的时候
+#### 有多个属性的时候
 
     @Target(ElementType.FIELD)
     @Retention(RetentionPolicy.RUNTIME)
@@ -399,6 +427,8 @@ c. 运行时动态处理，如得到注解信息
     }
 
 ### 解析Annotation(使用反射)
+
+对定义的注解进行处理
 
     public class Main {
         public static void main(String[] args) {
@@ -437,8 +467,13 @@ c. 运行时动态处理，如得到注解信息
                         // TODO Auto-generated catch block
                         e.printStackTrace();
                 }
-                
         }
+
+### apt注解处理器
+
+APT(Annotationprocessing tool)是一种注解处理工具,能对源代码进行分析并找出其中的注解进行额外处理
+
+
 
 --------
 
