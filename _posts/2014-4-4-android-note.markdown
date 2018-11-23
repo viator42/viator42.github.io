@@ -1178,6 +1178,29 @@ Activity.java 使用 Fragment
 
 获取到fragment实例之后就可以执行重新赋值的操作
 
+## Fragment切换
+
+    FragmentTransaction transaction;
+    transaction = manager.beginTransaction();
+    transaction.setCustomAnimations(android.R.anim.fade_in, R.anim.slide_out);  //可以为fragment切换设置转场动画
+    transaction.replace(R.id.content_frame, fragment)
+    transaction.commit();
+
+使用replace方法实现fragment的切换,但这种方法的缺点是每次切换都会导致fragment重新加载    
+解决方法是hide上一个Fragment,如果新的fragment不存在就先创建再add,如果已存在直接调用show   
+
+    transaction.hide(currentFragment);
+    if(mainpageFragment == null) {
+        mainpageFragment = new MainpageFragment();
+        transaction.add(R.id.content, mainpageFragment);
+    }
+    else {
+        transaction.show(mainpageFragment);
+    }
+    currentFragment = mainpageFragment;
+    transaction.commit();
+
+
 --------
 
 ### ListView
@@ -3542,4 +3565,6 @@ activity主窗口与软键盘的交互模式，可以用来避免输入法面板
 【H】adjustResize：该Activity总是调整屏幕的大小以便留出软键盘的空间
 
 【I】adjustPan：当前窗口的内容将自动移动以便当前焦点从不被键盘覆盖和用户能总是看到输入内容的部分
+
+--------
 

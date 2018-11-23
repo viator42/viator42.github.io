@@ -372,3 +372,72 @@ POST请求
 
             }
         });
+
+--------
+
+## Retrofit 使用缓存
+
+    CacheControl.Builder cacheBuilder  = new CacheControl.Builder();
+    cacheBuilder.maxAge(0, TimeUnit.SECONDS);//这个是控制缓存的最大生命时间
+    cacheBuilder.maxStale(365,TimeUnit.DAYS);//这个是控制缓存的过时时间
+    final CacheControl cacheControl = cacheBuilder.build();
+
+    File cacheFile = new File(view.getContext().getCacheDir(), "ugou");
+    Cache cache = new Cache(cacheFile, 1024 * 1024 * 100); //100Mb
+
+    OkHttpClient okHttpClient = new OkHttpClient.Builder()
+            .cache(cache)
+            .addInterceptor(new Interceptor() {
+                @Override
+                public okhttp3.Response intercept(Chain chain) throws IOException {
+                    Request.Builder requestBuilder = chain.request().newBuilder();
+                    requestBuilder.cacheControl(cacheControl);
+
+                    Request request = requestBuilder.build();
+                    okhttp3.Response response = chain.proceed(request);
+                    return response;
+                }
+            })
+            .build();
+
+    Retrofit retrofit = new Retrofit.Builder()
+            .baseUrl(EnvValues.SERVER_PATH)
+            .addConverterFactory(GsonConverterFactory.create())
+            .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+            .client(okHttpClient)
+            .build();
+
+    Gson gson = new Gson();
+    String paramStr = gson.toJson(homeParam);
+
+    CommonUtils.log(paramStr);
+
+    MainpageActions mainpageActions = retrofit.create(MainpageActions.class);
+
+    mainpageActions.home(paramStr)
+            .subscribeOn(Schedulers.newThread()) // "work" on io thread
+            .observeOn(AndroidSchedulers.mainThread()) // "listen" on UIThread);
+            .subscribe(new Observer<Response<HomeResult>>() {
+                @Override
+                public void onSubscribe(Disposable d) {
+                }
+
+                @Override
+                public void onNext(Response<HomeResult> homeResultResponse) {
+                    HomeResult homeResult = homeResultResponse.body();
+                    homeResult.aesKey = homeResultResponse.headers().get("Set-Cookie");
+                    view.listHome(homeResult);
+                }
+
+                @Override
+                public void onError(Throwable e) {
+
+                }
+
+                @Override
+                public void onComplete() {
+
+                }
+            });
+    
+    --------
