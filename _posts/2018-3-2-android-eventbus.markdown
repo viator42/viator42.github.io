@@ -15,6 +15,11 @@ categories: android
 * Subscriber：事件订阅者，接收特定的事件
 * Publisher:事件发布者，用于通知Subscriber有事件发生
 
+## 原理
+
+主要基于观察者模式，事件是被观察者，订阅者类是观察者。当事件出现或者发送变更的时候，会通过EventBus通知观察者，观察者定义的方法会自动调用    
+EventBus根据事件类的不同调用通知不同的观察者，每个事件都必须自定义一个事件类    
+
 ## 导入库
 
 AndroidManifest.xml

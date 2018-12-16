@@ -7,6 +7,55 @@ categories: android
 
 --------
 
+## 使用LocalBroadcastManager完全退出App的方法
+
+定义广播Action名称
+
+    public final static String BROADCAST_EXIT = "BROADCAST_EXIT";
+
+Application类中定义LocalBroadcastManager
+
+    public class AppContext extends Application {
+        public LocalBroadcastManager localBroadcastManager;
+
+        @Override
+        public void onCreate() {
+            localBroadcastManager = LocalBroadcastManager.getInstance(this);
+        }
+    }
+
+每一个Activity中定义BroadcastReceiver，收到广播的时候退出。Activity需要手动注册和注销接收器
+
+    public class MainpageActivity extends AppCompatActivity {
+        。。。
+        private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                finish();
+            }
+        };
+
+        @Override
+        protected void onCreate(Bundle savedInstanceState) {
+            。。。
+            appContext.localBroadcastManager.registerReceiver(broadcastReceiver, new IntentFilter(StaticValues.BROADCAST_EXIT));
+        }
+
+        @Override
+        protected void onDestroy() {
+            super.onDestroy();
+            appContext.localBroadcastManager.unregisterReceiver(broadcastReceiver);
+        }
+
+    }
+
+在需要退出App的地方发送广播
+
+    //退出App,关闭所有activity
+    appContext.localBroadcastManager.sendBroadcast(new Intent(StaticValues.BROADCAST_EXIT));
+
+--------
+
 ## 点9图
 
 图片放大时控制缩放区域    

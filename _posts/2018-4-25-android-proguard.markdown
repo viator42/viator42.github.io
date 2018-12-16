@@ -19,23 +19,83 @@ categories: Android
 * 预检
 对处理后的代码进行预检
 
-## 编写ProGuard.cfg文件
+--------
 
--dontusemixedcaseclassnames    
-指定混淆的类名称不使用大小写混合
+## 启用ProGuard
 
--skipnonpubliclibraryclasses    
-跳过非公开的类
+build.gradle文件修改
 
--keepattributes *Annotation*    
-保护代码中的Annotation不被混淆
+    android {
+        ···
+        buildTypes {
+            debug {
+                minifyEnabled false
+                proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            }
+            release {
+                minifyEnabled true
+                proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            }
+        }
+    }
 
--keepattributes Exceptions,InnerClasses,Signature,Deprecated,SourceFile,LineNumberTable,*Annotation*,EnclosingMethod
+每次构建时 ProGuard 都会输出下列文件：
+
+* dump.txt      说明 APK 中所有类文件的内部结构。    
+* mapping.txt   提供原始与混淆过的类、方法和字段名称之间的转换。
+* seeds.txt     列出未进行混淆的类和成员。
+* usage.txt     列出从 APK 移除的代码。
+
+这些文件保存在 <module-name>/build/outputs/mapping/release/ 中。
+
+--------
+
+## 编写proguard-rules.pro文件
+
+\# 代表行注释符    
+\- 表示一条规则的开始    
+
+## 常用选项
+
+* -optimizationpasses 5   代码混淆压缩比，在0和7之间，默认为5，一般不需要改
+ 
+* -dontusemixedcaseclassnames     混淆时不使用大小写混合，混淆后的类名为小写
+ 
+* -dontskipnonpubliclibraryclasses    指定不去忽略非公共的库的类
+ 
+* -dontskipnonpubliclibraryclassmembers   指定不去忽略非公共的库的类的成员
+ 
+* -dontpreverify  不做预校验，preverify是proguard的4个步骤之一，Android不需要preverify，去掉这一步可加快混淆速度
+ 
+* -verbose
+* -printmapping proguardMapping.txt
+ 
+有了verbose这句话，混淆后就会生成映射文件
+包含有类名->混淆后类名的映射关系
+然后使用printmapping指定映射文件的名称
+ 
+* -keepattributes *Annotation*    保护代码中的Annotation不被混淆，这在JSON实体映射时非常重要，比如fastJson
+ 
+* -keepattributes Signature   避免混淆泛型，这在JSON实体映射时非常重要，比如fastJson
+ 
+* -keepattributes SourceFile,LineNumberTable  抛出异常时保留代码行号，在异常分析中可以方便定位
+
+* -dontskipnonpubliclibraryclasses
+
+用于告诉ProGuard，不要跳过对非公开类的处理。默认情况下是跳过的，因为程序中不会引用它们，有些情况下人们编写的代码与类库中的类在同一个包下，并且对包中内容加以引用，此时需要加入此条声明。
+
+* -dontusemixedcaseclassnames
+
+这个是给Microsoft Windows用户的，因为ProGuard假定使用的操作系统是能区分两个只是大小写不同的文件名，但是Microsoft Windows不是这样的操作系统，所以必须为ProGuard指定-dontusemixedcaseclassnames选项
+
+--------
 
 ## 保留不被混淆的东西
 
-保护某些包下的类不被混淆
+#### -keep 
+保护某些包下的类不被混淆    
 
+    -keep public com.viator42.sampleapp
     -keep public * extends com.viator42.sampleapp
 
 实体类保留get,set方法不被混淆
@@ -46,8 +106,99 @@ categories: Android
         public *** is* ();
     }
 
+## 其他keep选项
+
+* -keep 	不混淆类和类成员（包括方法和参数）
+* -keepclassmembers 	不混淆类中的成员
+* -keepclasseswithmembers 	不混淆类中的成员及包含它的类
+* -keepnames 	
+* -keepclassmembernames
+* -keepclasseswithmembernames
+
+有无name的keep*区别    
+keep是阻止类和类的变量（实际上就是类中的方法和变量）被压缩和混淆，而keepnames那么则是在压缩后，防止类和类的成员被混淆    
+
+## 通配符
+
+    <init> 	    匹配所有构造函数
+    <fields> 	匹配所有字段
+    <methods> 	匹配所有方法，不包括构造函数
+    ? 	        匹配任意单个字符
+    % 	        匹配任意原始数据类型，例如 boolean、int，但是不包括 void
+    * 	        匹配任意长度字符，但是不包括包名分隔符（ . )，例如 android.support.* 不匹配 android.support.annotation.Keep
+    ** 	        匹配任意长度字符，包括包名分隔符（ . )，例如 android.support.** 匹配 support 包下的所有类
+    *** 	    匹配任意类型，包括原始数据类型、数组
+    … 	        匹配任意数量的任意参数类型
+
+## 其他选项
+
+* -dontnote 不打印潜在的错误或疏漏的注释
+
+* -dontwarn 不针对未处理的引用或其他重要问题发出警告
+
+    -dontwarn sun.misc.Unsafe
+
+* -keepattributes   保护特定类型不被混淆
+
+    -keepattributes Exceptions, InnerClasses, Signature, Deprecated, SourceFile ,LineNumberTable, *Annotation*, EnclosingMethod
+
+* -ignorewarning  // 忽略产生的警告继续往下运行
+
+* -dontskipnonpubliclibraryclassmembers // 不跳过非公开库的类成员
+
 --------
 
+##Android项目配置
+
+* 如果使用了Gson之类的工具要使JavaBean类即实体类不被混淆。    
+* 如果使用了自定义控件那么要保证它们不参与混淆。    
+* 如果使用了枚举要保证枚举不被混淆。    
+* 对第三方库中的类不进行混淆    
+
+Activity，Application，Service，BroadcastReceiver，ContentProvider这些写入AndroidManifest.xml中的类需要排除    
+以下是官方示例    
+
+    -keep public class * extends android.app.Activity
+    -keep public class * extends android.app.Application
+    -keep public class * extends android.app.Service
+    -keep public class * extends android.content.BroadcastReceiver
+    -keep public class * extends android.content.ContentProvider
+
+    -keep public class * extends android.view.View {
+        public <init>(android.content.Context);
+        public <init>(android.content.Context, android.util.AttributeSet);
+        public <init>(android.content.Context, android.util.AttributeSet, int);
+        public void set*(...);
+    }
+
+    -keepclasseswithmembers class * {
+        public <init>(android.content.Context, android.util.AttributeSet);
+    }
+
+    -keepclasseswithmembers class * {
+        public <init>(android.content.Context, android.util.AttributeSet, int);
+    }
+
+    -keepclassmembers class * extends android.content.Context {
+        public void *(android.view.View);
+        public void *(android.view.MenuItem);
+    }
+
+    -keepclassmembers class * implements android.os.Parcelable {
+        static ** CREATOR;
+    }
+
+    -keepclassmembers class **.R$* {
+        public static <fields>;
+    }
+
+    -keepclassmembers class * {
+        @android.webkit.JavascriptInterface <methods>;
+    }
+
+速查表 https://www.guardsquare.com/en/products/proguard/manual/refcard
+
+------------------------------------------------------------------------
 
 由于项目要发布,所以花了半天时间对代码的反编译和混淆进行下研究.
 
