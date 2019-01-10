@@ -7,6 +7,126 @@ categories: android
 
 --------
 
+## Bitmap加载
+
+创建BitmapOptions属性对象
+
+    BitmapFactory.Options options = new BitmapFactory.Options();
+    //options.outWidth = 800;   //图片宽度
+    //options.outHeight = 600   //图片高度
+    options.inJustDecodeBounds = false;     //设为true，那么BitmapFactory并不会真的返回一个Bitmap，它仅仅会把它的宽，高取回来给你
+    options.inSampleSize = 2;   //大于1时，图像高、宽分别以2的inSampleSize次方分之一缩小
+    options.inPreferredConfig = Bitmap.Config.ARGB_4444;    //设置图片的采样率
+    options.inScaled = true;    //是否需要放缩位图
+
+采样率属性
+
+* ALPHA_8: 每个像素用占8位,存储的是图像的透明值,占1个字节;    
+* RGB_565:每个像素用占16位,分别为5-R,6-G,5-B通道,占2个字节;    
+* ARGB-4444:每个像素占16位,即每个通道用4位表示,占2个字节;    
+* ARGB_8888:每个像素占32位,每个通道用8位表示,占4个字节;    
+
+应用到位图
+
+    Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length, options);
+
+图片的不同来源
+
+1. BitmapFactory.decodeBetyArray();//字节数组    
+2. BitmapFactory.decodeFile();//文件路径    
+3. BitmapFactory.decodeResource();//资源ID    
+4. BitmapFactory.decodeStream();//流    
+
+--------
+
+## LruCache缓存机制
+
+使用的缓存策略是LruCache和DiskLruCache。LruCache作为内存缓存DiskLruCache作为磁盘缓存    
+lru是least recently used，最少使用策略，缓存快满时删除最少使用的缓存目标   
+
+LruCache的实现机制是维护一张LinkedHashMap，是由数组和双向链表的数据结构实现的。新的缓存对象从队头插入，有对象被访问则把该对象移动到队头。长时间不被访问的对象就会被移动到队尾，缓存空间满了之后就删除队尾的对象。
+
+### 使用方法
+    
+    int maxMemory = (int) Runtime.getRuntime().maxMemory(); //获取应用的可用内存大小
+    int cacheSize = maxMemory / 8;  //定义缓存的总容量大小，此处为内存容量的 1/8
+    //创建LruCache，定义key和value的类型。重写计算缓存单位大小的sizeOf方法
+    LruCache<String, Bitmap> imgCache = new LruCache<String, Bitmap>(cacheSize) {
+            @Override
+            protected int sizeOf(String key, Bitmap value) {
+                return value.getRowBytes() * value.getHeight();
+            }
+        };
+
+    imgCache.put("TEST_IMG", bitmap);   //存储到缓存
+    bitmap = imgCache.get("TEST_IMG");  //从缓存中取出
+
+LruCache只是内存缓存，缓存内容保持在LruCache作用域期间，对象销毁之后缓存即被删除    
+持久化缓存使用DiskLruCache    
+
+## DiskLruCache
+
+导入包
+
+    compile 'com.jakewharton:disklrucache:2.0.2'
+
+import class
+
+    import com.jakewharton.disklrucache.DiskLruCache;
+
+使用
+
+创建缓存对象    
+DiskLruCache使用open方法创建自身，参数分别为
+
+* 缓存文件的存储目录
+* 应用的版本号，版本号更新的时候旧的缓存会被清空
+* 单个节点所对应的数据个数
+* 缓存的总大小
+
+    DiskLruCache diskLruCache = null;
+    try {
+        diskLruCache = DiskLruCache.open(getExternalCacheDir(), 1, 1, cacheSize);
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+
+DiskLruCache
+
+__数据缓存到存储__     
+使用editor.newOutputStream(INDEX);方法来新建存储数据的输入流，INDEX参数是单个节点的编号    
+
+    //
+    try {
+        DiskLruCache.Editor editor = diskLruCache.edit("testimg");
+        if(editor != null) {
+            OutputStream outputStream = editor.newOutputStream(0);
+            outputStream.write(data);
+            //写入之后必须进行commit操作
+            outputStream.flush();
+            editor.commit();
+        }
+
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+
+__读取磁盘缓存__    
+
+    try {
+        //获取缓存的snapshot，参数为key
+        DiskLruCache.Snapshot snapshot = diskLruCache.get("testimg");
+        if(snapshot!=null){
+            //snapshot中获取缓存的数据，参数为单个节点的编号
+            Bitmap bitmap = BitmapFactory.decodeStream(snapshot.getInputStream(0));
+            return bitmap;
+        }
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+
+--------
+
 ## 使用LocalBroadcastManager完全退出App的方法
 
 定义广播Action名称
@@ -107,6 +227,12 @@ sp (scaled pixels)（放大像素）主要用于字体显示（best for textsize
 px 实际像素数,在不同分辨率设备上显示效果不同,不推荐使用    
 
 --------
+
+## 图片加载相关
+
+图片加载时使用BitmapFactory.Option来调整图片的尺寸和采样率    
+inSampleSize 等于1时采样后的图片等同于原尺寸，2的时候宽高为原尺寸的1/2    
+
 
 ## 图片加载库 Glide使用
 

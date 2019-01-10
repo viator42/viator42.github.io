@@ -7,6 +7,22 @@ categories: android
 
 ## Android应用的构建过程
 
+编译构建分为4个步骤
+
+代码编译 -> 代码合成 -> 资源打包 -> 签名和对齐
+
+1. 代码编译
+Java编译器对工程的代码文件进行编译，包括App源代码，编译生成的R文件和AIDL接口生成的Java接口文件
+
+2. 代码合成
+通过dex工具将class文件和第三方库文件生成虚拟机可执行的dex文件。如果使用了MultiDex，会生成多个dex文件
+
+3. 资源打包
+apkbuilder工具将dex文件，apt编译后的资源文件，第三方库打包生成apk文件
+
+4.签名对齐
+使用预定的key对apk包进行签名。对齐可以使得在运行时Android与应用程序间的交互更加有效率
+
 首先所有的资源文件会被编译，并且在一个R文件中被引用。然后Java文件编译，通过dex工具转换成dalvik字节码。最后这些文件会被打包成一个APK文件，这个应用最终安装在设备中前，APK文件会被一个debug或者release的key文件签名。
 
 --------
@@ -249,6 +265,16 @@ Map
             outputFileName = "${variant.name}-${variant.versionName}.apk"
         }
     }
+
+--------
+
+## Gradle 3.0以上的变化
+
+compile指令改成了api，两者使用没有区别
+
+增加了implementation指令作为默认的依赖方式，代替了compile。跟compile的区别在于不能跨模块依赖。模块中的依赖包不会被外部访问到，这样可以隐藏内部接口的实现而且不会产生依赖冲突。
+
+--------
 
 
 
