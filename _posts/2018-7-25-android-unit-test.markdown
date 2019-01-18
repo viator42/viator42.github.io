@@ -5,7 +5,21 @@ date:   2018-7-25
 categories: android,UnitTest
 ---
 
-现在推荐的单元测试框架是Junit和mockito
+## 测试分类
+
+### Small Test    
+单元测试，对每一个功能模块进行单独的测试
+
+### Medium Test    
+集成测试，一部分的模块进行协同测试，测试运行在虚拟机或者真机上
+
+### Large Test    
+集成UI的工作流测试，测试运行在虚拟机或者真机上
+
+单元测试使用的框架是Junit和mockito
+
+Mockito 用来模拟测试中的依赖对象，只创建测试中用到的对象    
+单元测试只在本地机器上运行使用JVM虚拟机，如果测试依赖Android Framework，使用Robolectric模拟依赖    
 
 导入库
 
@@ -13,6 +27,10 @@ categories: android,UnitTest
     testImplementation 'org.mockito:mockito-core:2.+'
 
 ## Junit相关
+
+    在所有测试调用指令发起前的 setUp() 方法。
+    在测试方法运行后的 tearDown() 方法。
+
 
 @Before 注解的方法在测试开始前执行,进行测试环境初始化工作     
 @After 注解的方法在测试方法结束后执行    
@@ -193,3 +211,7 @@ verify()方法的参数必须是mock对象
 
     @ClassRule
     public static RxSchedulersOverrideRule sSchedulersOverrideRule = new RxSchedulersOverrideRule();
+
+## Espresso相关
+
+
