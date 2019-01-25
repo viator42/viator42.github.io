@@ -241,3 +241,18 @@ class Person {
 
 --------
 
+## Kotlin Android 扩展 
+
+不需要findViewById()绑定view。导入activity的xml就可以直接使用
+
+    import kotlinx.android.synthetic.main.activity_main.*
+    import kotlinx.android.synthetic.main.content_main.*
+
+Model类序列化Parcelize
+
+    import kotlinx.android.parcel.Parcelize
+
+    @Parcelize
+    class User(val firstName: String, val lastName: String, val age: Int): Parcelable
+
+

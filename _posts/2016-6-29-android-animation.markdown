@@ -343,3 +343,52 @@ __使用__
         android:layoutAnimation:@anim/layout_anim01
         >
 
+--------
+
+## 为PopupWindow添加动画
+
+__动画xml__
+
+wrap_slide_vertical_enter_in.xml
+
+    <?xml version="1.0" encoding="utf-8"?>
+    <set xmlns:android="http://schemas.android.com/apk/res/android">
+        <translate
+            android:fromYDelta="100%p"
+            android:toYDelta="0%p"
+            android:duration="200"
+            android:fillAfter="true"
+            />
+    </set>
+
+wrap_slide_vertical_exit_out.xml
+
+    <?xml version="1.0" encoding="utf-8"?>
+    <set xmlns:android="http://schemas.android.com/apk/res/android">
+        <translate
+            android:fromYDelta="0%p"
+            android:toYDelta="100%p"
+            android:duration="200"
+            android:fillAfter="true"
+            />
+    </set>
+
+设置Style
+
+style.xml
+
+    <style name="popwindow_anim_style">
+        <!-- 指定显示的动画xml -->
+        <item name="android:windowEnterAnimation">@anim/wrap_slide_vertical_enter_in</item>
+        <!-- 指定消失的动画xml -->
+        <item name="android:windowExitAnimation">@anim/wrap_slide_vertical_exit_out</item>
+    </style>
+
+PopupWindow设置动画
+
+    GoodsAttributePopup goodsAttributePopup = new GoodsAttributePopup(GoodsActivity.this, null, goods, attributes);
+    goodsAttributePopup.setAnimationStyle(R.style.popwindow_anim_style);
+    goodsAttributePopup.showAtLocation(rootView, Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL, 0, 0);
+
+--------
+
