@@ -27,32 +27,23 @@ apkbuilder工具将dex文件，apt编译后的资源文件，第三方库打包�
 
 --------
 
-## Gradle相关
+## Gradle文件
 
-Android的构建文件中必须的元素
+在项目的根目录有build.gradle，Settings.gradle，每个模块都有一个build.gradle
 
-    buildscript {
-        
-        repositories {
-            jcenter()   //整个构建过程中的依赖仓库
-        }
-        dependencies {
-        }
-    }
+### setttings.gradle
 
-build.gradle Settings.gradle在项目的根目录，每个模块都有一个build.gradle
-
-setttings.gradle定义了哪些模块会参与构建
+这个文件定义了哪些模块会参与构建,创建模块后需要在这里添加到项目
 
     include ':app', ':base'
 
-根目录的build.gradle
+### 根目录的build.gradle
 
     buildscript {
         //定义依赖仓库
         repositories {
             google()
-            jcenter()
+            jcenter()   //整个构建过程中的依赖仓库
         }
         
         //构建过程中的依赖包
@@ -65,6 +56,7 @@ setttings.gradle定义了哪些模块会参与构建
 
     }
 
+    //声明那些被用于所有模块的属性，可以在allprojects中创建任务，这些任务最终会被运用到所有模块
     allprojects {
         repositories {
             google()
@@ -72,15 +64,16 @@ setttings.gradle定义了哪些模块会参与构建
         }
     }
 
-每个模块的build.gradle
+### 每个模块的build.gradle
 
     apply plugin: 'com.android.application' //导入Android应用插件
 
     //包含了全部的Android特有配置
     android {
-        compileSdkVersion 27
+        compileSdkVersion 27    //用来编译应用的Android API版本
+        buildToolsVersion '27.0.2'  //构建工具和编译器使用的版本号
         defaultConfig {
-            applicationId "com.viator42.ugo"    //应用的id，跟package name不同。同样的package name可以有不同的id
+            applicationId "com.viator42.ugo"    //applicationId覆盖了AndroidManifest.xml中的package name属性，跟package name不同。同样的package name可以有不同的id，这样设计可以为一个应用制作不同的版本,而且可以安装到同一个手机上
             minSdkVersion 19
             targetSdkVersion 27
             versionCode 1
@@ -113,7 +106,9 @@ setttings.gradle定义了哪些模块会参与构建
         。。。
     }
 
-###定义依赖
+--------
+
+### 定义依赖
 
 一个依赖由 group：name：version构成
 
@@ -125,48 +120,59 @@ setttings.gradle定义了哪些模块会参与构建
 
 aar文件依赖
 
+--------
+
 ### 创建Variant
 
-buildType构建类型用来定义如何构建一个应用，默认的有debug和release
+buildType构建类型用来定义如何构建一个应用，debug标识是否包含，application是什么，是否进行代码压缩
+默认的有debug和release
 
-    buildTypes {
-        debug {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            debuggable = true
-        }
-        staging.initWith(buildTypes.debug)  //可以从现有的构建类型继承属性
-        staging {
-            applicationIdSuffix "-staging"  //applicatinId当前类型的app id添加后缀，这样测试版和正式版能装在同一台手机上
-            versionNameSuffix "-staging"    //为当前类型的versionName添加后缀
+    android {
+        。。。
+        buildTypes {
+            debug {
+                minifyEnabled false
+                proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+                debuggable = true
+            }
+            staging.initWith(buildTypes.debug)  //可以从现有的构建类型继承属性
+            staging {
+                applicationIdSuffix "-staging"  //applicatinId当前类型的app id添加后缀，这样测试版和正式版能装在同一台手机上
+                versionNameSuffix "-staging"    //为当前类型的versionName添加后缀
 
-        }
-        release {
-            minifyEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            debuggable = false
+            }
+            release {
+                minifyEnabled true
+                proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+                debuggable = false
+            }
         }
     }
 
-productFlavors用于创建不同的渠道包
+### productFlavors
 
-    productFlavors {
-        qihu360 {
-            manifestPlaceholders = [
-                    channel_id: "1000",
-                    app_name  : "UGou_360定制版",
-            ]
+productFlavors用于创建不同的版本，比如构建免费版和付费版，内部试用版版和外部版，同一类别不同客户使用的版本，唯一不同的是颜色图标和后台url，对应不同市场发布的渠道包    
 
+    android {
+        。。。
+        productFlavors {
+            qihu360 {
+                manifestPlaceholders = [
+                        channel_id: "1000",
+                        app_name  : "UGou_360定制版",
+                ]
+
+            }
+            wandoujia {
+                manifestPlaceholders = [
+                        channel_id: "1001",
+                        app_name  : "UGou_豌豆荚定制版",
+                ]
+            }
+    //        productFlavors.all {
+    //            flavor -> flavor.manifestPlaceholders =[channel: name]
+    //        }
         }
-        wandoujia {
-            manifestPlaceholders = [
-                    channel_id: "1001",
-                    app_name  : "UGou_豌豆荚定制版",
-            ]
-        }
-//        productFlavors.all {
-//            flavor -> flavor.manifestPlaceholders =[channel: name]
-//        }
     }
 
     dependencies {

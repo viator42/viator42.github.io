@@ -1,71 +1,85 @@
 ---
 layout: page
-title: 关于作者
-permalink: /about/
+title: 个人简历
+permalink: /resume/
 ---
 
-### 技能
+## 技能
 
-* 熟练掌握Java编程思想,具有良好的编码设计风格,并熟练运用部分设计模式并了解在Android系统中的使用;    
-* 熟练掌握Android事件分发机制,View绘制流程,自定义控件和动画等;
-* 熟练掌握Http和Socket网络同通信;
-* 熟悉Android系统内部运行机制以及各项性能指标,擅长性能优化;
-* 拥有良好的阅读学习源代码的能力,阅读过部分系统组件以及开源框架的源代码,知晓其原理并学习其设计理念;
-* 有后台开发与部署项目的经验,能独立完成Android项目的开发
-* 熟悉React Native,能完成跨平台开发任务
-* 熟练使用Git作为版本控制
+* 熟悉Android应用层开发，独立开发过多个商业App，能独立完成Android项目的开发；
+
+* 熟悉Java编程思想,具有良好的编码设计风格,熟悉设计模式并了解在Android系统中的使用；    
+
+* 熟练掌握Android事件分发机制,View绘制流程,自定义控件和动画等；
+
+* 熟悉MVP，MVVM架构模式以及RxJava，Dagger的原理和使用；
+
+* 熟悉Android模块组件化开发；
+
+* 熟悉Material Design设计规范及使用；
+
+* 熟悉Http网络通信，熟练使用Retrofit网络加载以及Glide图片加载框架;
+
+* 拥有良好的阅读学习源代码的能力，阅读过部分系统组件以及开源框架的源代码，知晓其原理并学习其设计理念；
+
+* 了解React Native，能完成跨平台开发任务；
+
+* 熟练使用Git作为代码管理和版本控制工具；
+
+* 熟悉Android App启动、APK瘦身等性能优化；
 
 --------
 
-### 项目经历
+## 项目经历
 
-#### 柠檬壁纸    
-__简介：__ 一款手机壁纸聚合App。采用MD风格构建，提供高清壁纸的浏览，分类收藏，下载功能。    
-[下载链接](http://7xj4vv.com1.z0.glb.clouddn.com/Lemon_v1.0.apk)    
+### U购
 
-#### 财来记账    
-__简介：__ 个人开发的开源作品。MaterialDesign风格的记账App，使用系统定时器实现应收应付款的提醒以及自动记账的功能。    
-[源码](https://github.com/viator42/ErikaNote)    
-[下载链接](http://android.myapp.com/myapp/detail.htm?apkName=com.viator42.erikanote)    
-
-#### U购    
 __简介：__ 服装行业的在线商城应用，提供门店的定制主页，服装的分类展示和查询搜索。主要功能有基于地理位置的周边门店查询及导航，在线下单购买，上门预约试衣，扫码查询购买等功能。    
+
 __职责：__ 负责Android端的开发维护，与后端合作完成数据交互以及逻辑业务处理。
 
-[官网链接](http://ugouchina.com/)
+[官网链接](http://ugouchina.com/)    
+[App下载链接](http://ugouchina.com/)    
 
-#### 速派网销平台    
-__简介：__ 面向批发零售行业O2O应用，为超市和批发部提供在线的商品展示，销售，库存管理以及销售统计。   
+### 速派网销平台    
 
-__功能：__
+__简介：__ 面向小型超市和批发部的O2O应用。主要功能有通过扫描条形码录入商品，带有商品信息的条码库，可以做到常用商品无需填写直接扫码录入，同一个App中集成客户版和商户版的功能，用户可自助申请开店，店铺首页管理以及商品的展示查询以及分类。线上购买以及员工线下结算功能。连接蓝牙小票打印机打印出货单，送货上门，地图导航以及送货员实时位置查看。
 
-* 配合自建的条码库，实现扫码识别商品
-* 同一个App中集成客户版和商户版的功能，用户可自助申请开店。
-* 实现蓝牙连接小票打印机实现打印出库单，票据等功能
+__职责：__ 负责整个项目业务模块的设计和实现，Android客户端和服务端的代码编写及维护。
 
-### 应用截图
+--------
 
-#### 柠檬壁纸    
-![lemon_1](http://7xj4vv.com1.z0.glb.clouddn.com/lemon_1.jpg)
-![lemon_2](http://7xj4vv.com1.z0.glb.clouddn.com/lemon_2.jpg)
-![lemon_3](http://7xj4vv.com1.z0.glb.clouddn.com/lemon_3.jpg)
-![lemon_4](http://7xj4vv.com1.z0.glb.clouddn.com/lemon_4.jpg)
+## 工作经历
 
-#### U购    
-![ushopping_01](http://7xj4vv.com1.z0.glb.clouddn.com/ushopping_01.jpg)
-![ushopping_02](http://7xj4vv.com1.z0.glb.clouddn.com/ushopping_02.jpg)
-![ushopping_03](http://7xj4vv.com1.z0.glb.clouddn.com/ushopping_03.jpg)
-![ushopping_04](http://7xj4vv.com1.z0.glb.clouddn.com/ushopping_04.jpg)
-![ushopping_05](http://7xj4vv.com1.z0.glb.clouddn.com/ushopping_05.jpg)
+### 山东靓萌服饰有限公司
 
-#### 速派网销平台    
-![SupaiMarketing_1](http://7xj4vv.com1.z0.glb.clouddn.com/SupaiMarketing_1.jpg)
-![SupaiMarketing_2](http://7xj4vv.com1.z0.glb.clouddn.com/SupaiMarketing_2.jpg)
-![SupaiMarketing_3](http://7xj4vv.com1.z0.glb.clouddn.com/SupaiMarketing_3.jpg)
-![SupaiMarketing_4](http://7xj4vv.com1.z0.glb.clouddn.com/SupaiMarketing_4.jpg)
-![SupaiMarketing_5](http://7xj4vv.com1.z0.glb.clouddn.com/SupaiMarketing_5.jpg)
+> 时间：2015年11月~至今    
+> 职务：Android开发    
+> 职责：和后端配合完成Android端的开发和维护。
+> 负责项目：U购    
 
-### 联系方式
+### 济南速派信息技术有线公司
+
+> 时间：2015年6月~2018年10月    
+> 职务：Android端和服务端的开发维护。
+> 职责：负责产品业务模块的设计和实现。
+> 负责项目：速派网销平台    
+
+### 易驰国际信息科技有限公司
+
+> 时间：2014年6月~2015年6月 
+> 职务：前端开发
+> 职责：微信公众平台相关功能的开发， 参与项目需求分析，设计，独立完成模块编码工作。各种IT服务的搭建以及维护，项目的发布，Git分支的维护工作。
+
+### 山东动量影视
+
+> 时间：2012年12月~2014年6月
+> 职务：Web开发
+> 职责：内部项目管理系统的开发以及Linux渲染服务器的维护。
+
+--------
+
+## 联系方式
 email:    viator42@qq.com    
 Github:   https://github.com/viator42    
 blog: [cnblogs.com/viator42/](http://cnblogs.com/viator42/)    
