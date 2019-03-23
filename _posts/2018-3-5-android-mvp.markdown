@@ -6,9 +6,10 @@ categories: Android
 ---
 todo
 
-Android最初使用的是MVC模式,即Model,View,Controller.这三个部分是相互调用的,View可以直接调用model.    
-MVC模式的缺点是三个部分互相产生交互,结构混乱.在Android开发中Activity会存在一部分的业务逻辑.作为View的实际承担了Controller的功能,造成Activity的臃肿.    
+Android最初使用的是MVC模式，即Model,View,Controller。
+这三个部分是相互调用的,View可以直接调用model，MVC模式的缺点是三个部分互相产生交互,结构混乱.在Android开发中Activity会存在一部分的业务逻辑.作为View的实际承担了Controller的功能,造成Activity的臃肿.    
 MVP中添加了Prsernter类代替Controller,Model和View之间通过Prsernter控制而不直接交互    
+
 Model ←→ Prsernter ←→ View
 
 MVP模式的优点:    

@@ -14,16 +14,70 @@ RxJava本质上是一个异步操作库，是一个能让你用极其简洁的�
 Android平台上为已经开发者提供了AsyncTask,Handler等用来做异步操作的类库，那我们为什么还要选择RxJava呢？答案是简洁！RxJava可以用非常简洁的代码逻辑来解决复杂问题；而且即使业务逻辑的越来越复杂，它依然能够保持简洁    
 RxJava主要使用的是观察者模式    
 
+* 创建：Rx可以方便的创建事件流和数据流
+* 组合：Rx使用查询式的操作符组合和变换数据流
+* 监听：Rx可以订阅任何可观察的数据流并执行操作
+
 ### RxJava的基本原理
 
 在RxJava，Observable相当于被观察者，它是事件的源头，而OnSubscribe则是定义数据源如何发送事件，或者如何发送什么样的数据；Subscriber则是观察者（在代码实现上，Subscriber实现了接口Observer），定义了接收数据后对应的反应。observable.subscribe(subscriber)将两者进行了关联：即告诉Observable，它有一个Subscriber；同时触发OnSubscribe.onCall()，开启整个事件流。    
 观察者模式一般是观察者注册到被观察者     
 RxJava中是被观察者注册观察者    
 
+RxJava的原理就是创建一个Observable对象来干活，然后使用各种操作符建立起来的链式操作，就如同流水线一样，把你想要处理的数据一步一步地加工
+成你想要的成品，然后发射给Subscriber处理。
+
 ### 导入
 
-    compile 'io.reactivex.rxjava2:rxjava:2.1.1'
-    compile 'io.reactivex.rxjava2:rxandroid:2.0.1'
+    implementation 'io.reactivex.rxjava2:rxjava:2.1.1'
+    implementation 'io.reactivex.rxjava2:rxandroid:2.0.1'
+
+###  RxJava基本实现
+
+RxJava的基本用法分为如下3个步骤。
+
+1.创建Observer（观察者）    
+它决定事件触发的时候将有怎样的行为    
+
+    Observer<String> observer = new Observer<String>() {
+            @Override
+            public void onSubscribe(Disposable d) {
+                Log.v("RxJavaTester", "onSubscribe");
+            }
+
+            @Override
+            public void onNext(String s) {
+                Log.v("RxJavaTester", s + " onNext");
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                Log.v("RxJavaTester", "onError");
+            }
+
+            @Override
+            public void onComplete() {
+                Log.v("RxJavaTester", "onComplete");
+            }
+        };
+
+2.创建 Observable（被观察者）    
+它决定什么时候触发事件以及触发怎样的事件。RxJava 使用 create 方法来创建一个Observable，并为它定义事件触发规则
+
+    Observable.create(new ObservableOnSubscribe<String>() {
+            @Override
+            public void subscribe(ObservableEmitter<String> e) throws Exception {
+                e.onNext("111");
+                e.onNext("222");
+                e.onNext("333");
+                e.onComplete();
+            }
+        })
+
+3.Subscribe（订阅）   
+    
+    observable.subscribe(subscriber);
+
 
 ### Example
 

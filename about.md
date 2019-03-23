@@ -4,6 +4,13 @@ title: 个人简历
 permalink: /resume/
 ---
 
+## 联系方式
+email:    viator42@qq.com    
+Github:   https://github.com/viator42    
+blog: [cnblogs.com/viator42/](http://cnblogs.com/viator42/)    
+
+--------
+
 ## 技能
 
 * 熟悉Android应用层开发，独立开发过多个商业App，能独立完成Android项目的开发；
@@ -79,7 +86,21 @@ __职责：__ 负责整个项目业务模块的设计和实现，Android客户�
 
 --------
 
-## 联系方式
-email:    viator42@qq.com    
-Github:   https://github.com/viator42    
-blog: [cnblogs.com/viator42/](http://cnblogs.com/viator42/)    
+## 项目截图
+
+### U购
+
+![](http://sdqqsntd.com/static/img/app/ugou_1.png)
+![](http://sdqqsntd.com/static/img/app/ugou_2.png)
+![](http://sdqqsntd.com/static/img/app/ugou_3.png)
+![](http://sdqqsntd.com/static/img/app/ugou_4.png)
+![](http://sdqqsntd.com/static/img/app/ugou_5.png)
+![](http://sdqqsntd.com/static/img/app/ugou_6.png)
+
+### 速派网销平台
+
+![](http://sdqqsntd.com/static/img/app/supai_1.png)
+![](http://sdqqsntd.com/static/img/app/supai_2.png)
+![](http://sdqqsntd.com/static/img/app/supai_3.png)
+![](http://sdqqsntd.com/static/img/app/supai_4.png)
+![](http://sdqqsntd.com/static/img/app/supai_5.png)

@@ -9,7 +9,7 @@ categories: Java
 
 ## 三元操作符if-else
 
-boolean-exp ? value-true : value-false;
+        boolean-exp ? value-true : value-false;
 
 示例:
 
@@ -65,7 +65,7 @@ ordinal方法输出ini值
 
 final修饰符    
 
-类属性: 常量,初始化时必须复制,不允许改变
+类属性: 常量,初始化时必须赋值,不允许改变
 方法:   不允许子类覆盖
 类:     不允许其他类继承这个类
 
@@ -80,39 +80,39 @@ final修饰符
 
 类属性的类型可以作为一个参数自定义
 
-public class Holder<T, B> {     //参数的类型
-    private T t;        //属性的类型用符合代替
-    private B b;
+        public class Holder<T, B> {     //参数的类型
+                private T t;        //属性的类型用符合代替
+                private B b;
 
-    public B getB() {
-        return b;
-    }
+                public B getB() {
+                        return b;
+                }
 
-    public void setB(B b) {
-        this.b = b;
-    }
+                public void setB(B b) {
+                        this.b = b;
+                }
 
-    public T getT() {
-        return t;
-    }
+                public T getT() {
+                        return t;
+                }
 
-    public void setT(T t) {
-        this.t = t;
-    }
+                public void setT(T t) {
+                        this.t = t;
+                }
 
-    public static void main(String[] args) {
-        System.out.println("Class Tester");
+                public static void main(String[] args) {
+                        System.out.println("Class Tester");
 
-        Holder<String, Integer> holder = new Holder<>();
+                        Holder<String, Integer> holder = new Holder<>();
 
-        holder.setT("aaaaa");
-        System.out.println(holder.getT());
+                        holder.setT("aaaaa");
+                        System.out.println(holder.getT());
 
-        holder.setB(123);
-        System.out.println(holder.getB());
+                        holder.setB(123);
+                        System.out.println(holder.getB());
 
-    }
-}
+                }
+        }
 
 ---------
 
@@ -120,24 +120,24 @@ public class Holder<T, B> {     //参数的类型
 
 第一种:
 
-　　Map map = new HashMap();
-　　Iterator iter = map.entrySet().iterator();
-　　while (iter.hasNext()) {
-        　　Map.Entry entry = (Map.Entry) iter.next();
-        　　Object key = entry.getKey();
-        　　Object val = entry.getValue();
-　　}
+        Map map = new HashMap();
+        Iterator iter = map.entrySet().iterator();
+        while (iter.hasNext()) {
+                Map.Entry entry = (Map.Entry) iter.next();
+                Object key = entry.getKey();
+                Object val = entry.getValue();
+        }
 
 效率高,以后一定要使用此种方式！
 
 第二种:
 
-　　Map map = new HashMap();
-　　Iterator iter = map.keySet().iterator();
-　　while (iter.hasNext()) {
-        　　Object key = iter.next();
-        　　Object val = map.get(key);
-　　}
+        Map map = new HashMap();
+        Iterator iter = map.keySet().iterator();
+        while (iter.hasNext()) {
+                Object key = iter.next();
+                Object val = map.get(key);
+        }
 
 效率低,以后尽量少使用！
 
@@ -785,19 +785,19 @@ FutureTask类实现了RunnableFuture接口
 
 __实现Callble接口的任务__
 
-class Task implements Callable<String> {
-    private String msg;
+        class Task implements Callable<String> {
+        private String msg;
 
-    public Task(String msg) {
-        this.msg = msg;
-    }
+        public Task(String msg) {
+                this.msg = msg;
+        }
 
-    @Override
-    public String call() throws Exception {
-        System.out.println(msg);
-        return msg + " done";
-    }
-}
+        @Override
+        public String call() throws Exception {
+                System.out.println(msg);
+                return msg + " done";
+        }
+        }
 
 __Callable + Future__    
 submit提交一个实现Callable接口的任务，并且返回封装了异步计算结果的Future。
@@ -807,13 +807,13 @@ submit提交一个实现Callable接口的任务，并且返回封装了异步计
 
         Future<String> future = executor.submit(task);
         try {
-        String result = future.get();
-        System.out.println(result);
+                String result = future.get();
+                System.out.println(result);
 
         } catch (InterruptedException e) {
-        e.printStackTrace();
+                e.printStackTrace();
         } catch (ExecutionException e) {
-        e.printStackTrace();
+                e.printStackTrace();
         }
 
 __Callable + FutureTask__
