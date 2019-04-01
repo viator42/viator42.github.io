@@ -5,25 +5,25 @@ date:   2019-03-25
 categories: android
 ---
 
-## View绘制的过程
-
 各种组件都是ViewGroup的子类,ViewGroup是View的子类,view结构如下
 
 ![view结构](http://zhaowen.io/post/Android_Dive_Deep_In_View/decor_view.jpg)
 
 Android的UI界面是一个树形结构,View的嵌套.子View在父View中，这些View都经过一个相同的流程最终显示到屏幕上    
+
+view的位置由top，left，right，bottom四个值来确定，宽度是right-left，高度是bottom-top。    
+
+--------
+
+## View绘制的过程
+
 每一个View的绘制都有Measure,Layout,Draw三个步骤的过程
 
 measure -> onMeasure() -> layout -> onLayout() -> draw -> onDraw()
 
-* Measure()    
-测量视图的大小
-
-* Layout()    
-计算视图的位置
-
-* Draw()    
-视图绘制到屏幕上
+* Measure() 测量视图的大小
+* Layout()  计算视图的位置
+* Draw()    视图绘制到屏幕上
 
 meaure会经历performMeaure -> meaure -> onMeaure 的调用过程,其他两个也是同样    
 视图绘制过程中会回调onMeasure(), onLayout(), onDraw()方法,自定义View的时候需要重写这三个方法    
@@ -43,16 +43,16 @@ meaure会经历performMeaure -> meaure -> onMeaure 的调用过程,其他两个�
         super.onDraw(canvas);
     }
 
-点击屏幕的事件顺序 DOWN->UP
-滑动屏幕的事件顺序 DOWN->MOVE...->UP
-
 widthMeasureSpec和heightMeasureSpec是测量的view的尺寸    
-其中高两位是模式    
+其中高两位是模式，低两位是测量值    
 模式分为一下三种    
 
 * EXACTLY 当View的layout_width和layout_height设置的是固定值的时候
 * AT_MOST 控件的layout_width和layout_height设置成wrap_content的时候,控件的大小随着子控件的大小变化.
 * UNSPECIFIED 不指定测量的大小
+
+MeasureSpec和LayoutParam的关系    
+系统使用MeasureSpec来测量View的尺寸，LayoutParam在绘制的时候会转换成MeasureSpec。LayoutParam需要和父容器一起决定MeasureSpec的值。
 
 __重写onMeasure__
 
@@ -118,18 +118,88 @@ __自定义View需要注意的地方__
 
 MotionEvent 是手指触控屏幕产生的一系列事件, 主要有以下几种
 
-* ACTION_DOWN    
-* ACTION_UP    
-* ACTION_MOVE
+* ACTION_DOWN 手指刚接触屏幕    
+* ACTION_MOVE 手指在屏幕上移动
+* ACTION_UP 手指离开屏幕     
+
+事件触发顺序
+
+点击屏幕松开 DOWN -> UP    
+点击屏幕滑动再松开 DOWN -> MOVE -> MOVE -> UP
+
+TouchSlop 是能识别出来的最小滑动距离,小于这个距离系统不认为这是滑动操作.主要是屏蔽手抖动的误差
 
 --------
 
 ### View滑动
 
+一般有三种方法实现View滑动,ScrollTo或者ScrollBy方法,使用动画效果,通过改变LayoutParams使View重新布局
+
+ScrollTo()和ScrollBy()的区别
+
+* scrollTo的两个参数x,y表示的移动的具体位置(目标位置x,y)，scrollTo实现了基于传递参数的绝对滑动。
+* scrollBy的两个参数x,y表示移动的偏移量，scrollBy实现了基于传递参数的相对滑动。
+
 * getX（）：获取点击事件距离控件左边的距离，即视图坐标。
 * getY（）：获取点击事件距离控件顶边的距离，即视图坐标。
 * getRawX（）：获取点击事件距离整个屏幕左边的距离，即绝对坐标。
 * getRawY（）：获取点击事件距离整个屏幕顶边的距离，即绝对坐标。
+
+--------
+
+### Android 手势相关
+
+首先定义GestureDetector
+
+    GestureDetector mGestureDetector = new GestureDetector(this, new GestureDetector.OnGestureListener() {
+        @Override
+        //当手指按下的时候触发下面的方法
+        public boolean onDown(MotionEvent e) {
+            Toast.makeText(MainActivity.this, "Press Down", Toast.LENGTH_SHORT).show();
+            return true;
+        }
+
+        @Override
+        //当用户手指在屏幕上按下,而且还未移动和松开的时候触发这个方法
+        public void onShowPress(MotionEvent e) {
+
+        }
+
+        @Override
+        //当手指在屏幕上轻轻点击的时候触发下面的方法
+        public boolean onSingleTapUp(MotionEvent e) {
+            return false;
+        }
+
+        @Override
+        //当手指在屏幕上滚动的时候触发这个方法
+        public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+            return false;
+        }
+
+        @Override
+        //当用户手指在屏幕上长按的时候触发下面的方法
+        public void onLongPress(MotionEvent e) {
+            Toast.makeText(MainActivity.this, "Long pressed", Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        //当用户的手指在触摸屏上拖过的时候触发下面的方法,velocityX代表横向上的速度,velocityY代表纵向上的速度
+        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+            return false;
+        }
+    });
+
+组件应用touch事件, 将touch事件交给gesture处理
+
+    button = (Button) findViewById(R.id.test_btn);
+    button.setOnTouchListener(new View.OnTouchListener() {
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            mGestureDetector.onTouchEvent(event);
+            return true;
+        }
+    });
 
 --------
 
