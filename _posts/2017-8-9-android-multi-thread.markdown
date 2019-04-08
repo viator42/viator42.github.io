@@ -75,6 +75,8 @@ synchronized关键字可防止多个线程同时执行一段代码，那么这�
 
 阻塞队列（BlockingQueue）是一个支持两个附加操作的队列。这两个附加的操作是：在队列为空时，获取元素的线程会等待队列变为非空。当队列满时，存储元素的线程会等待队列可用。阻塞队列常用于生产者和消费者的场景，生产者是往队列里添加元素的线程，消费者是从队列里拿元素的线程。阻塞队列就是生产者存放元素的容器，而消费者也只从容器里拿元素。
 
+阻塞队列与普通队列的区别在于，当队列是空的时，从队列中获取元素的操作将会被阻塞，或者当队列是满时，往队列里添加元素的操作会被阻塞。试图从空的阻塞队列中获取元素的线程将会被阻塞，直到其他的线程往空的队列插入新的元素。同样，试图往已满的阻塞队列中添加新元素的线程同样也会被阻塞，直到其他的线程使队列重新变得空闲起来，如从队列中移除一个或者多个元素，或者完全清空队列
+
 __常见阻塞场景__
 
 阻塞队列有两个常见的阻塞场景，它们分别是：
@@ -101,13 +103,31 @@ __BlockingQueue的核心方法__
 
 __阻塞队列分类__
 
-* ArrayBlockingQueue ：     由数组结构组成的有界阻塞队列。
-* LinkedBlockingQueue ：    由链表结构组成的有界阻塞队列。
-* PriorityBlockingQueue ：  支持优先级排序的无界阻塞队列。
-* DelayQueue：              使用优先级队列实现的无界阻塞队列。
-* SynchronousQueue：        不存储元素的阻塞队列。
-* LinkedTransferQueue：     由链表结构组成的无界阻塞队列。
-* LinkedBlockingDeque：     由链表结构组成的双向阻塞队列。
+* ArrayBlockingQueue ：     
+用数组实现的有界阻塞队列，并按照先进先出（FIFO）的原则对元素进行排序。默认情况下不保证线程公平地访问队列。公平访问队列就是指阻塞的所有生产者线程或消费者线程，当队列可用时，可以按照阻塞的先后顺序访问队列。插入获取元素的时候使用阻塞的方式。即先阻塞的生产者线程，可以先往队列里插入元素；先阻塞的消费者线程，可以先从队列里获取元素。
+
+* LinkedBlockingQueue ：    
+它是基于链表的阻塞队列，同ArrayListBlockingQueue类似，此队列按照先进先出（FIFO）的原则对元素进行排序，其内部也维持着一个数据缓冲队列（该队列由一个链表构成）。生产者向队列中放入数据的时候会进入缓存区，直到缓存区满的时候才会触发阻塞队列。LinkedBlockingQueue对生产者和消费者端使用了独立的锁来控制同步，这也意味着在高并发的情况下生产者和消费者可以并行地操作队列中的数据，以此来提高整个队列的并发性能。
+
+* PriorityBlockingQueue ：  
+它是一个支持优先级的无界队列。默认情况下元素采取自然顺序升序排列。这里可以自定义实现compareTo（）方法来指定元素进行排序规则；或者初始化PriorityBlockingQueue时，指定构造参数Comparator来对元素进行排序。但其不能保证同优先级元素的顺序。
+
+* DelayQueue：              
+它是一个支持延时获取元素的无界阻塞队列。队列使用PriorityQueue来实现。队列中的元素必须实现Delayed 接口。创建元素时，可以指定元素到期的时间，只有在元素到期时才能从队列中取走。
+
+* SynchronousQueue：        
+它是一个不存储元素的阻塞队列。每个插入操作必须等待另一个线程的移除操作，同样任何一个移除操作都等待另一个线程的插入操作。因此此队列内部其实没有任何一个元素，或者说容量是0，严格来说它并不是一种容器。由于队列没有容量，因此不能调用peek操作（返回队列的头元素）。
+
+* LinkedTransferQueue：     
+它是一个由链表结构组成的无界阻塞TransferQueue队列。LinkedTransferQueue实现了一个重要的接口TransferQueue。该接口含有5个方法，其中有3个重要的方法，它们分别如下所示。    
+（1）transfer（E e）：若当前存在一个正在等待获取的消费者线程，则立刻将元素传递给消费者；如果没有消费者在等待接收数据，就会将元素插入到队列尾部，并且等待进入阻塞状态，直到有消费者线程取走该元素。    
+（2）tryTransfer（E e）：若当前存在一个正在等待获取的消费者线程，则立刻将元素传递给消费者；若不存在，则返回 false，并且不进入队列，这是一个不阻塞的操作。与 transfer 方法不同的是，tryTransfer方法无论消费者是否接收，其都会立即返回；而transfer方法则是消费者接收了才返回。    
+（3）tryTransfer（E e，long timeout，TimeUnit unit）：若当前存在一个正在等待获取的消费者线程，则立刻将元素传递给消费者；若不存在则将元素插入到队列尾部，并且等待消费者线程取走该元素。若在
+指定的超时时间内元素未被消费者线程获取，则返回false；若在指定的超时时间内其被消费者线程获取，则返回true。    
+
+* LinkedBlockingDeque：     
+它是一个由链表结构组成的双向阻塞队列。双向队列可以从队列的两端插入和移出元素，因此在多线程同时入队时，也就减少了一半的竞争。由于是双向的，因此LinkedBlockingDeque多了addFirst、addLast、
+offerFirst、offerLast、peekFirst、peekLast等方法。其中，以First单词结尾的方法，表示插入、获取或移除双端队列的第一个元素；以Last单词结尾的方法，表示插入、获取或移除双端队列的最后一个元素。
 
 --------
 
@@ -115,9 +135,9 @@ __阻塞队列分类__
 
 __线程池的优点__
 
-1. 重用线程池中的线程,避免线程创建销毁带来的性能开销
-2. 控制最大并发数,避免大量线程相互抢夺资源造成阻塞
-3. 对线程进行管理,并提供定时执行和指定时间执行的功能
+1. 重用线程池中的线程,避免线程创建销毁带来的性能开销    
+2. 控制最大并发数,避免大量线程相互抢夺资源造成阻塞    
+3. 对线程进行管理,并提供定时执行和指定时间执行的功能    
 
 线程池类为 java.util.concurrent.ThreadPoolExecutor，常用构造方法为：
 
@@ -148,137 +168,140 @@ __创建新线程的策略__
 
 __常见的线程池__
 
-* FixedThreadPool 创建线程数量固定大小的线程池,只有核心线程,任务队列大小没有限制.适用于快速响应请求.创建一个定长线程池，可控制线程最大并发数，超出的线程会在队列中等待。
+* FixedThreadPool    
+创建线程数量固定大小的线程池,只有核心线程,任务队列大小没有限制.适用于快速响应请求.创建一个定长线程池，可控制线程最大并发数，超出的线程会在队列中等待。    
 
-        ExecutorService fixedThreadPool = Executors.newFixedThreadPool(3);
-        for (int i = 0; i < 10; i++) {
-                final int index = i;
-                fixedThreadPool.execute(new Runnable() {
-                        @Override
-                        public void run() {
-                                try {
-                                        System.out.println(index);
-                                        Thread.sleep(2000);
-                                } catch (InterruptedException e) {
-                                        // TODO Auto-generated catch block
-                                        e.printStackTrace();
-                                }
-                        }
-                });
-        }
+    ExecutorService fixedThreadPool = Executors.newFixedThreadPool(3);
+    for (int i = 0; i < 10; i++) {
+            final int index = i;
+            fixedThreadPool.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                            try {
+                                    System.out.println(index);
+                                    Thread.sleep(2000);
+                            } catch (InterruptedException e) {
+                                    // TODO Auto-generated catch block
+                                    e.printStackTrace();
+                            }
+                    }
+            });
+    }
 
-* CachedThreadPool 创建一个可根据需要创建新线程的线程池，但是在以前构造的线程可用时将重用它们。只有非核心线程,最大线程数没有限制,适合执行大量耗时较少的任务.线程池为无限大，当执行第二个任务时第一个任务已经完成，会复用执行第一个任务的线程，而不用每次新建线程。
+* CachedThreadPool    
+创建一个可根据需要创建新线程的线程池，但是在以前构造的线程可用时将重用它们。只有非核心线程,最大线程数没有限制,适合执行大量耗时较少的任务.线程池为无限大，当执行第二个任务时第一个任务已经完成，会复用执行第一个任务的线程，而不用每次新建线程。
 
-        ExecutorService cachedThreadPool = Executors.newCachedThreadPool();
-        for (int i = 0; i < 10; i++) {
-                final int index = i;
-                try {
-                        Thread.sleep(index * 1000);
-                } catch (InterruptedException e) {
-                        e.printStackTrace();
-                }
-        
-                cachedThreadPool.execute(new Runnable() {
-                        @Override
-                        public void run() {
-                                System.out.println(index);
-                        }
-                });
-        }
+    ExecutorService cachedThreadPool = Executors.newCachedThreadPool();
+    for (int i = 0; i < 10; i++) {
+            final int index = i;
+            try {
+                    Thread.sleep(index * 1000);
+            } catch (InterruptedException e) {
+                    e.printStackTrace();
+            }
+    
+            cachedThreadPool.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                            System.out.println(index);
+                    }
+            });
+    }
 
-* ScheduledThreadPool 核心线程数固定,非核心线程数没有限制，此线程池支持定时以及周期性执行任务的需求。
+* ScheduledThreadPool    
+核心线程数固定,非核心线程数没有限制，此线程池支持定时以及周期性执行任务的需求。      
 
 表示延迟3秒执行。
 
-        ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(5);
-        scheduledThreadPool.schedule(new Runnable() {
-        
-                @Override
-                public void run() {
-                        System.out.println("delay 3 seconds");
-                }
-        }, 3, TimeUnit.SECONDS);
+    ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(5);
+    scheduledThreadPool.schedule(new Runnable() {
+            @Override
+            public void run() {
+                    System.out.println("delay 3 seconds");
+            }
+    }, 3, TimeUnit.SECONDS);
 
 表示延迟1秒后每3秒执行一次。
 
-        scheduledThreadPool.scheduleAtFixedRate(new Runnable() {
-                @Override
-                public void run() {
-                        System.out.println("delay 1 seconds, and excute every 3 seconds");
-                }
-        }, 1, 3, TimeUnit.SECONDS);
+    scheduledThreadPool.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                    System.out.println("delay 1 seconds, and excute every 3 seconds");
+            }
+    }, 1, 3, TimeUnit.SECONDS);
 
 
-* SingleThreadExecutor 创建一个单线程化的线程池，它只会用唯一的工作线程来执行任务，保证所有任务按照指定顺序(FIFO, LIFO, 优先级)执行。
+* SingleThreadExecutor    
+创建一个单线程化的线程池，它只会用唯一的工作线程来执行任务，保证所有任务按照指定顺序(FIFO, LIFO, 优先级)执行。    
 
-        ExecutorService singleThreadExecutor = Executors.newSingleThreadExecutor();
-        for (int i = 0; i < 10; i++) {
-                final int index = i;
-                singleThreadExecutor.execute(new Runnable() {
-        
-                        @Override
-                        public void run() {
-                                try {
-                                        System.out.println(index);
-                                        Thread.sleep(2000);
-                                } catch (InterruptedException e) {
-                                        // TODO Auto-generated catch block
-                                        e.printStackTrace();
-                                }
-                        }
-                });
-        }
+    ExecutorService singleThreadExecutor = Executors.newSingleThreadExecutor();
+    for (int i = 0; i < 10; i++) {
+            final int index = i;
+            singleThreadExecutor.execute(new Runnable() {
+    
+                    @Override
+                    public void run() {
+                            try {
+                                    System.out.println(index);
+                                    Thread.sleep(2000);
+                            } catch (InterruptedException e) {
+                                    // TODO Auto-generated catch block
+                                    e.printStackTrace();
+                            }
+                    }
+            });
+    }
 
 ### __代码示例__
 
 需要执行的Runnable任务
 
-        public class ThreadPollTask implements Runnable {
-                // 保存任务所需要的数据
-                private Object threadPoolTaskData;
-                ThreadPollTask(Object tasks) {
-                        this.threadPoolTaskData = tasks;
-                }
-                @Override
-                public void run() {
-                        // 处理一个任务，这里的处理方式太简单了，仅仅是一个打印语句
-                        System.out.println("start .." + threadPoolTaskData);
-                        try {
-                        //便于观察，等待一段时间
-                        Thread.sleep(2000);
-                        } catch (Exception e) {
-                        e.printStackTrace();
-                        }
-                }
-                public Object getTask() {
-                        return this.threadPoolTaskData;
-                }
-        }
+    public class ThreadPollTask implements Runnable {
+            // 保存任务所需要的数据
+            private Object threadPoolTaskData;
+            ThreadPollTask(Object tasks) {
+                    this.threadPoolTaskData = tasks;
+            }
+            @Override
+            public void run() {
+                    // 处理一个任务，这里的处理方式太简单了，仅仅是一个打印语句
+                    System.out.println("start .." + threadPoolTaskData);
+                    try {
+                    //便于观察，等待一段时间
+                    Thread.sleep(2000);
+                    } catch (Exception e) {
+                    e.printStackTrace();
+                    }
+            }
+            public Object getTask() {
+                    return this.threadPoolTaskData;
+            }
+    }
 
 手动创建线程池
 
-        private static int produceTaskSleepTime = 2;
-        private static int produceTaskMaxNumber = 10;
+    private static int produceTaskSleepTime = 2;
+    private static int produceTaskMaxNumber = 10;
 
-        // 构造一个线程池
-        ThreadPoolExecutor threadPool = new ThreadPoolExecutor(2, 4, 3,
-                TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(3),
-                new ThreadPoolExecutor.DiscardOldestPolicy());
+    // 构造一个线程池
+    ThreadPoolExecutor threadPool = new ThreadPoolExecutor(2, 4, 3,
+            TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(3),
+            new ThreadPoolExecutor.DiscardOldestPolicy());
 
 执行Callable任务
 
-        for (int i = 1; i <= produceTaskMaxNumber; i++) {
-            try {
-                // 产生一个任务，并将其加入到线程池
-                String task = "task@ " + i;
-                System.out.println("put " + task);
-                threadPool.execute(new ThreadPollTask(task));
-                // 便于观察，等待一段时间
-                Thread.sleep(produceTaskSleepTime);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+    for (int i = 1; i <= produceTaskMaxNumber; i++) {
+        try {
+            // 产生一个任务，并将其加入到线程池
+            String task = "task@ " + i;
+            System.out.println("put " + task);
+            threadPool.execute(new ThreadPollTask(task));
+            // 便于观察，等待一段时间
+            Thread.sleep(produceTaskSleepTime);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+    }
 
 线程池对拒绝任务的处理策略    
 
@@ -296,6 +319,341 @@ CallerRunsPolicy
 
 用户自定义拒绝策略（最常用）
 实现RejectedExecutionHandler
+
+--------
+
+代码示例
+
+    public class ThreadPollTask implements Runnable {
+        // 保存任务所需要的数据
+        private Object threadPoolTaskData;
+        ThreadPollTask(Object tasks) {
+            this.threadPoolTaskData = tasks;
+        }
+        @Override
+        public void run() {
+            // 处理一个任务，这里的处理方式太简单了，仅仅是一个打印语句
+            System.out.println("start .." + threadPoolTaskData);
+            try {
+                //便于观察，等待一段时间
+                Thread.sleep(2000);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        public Object getTask() {
+            return this.threadPoolTaskData;
+        }
+    }
+
+    private static int produceTaskSleepTime = 2;
+    private static int produceTaskMaxNumber = 10;
+
+    // 构造一个线程池
+    ThreadPoolExecutor threadPool = new ThreadPoolExecutor(2, 4, 3,
+            TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(3),
+            new ThreadPoolExecutor.DiscardOldestPolicy());
+
+    for (int i = 1; i <= produceTaskMaxNumber; i++) {
+        try {
+            // 产生一个任务，并将其加入到线程池
+            String task = "task@ " + i;
+            System.out.println("put " + task);
+            threadPool.execute(new ThreadPollTask(task));
+            // 便于观察，等待一段时间
+            Thread.sleep(produceTaskSleepTime);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+--------
+
+# ASyncTask相关
+
+一般声明在Activity类中作为内内部类.标注三个参数的类型
+第一个参数表示要执行的任务通常是网络的路径。第二个参数表示进度的刻度，第三个参数表示任务执行的结果。
+
+重写方法完成操作.
+
+*  onPreExecute 表示任务执行之前的操作.    
+*  doInBackground方法实现耗时的任务。    
+*  onPostExecute 主要是更新UI的操作.    
+
+    public class ListAllTask extends AsyncTask<String, Void, String>
+    {
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected String doInBackground(String... params) {
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+        }
+    }
+
+运行AsyncTask
+new ListAllTask().execute("aaa");
+
+Android多线程编程主要使用的方法    
+创建Thread,Handler Looper机制通信和使用异步框架ASyncTask    
+
+Android 原生的 AsyncTask.java 是对线程池的一个封装，使用其自定义的 Executor 来调度线程的执行方式（并发还是串行），并使用 Handler 来完成子线程和主线程数据的共享。
+
+ASyncTask需要继承父类并定义三个泛型类型
+
+    private class MyTask extends AsyncTask<Void, Void, Void> { ... }
+
+* Params  传入的参数,这里是可变长参数
+* Progress    处理过程中的进度信息
+* Result  返回的结果信息
+
+ASyncTask需要重写三个方法    
+* onPreExecute() 该方法将在执行实际的后台操作前被UI thread调用。可以在该方法中做一些准备工作，如在界面上显示一个进度条。
+* doInBackground(Params...), 将在onPreExecute 方法执行后马上执行，该方法运行在后台线程中。这里将主要负责执行那些很耗时的后台计算工作。可以调用 publishProgress方法来更新实时的任务进度。此方法中不能进行修改UI操作
+* onProgressUpdate(Progress...) UI thread将调用这个方法从而在界面上展示任务的进展情况，例如通过一个进度条进行展示。
+* onPostExecute(Result), 在doInBackground 执行完成后，onPostExecute 方法将被UI thread调用，后台的计算结果将通过该方法传递到UI thread.
+
+ASyncTask必须在UI线程中创建,execute方法必须在UI thread中调用,不要手动的调用onPreExecute(), onPostExecute(Result)，doInBackground(Params...), onProgressUpdate(Progress...)这几个方法
+
+ASyncTask的缺点: 后台线程只有一个,多个任务线性执行
+
+参考    
+https://segmentfault.com/a/1190000002872278    
+http://www.infoq.com/cn/articles/android-asynctask    
+
+## ASyncTask源码整理
+
+主要使用的技术是ThreadPoll线程池和Handler Looper实现
+
+ASyncTask构造函数中创建FutureTask, WorkerRunnable<Params, Result>对象     
+WorkerRunnable继承了Runnable接口,call方法调用doInBackground()方法,结果返回Result对象,最后调用postResult方法返回结果
+FutureTask实现了done方法在任务完成时调用postResultIfNotInvoked() -> postResult()返回结果
+
+execute()方法执行    
+
+调用execute() -> executeOnExecutor()
+
+executeOnExecutor()    
+
+    onPreExecute()
+    mWorker.mParams = params;   //Callable对象参数赋值
+    exec.execute(mFuture);  //线程添加到线程池
+
+WorkerRunnable的对象中
+
+    mWorker = new WorkerRunnable<Params, Result>() {
+            public Result call() throws Exception {
+                mTaskInvoked.set(true);
+                Result result = null;
+                try {
+                    Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
+                    //noinspection unchecked
+                    result = doInBackground(mParams);
+                    Binder.flushPendingCommands();
+                } catch (Throwable tr) {
+                    mCancelled.set(true);
+                    throw tr;
+                } finally {
+                    postResult(result);
+                }
+                return result;
+            }
+        };
+
+postResult方法会把使用Handler Messageer把结果发送给主线程
+
+    private Result postResult(Result result) {
+        @SuppressWarnings("unchecked")
+        Message message = getHandler().obtainMessage(MESSAGE_POST_RESULT,
+                new AsyncTaskResult<Result>(this, result));
+        message.sendToTarget();
+        return result;
+    }
+
+主线程Handler接收返回的结果
+
+    private static class InternalHandler extends Handler {
+        public InternalHandler() {
+            super(Looper.getMainLooper());
+        }
+
+        @SuppressWarnings({"unchecked", "RawUseOfParameterizedType"})
+        @Override
+        public void handleMessage(Message msg) {
+            AsyncTaskResult<?> result = (AsyncTaskResult<?>) msg.obj;
+            switch (msg.what) {
+                case MESSAGE_POST_RESULT:
+                    // There is only one result
+                    result.mTask.finish(result.mData[0]);
+                    break;
+                case MESSAGE_POST_PROGRESS:
+                    result.mTask.onProgressUpdate(result.mData);
+                    break;
+            }
+        }
+    }
+
+finish() -> onPostExecute()
+
+    private void finish(Result result) {
+        if (isCancelled()) {
+            onCancelled(result);
+        } else {
+            onPostExecute(result);
+        }
+        mStatus = Status.FINISHED;
+    }
+
+--------
+
+# ASyncTask相关
+
+一般声明在Activity类中作为内内部类.标注三个参数的类型
+第一个参数表示要执行的任务通常是网络的路径。第二个参数表示进度的刻度，第三个参数表示任务执行的结果。
+
+重写方法完成操作.
+
+*  onPreExecute 表示任务执行之前的操作.    
+*  doInBackground方法实现耗时的任务。    
+*  onPostExecute 主要是更新UI的操作.    
+
+        public class ListAllTask extends AsyncTask<String, Void, String>
+        {
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+            }
+
+            @Override
+            protected String doInBackground(String... params) {
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(String s) {
+                super.onPostExecute(s);
+            }
+        }
+
+运行AsyncTask
+new ListAllTask().execute("aaa");
+
+Android多线程编程主要使用的方法    
+创建Thread,Handler Looper机制通信和使用异步框架ASyncTask    
+
+Android 原生的 AsyncTask.java 是对线程池的一个封装，使用其自定义的 Executor 来调度线程的执行方式（并发还是串行），并使用 Handler 来完成子线程和主线程数据的共享。
+
+ASyncTask需要继承父类并定义三个泛型类型
+
+    private class MyTask extends AsyncTask<Void, Void, Void> { ... }
+
+* Params  传入的参数,这里是可变长参数
+* Progress    处理过程中的进度信息
+* Result  返回的结果信息
+
+ASyncTask需要重写三个方法    
+* onPreExecute() 该方法将在执行实际的后台操作前被UI thread调用。可以在该方法中做一些准备工作，如在界面上显示一个进度条。
+* doInBackground(Params...), 将在onPreExecute 方法执行后马上执行，该方法运行在后台线程中。这里将主要负责执行那些很耗时的后台计算工作。可以调用 publishProgress方法来更新实时的任务进度。此方法中不能进行修改UI操作
+* onProgressUpdate(Progress...) UI thread将调用这个方法从而在界面上展示任务的进展情况，例如通过一个进度条进行展示。
+* onPostExecute(Result), 在doInBackground 执行完成后，onPostExecute 方法将被UI thread调用，后台的计算结果将通过该方法传递到UI thread.
+
+ASyncTask必须在UI线程中创建,execute方法必须在UI thread中调用,不要手动的调用onPreExecute(), onPostExecute(Result)，doInBackground(Params...), onProgressUpdate(Progress...)这几个方法
+
+ASyncTask的缺点: 后台线程只有一个,多个任务线性执行
+
+参考    
+https://segmentfault.com/a/1190000002872278    
+http://www.infoq.com/cn/articles/android-asynctask    
+
+## ASyncTask源码整理
+
+主要使用的技术是ThreadPoll线程池和Handler Looper实现
+
+ASyncTask构造函数中创建FutureTask, WorkerRunnable<Params, Result>对象     
+WorkerRunnable继承了Runnable接口,call方法调用doInBackground()方法,结果返回Result对象,最后调用postResult方法返回结果
+FutureTask实现了done方法在任务完成时调用postResultIfNotInvoked() -> postResult()返回结果
+
+execute()方法执行    
+
+调用execute() -> executeOnExecutor()
+
+executeOnExecutor()    
+
+    onPreExecute()
+    mWorker.mParams = params;   //Callable对象参数赋值
+    exec.execute(mFuture);  //线程添加到线程池
+
+WorkerRunnable的对象中
+
+    mWorker = new WorkerRunnable<Params, Result>() {
+            public Result call() throws Exception {
+                mTaskInvoked.set(true);
+                Result result = null;
+                try {
+                    Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
+                    //noinspection unchecked
+                    result = doInBackground(mParams);
+                    Binder.flushPendingCommands();
+                } catch (Throwable tr) {
+                    mCancelled.set(true);
+                    throw tr;
+                } finally {
+                    postResult(result);
+                }
+                return result;
+            }
+        };
+
+postResult方法会把使用Handler Messageer把结果发送给主线程
+
+    private Result postResult(Result result) {
+        @SuppressWarnings("unchecked")
+        Message message = getHandler().obtainMessage(MESSAGE_POST_RESULT,
+                new AsyncTaskResult<Result>(this, result));
+        message.sendToTarget();
+        return result;
+    }
+
+主线程Handler接收返回的结果
+
+    private static class InternalHandler extends Handler {
+        public InternalHandler() {
+            super(Looper.getMainLooper());
+        }
+
+        @SuppressWarnings({"unchecked", "RawUseOfParameterizedType"})
+        @Override
+        public void handleMessage(Message msg) {
+            AsyncTaskResult<?> result = (AsyncTaskResult<?>) msg.obj;
+            switch (msg.what) {
+                case MESSAGE_POST_RESULT:
+                    // There is only one result
+                    result.mTask.finish(result.mData[0]);
+                    break;
+                case MESSAGE_POST_PROGRESS:
+                    result.mTask.onProgressUpdate(result.mData);
+                    break;
+            }
+        }
+    }
+
+finish() -> onPostExecute()
+
+    private void finish(Result result) {
+        if (isCancelled()) {
+            onCancelled(result);
+        } else {
+            onPostExecute(result);
+        }
+        mStatus = Status.FINISHED;
+    }
 
 --------
 
@@ -459,83 +817,196 @@ AndroidManifest.xml
 
 --------
 
-# 线程池
+# Handler Looper机制
 
-代码示例
+作用 用于在线程之间传递信息,子线程向主线程传递结果,进度信息.
 
-public class ThreadPollTask implements Runnable {
-    // 保存任务所需要的数据
-    private Object threadPoolTaskData;
-    ThreadPollTask(Object tasks) {
-        this.threadPoolTaskData = tasks;
-    }
-    @Override
-    public void run() {
-        // 处理一个任务，这里的处理方式太简单了，仅仅是一个打印语句
-        System.out.println("start .." + threadPoolTaskData);
-        try {
-            //便于观察，等待一段时间
-            Thread.sleep(2000);
-        } catch (Exception e) {
-            e.printStackTrace();
+Message：封装的消息体.    
+其中包含了消息ID，消息处理对象以及处理的数据等，由MessageQueue统一列队，终由Handler处理。
+
+参数:
+* what 自定义消息id
+* arg1, arg2 消息参数
+* obj 消息内容,可以为任意类型
+          
+Handler：处理者，负责Message的发送及处理。在接收消息的地方定义.重写handleMessage(Message msg)方法来处理消息.
+
+MessageQueue：消息队列，用来存放Handler发送过来的消息，并按照FIFO（先进先出）规则执行。当然，存放Message并非实际意义的保存，而是将Message以链表的方式串联起来的，等待Looper的抽取。内部封装的类,使用时不可见.
+
+Looper：消息泵，不断地从MessageQueue中抽取Message执行。因此，一个MessageQueue需要一个Looper。UI线程自带Looper不需要定义.子线程在定义Hander的时候需要先初始化Looper,初始化Hander的代码写在Looper.prepare();和Looper.loop();之间.
+
+ThreadLocal: ThreadLocal是一个线程内部的数据存储类，通过它可以在指定的线程中存储数据，数据存储以后，只有在指定线程中可以获取到存储的数据。 不同的线程存取获取的是不同的数据相互不会混淆.
+
+__主线程和子线程通过Handler交互的实例__
+
+    public class MainActivity extends AppCompatActivity {
+        private Button startThreadBtn;
+        private Button pushMsgToSubBtn;
+        private TextView msgTextView;
+        private Handler toSubThreadHandler;
+        private Handler toMainThreadHandler;
+        private final static int MSG_TO_MAIN = 1;
+        private final static int MSG_TO_SUB = 2;
+
+        @Override
+        protected void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            setContentView(R.layout.activity_main);
+            msgTextView = (TextView) findViewById(R.id.msg);
+            startThreadBtn = (Button) findViewById(R.id.start_thread);
+            startThreadBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    SubThread subThread = new SubThread();
+                    subThread.start();
+
+                    pushMsgToSubBtn.setEnabled(true);
+                }
+            });
+
+            pushMsgToSubBtn = (Button) findViewById(R.id.push_msg_to_sub);
+            pushMsgToSubBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    //向子线程发送消息
+                    Message message1 = Message.obtain();
+                    String msg1 = "This is an message to sub thread";
+                    message1.obj = msg1;
+                    message1.what = MSG_TO_SUB;
+                    toMainThreadHandler.sendMessage(message1);
+                }
+            });
+            pushMsgToSubBtn.setEnabled(false);
+
+            //定义handler
+            toSubThreadHandler = new Handler() {
+                @Override
+                public void handleMessage(Message msg) {
+                    super.handleMessage(msg);
+
+                    switch (msg.what)
+                    {
+                        //接受来自子线程的消息
+                        case MSG_TO_MAIN:
+                            msgTextView.setText((String) msg.obj);
+                            break;
+                    }
+                }
+            };
         }
-    }
-    public Object getTask() {
-        return this.threadPoolTaskData;
-    }
-}
 
-private static int produceTaskSleepTime = 2;
-private static int produceTaskMaxNumber = 10;
+        private class SubThread extends Thread {
+            @Override
+            public void run() {
+                super.run();
 
-        // 构造一个线程池
-        ThreadPoolExecutor threadPool = new ThreadPoolExecutor(2, 4, 3,
-                TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(3),
-                new ThreadPoolExecutor.DiscardOldestPolicy());
+                //子线程向主线程发送消息
+                Message toMainThreadMsg = new Message();
+                toMainThreadMsg.what = 1;
+                String msg = "A Messgae to Main Thread";
+                toMainThreadMsg.obj = msg;
+                toSubThreadHandler.sendMessage(toMainThreadMsg);
 
-        for (int i = 1; i <= produceTaskMaxNumber; i++) {
-            try {
-                // 产生一个任务，并将其加入到线程池
-                String task = "task@ " + i;
-                System.out.println("put " + task);
-                threadPool.execute(new ThreadPollTask(task));
-                // 便于观察，等待一段时间
-                Thread.sleep(produceTaskSleepTime);
-            } catch (Exception e) {
-                e.printStackTrace();
+                //接收来自主线程的消息
+                //需要初始化Looper
+                Looper.prepare();
+                toMainThreadHandler = new Handler(){
+                    @Override
+                    public void handleMessage(Message msg) {
+                        super.handleMessage(msg);
+                        switch (msg.what)
+                        {
+                            case MSG_TO_SUB:
+                                Toast.makeText(MainActivity.this, (String) msg.obj, Toast.LENGTH_SHORT).show();
+                                break;
+                        }
+                    }
+                };
+                Looper.loop();
             }
         }
+    }
 
 
-线程池类为 java.util.concurrent.ThreadPoolExecutor，常用构造方法为：
+发送Message消息方法
 
-ThreadPoolExecutor(
-    int corePoolSize, 
-    int maximumPoolSize,
-    long keepAliveTime, 
-    TimeUnit unit,BlockingQueue<Runnable> workQueue,
-    RejectedExecutionHandler handler)
+* 第一种方法
 
-corePoolSize：        线程池维护线程的最少数量 （core : 核心）
-maximumPoolSize：线程池维护线程的最大数量
-keepAliveTime：     线程池维护线程所允许的空闲时间
-unit：           线程池维护线程所允许的空闲时间的单位
-workQueue： 线程池所使用的缓冲队列
-handler：      线程池对拒绝任务的处理策略
+	Message message = Message.obtain();
+	message.obj = data;
+	message.what = IS_END;
+	handler.sendMessage(message);
 
-线程池对拒绝任务的处理策略
-AbortPolicy
-为java线程池默认的阻塞策略，不执行此任务，而且直接抛出一个运行时异常，切记ThreadPoolExecutor.execute需要try catch，否则程序会直接退出。
-DiscardPolicy
-直接抛弃，任务不执行，空方法
-DiscardOldestPolicy
-从队列里面抛弃head的一个任务，并再次execute 此task。
-CallerRunsPolicy
-在调用execute的线程里面执行此command，会阻塞入口
-用户自定义拒绝策略（最常用）
-实现RejectedExecutionHandler，并自己定义策略模式
-下我们以ThreadPoolExecutor为例展示下线程池的工作流程图
+* 第二种方法, 新建message对象指定handler
+
+    Message message = Message.obtain(handler);
+    message.obj = data;
+    message.what = IS_END;
+    message.sendToTarget();
+
+* 第三种方法, 新建message对象指定handler和what参数
+	
+	Message message = Message.obtain(handler, 1);
+    message.obj = data;
+    message.what = IS_END;
+    message.sendToTarget();
+
+### Looper对象
+
+Activity中有一个默认的Looper对象,来处理子线程发送的消息.所以主线程接收子线程发送的消息就补需要定义looper
+如果子线程需要获取主线程发送的消息就必须定义Lopper.
+
+定义一个Handler对象
+
+	private Handler handler;
+
+主线程发送Message消息
+
+	Message message = Message.obtain();
+	message.obj = "Jack";
+	handler.sendMessage(message);
+
+子线程定义Loop消息队列并接收消息.
+	public class MyThread implements Runnable
+    {
+
+        @Override
+        public void run() {
+            Looper.prepare();//循环消息队列
+
+            handler = new Handler()
+            {
+                @Override
+                public void handleMessage(Message msg) {
+                    super.handleMessage(msg);
+                    Log.v("--supai", "从UI主线程中获取消息-->" + msg.obj);
+
+                }
+            };
+
+            Looper.loop();//直到消息队列循环结束
+
+        }
+    }
+
+## ThreadLocal
+
+ThreadLocal是一个线程内部的数据存储类，通过他可以在指定线程中存储数据，数据存储后，只有在指定线程中可以获取存储到的数据．　　　　
+Handler使用ThreadLocal获取当前线程的Looper    
+
+### ThreadLocal的原理
+
+Thread类中有一个成员存储线程ThreadValue的数据,执行threadLocal.put()的时候先去获取当前的线程,然后再把数据放到对应的线程中.获取的时候也是一样,先获取当前的线程再查找数据.
+从而实现每个线程的数据单独存取.
+
+## 运行原理
+
+Handler的运行需要MessageQueue和Looper的支持.Handler创建之后就会使用当前线程的Looper和MessageQueue.然后通过handler的send方法,把封装好数据的Message对象放到MessageQueue消息队列中.Looper不断的检查消息队列里的消息.发现有消息到来时就会取出并处理消息.最终handler的handleMessage方法被调用.
+
+主线程运行MessageQueue和Looper用来获取消息,handler在子线程中的引用把消息存入到队列中.主线程的Looper收到消息后交由Handler处理
+
+
+参考: Android开发艺术探索
 
 --------
-
 
