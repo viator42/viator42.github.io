@@ -514,11 +514,7 @@ __Android中弱引用与软引用的应用场景__
 
 --------
 
-
-
---------
-
-## Callable、Future和FutureTask
+# Callable、Future和FutureTask
 
 __Callable与Runnable的区别__
 

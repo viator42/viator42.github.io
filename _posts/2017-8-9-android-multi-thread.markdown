@@ -380,8 +380,7 @@ CallerRunsPolicy
 *  doInBackground方法实现耗时的任务。    
 *  onPostExecute 主要是更新UI的操作.    
 
-    public class ListAllTask extends AsyncTask<String, Void, String>
-    {
+    public class ListAllTask extends AsyncTask<String, Void, String> {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
@@ -432,21 +431,7 @@ http://www.infoq.com/cn/articles/android-asynctask
 
 主要使用的技术是ThreadPoll线程池和Handler Looper实现
 
-ASyncTask构造函数中创建FutureTask, WorkerRunnable<Params, Result>对象     
-WorkerRunnable继承了Runnable接口,call方法调用doInBackground()方法,结果返回Result对象,最后调用postResult方法返回结果
-FutureTask实现了done方法在任务完成时调用postResultIfNotInvoked() -> postResult()返回结果
-
-execute()方法执行    
-
-调用execute() -> executeOnExecutor()
-
-executeOnExecutor()    
-
-    onPreExecute()
-    mWorker.mParams = params;   //Callable对象参数赋值
-    exec.execute(mFuture);  //线程添加到线程池
-
-WorkerRunnable的对象中
+新建WorkerRunnable对象，WorkerRunnable implements Callable接口，call方法调用doInBackground()方法，结果返回Result对象，最后调用postResult方法返回结果
 
     mWorker = new WorkerRunnable<Params, Result>() {
             public Result call() throws Exception {
@@ -466,6 +451,33 @@ WorkerRunnable的对象中
                 return result;
             }
         };
+
+创建FutureTask对象，FutureTask实现了done方法在任务完成时调用postResultIfNotInvoked() -> postResult()返回结果
+
+    mFuture = new FutureTask<Result>(mWorker) {
+            @Override
+            protected void done() {
+                try {
+                    postResultIfNotInvoked(get());
+                } catch (InterruptedException e) {
+                    android.util.Log.w(LOG_TAG, e);
+                } catch (ExecutionException e) {
+                    throw new RuntimeException("An error occurred while executing doInBackground()",
+                            e.getCause());
+                } catch (CancellationException e) {
+                    postResultIfNotInvoked(null);
+                }
+            }
+        };
+
+调用postResult返回结果
+
+    private void postResultIfNotInvoked(Result result) {
+        final boolean wasTaskInvoked = mTaskInvoked.get();
+        if (!wasTaskInvoked) {
+            postResult(result);
+        }
+    }
 
 postResult方法会把使用Handler Messageer把结果发送给主线程
 
@@ -498,90 +510,11 @@ postResult方法会把使用Handler Messageer把结果发送给主线程
                     break;
             }
         }
-    }
-
-finish() -> onPostExecute()
-
-    private void finish(Result result) {
-        if (isCancelled()) {
-            onCancelled(result);
-        } else {
-            onPostExecute(result);
-        }
-        mStatus = Status.FINISHED;
     }
 
 --------
 
-# ASyncTask相关
-
-一般声明在Activity类中作为内内部类.标注三个参数的类型
-第一个参数表示要执行的任务通常是网络的路径。第二个参数表示进度的刻度，第三个参数表示任务执行的结果。
-
-重写方法完成操作.
-
-*  onPreExecute 表示任务执行之前的操作.    
-*  doInBackground方法实现耗时的任务。    
-*  onPostExecute 主要是更新UI的操作.    
-
-        public class ListAllTask extends AsyncTask<String, Void, String>
-        {
-            @Override
-            protected void onPreExecute() {
-                super.onPreExecute();
-            }
-
-            @Override
-            protected String doInBackground(String... params) {
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(String s) {
-                super.onPostExecute(s);
-            }
-        }
-
-运行AsyncTask
-new ListAllTask().execute("aaa");
-
-Android多线程编程主要使用的方法    
-创建Thread,Handler Looper机制通信和使用异步框架ASyncTask    
-
-Android 原生的 AsyncTask.java 是对线程池的一个封装，使用其自定义的 Executor 来调度线程的执行方式（并发还是串行），并使用 Handler 来完成子线程和主线程数据的共享。
-
-ASyncTask需要继承父类并定义三个泛型类型
-
-    private class MyTask extends AsyncTask<Void, Void, Void> { ... }
-
-* Params  传入的参数,这里是可变长参数
-* Progress    处理过程中的进度信息
-* Result  返回的结果信息
-
-ASyncTask需要重写三个方法    
-* onPreExecute() 该方法将在执行实际的后台操作前被UI thread调用。可以在该方法中做一些准备工作，如在界面上显示一个进度条。
-* doInBackground(Params...), 将在onPreExecute 方法执行后马上执行，该方法运行在后台线程中。这里将主要负责执行那些很耗时的后台计算工作。可以调用 publishProgress方法来更新实时的任务进度。此方法中不能进行修改UI操作
-* onProgressUpdate(Progress...) UI thread将调用这个方法从而在界面上展示任务的进展情况，例如通过一个进度条进行展示。
-* onPostExecute(Result), 在doInBackground 执行完成后，onPostExecute 方法将被UI thread调用，后台的计算结果将通过该方法传递到UI thread.
-
-ASyncTask必须在UI线程中创建,execute方法必须在UI thread中调用,不要手动的调用onPreExecute(), onPostExecute(Result)，doInBackground(Params...), onProgressUpdate(Progress...)这几个方法
-
-ASyncTask的缺点: 后台线程只有一个,多个任务线性执行
-
-参考    
-https://segmentfault.com/a/1190000002872278    
-http://www.infoq.com/cn/articles/android-asynctask    
-
-## ASyncTask源码整理
-
-主要使用的技术是ThreadPoll线程池和Handler Looper实现
-
-ASyncTask构造函数中创建FutureTask, WorkerRunnable<Params, Result>对象     
-WorkerRunnable继承了Runnable接口,call方法调用doInBackground()方法,结果返回Result对象,最后调用postResult方法返回结果
-FutureTask实现了done方法在任务完成时调用postResultIfNotInvoked() -> postResult()返回结果
-
 execute()方法执行    
-
 调用execute() -> executeOnExecutor()
 
 executeOnExecutor()    
@@ -590,38 +523,29 @@ executeOnExecutor()
     mWorker.mParams = params;   //Callable对象参数赋值
     exec.execute(mFuture);  //线程添加到线程池
 
-WorkerRunnable的对象中
+finish() -> onPostExecute()
 
-    mWorker = new WorkerRunnable<Params, Result>() {
-            public Result call() throws Exception {
-                mTaskInvoked.set(true);
-                Result result = null;
-                try {
-                    Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
-                    //noinspection unchecked
-                    result = doInBackground(mParams);
-                    Binder.flushPendingCommands();
-                } catch (Throwable tr) {
-                    mCancelled.set(true);
-                    throw tr;
-                } finally {
-                    postResult(result);
-                }
-                return result;
-            }
-        };
-
-postResult方法会把使用Handler Messageer把结果发送给主线程
-
-    private Result postResult(Result result) {
-        @SuppressWarnings("unchecked")
-        Message message = getHandler().obtainMessage(MESSAGE_POST_RESULT,
-                new AsyncTaskResult<Result>(this, result));
-        message.sendToTarget();
-        return result;
+    private void finish(Result result) {
+        if (isCancelled()) {
+            onCancelled(result);
+        } else {
+            onPostExecute(result);
+        }
+        mStatus = Status.FINISHED;
     }
 
-主线程Handler接收返回的结果
+执行完成之后利用Handler Message机制返回结果
+
+    private static InternalHandler sHandler;
+
+    private static Handler getHandler() {
+        synchronized (AsyncTask.class) {
+            if (sHandler == null) {
+                sHandler = new InternalHandler();
+            }
+            return sHandler;
+        }
+    }
 
     private static class InternalHandler extends Handler {
         public InternalHandler() {
@@ -644,15 +568,12 @@ postResult方法会把使用Handler Messageer把结果发送给主线程
         }
     }
 
-finish() -> onPostExecute()
-
-    private void finish(Result result) {
-        if (isCancelled()) {
-            onCancelled(result);
-        } else {
-            onPostExecute(result);
-        }
-        mStatus = Status.FINISHED;
+    private Result postResult(Result result) {
+        @SuppressWarnings("unchecked")
+        Message message = getHandler().obtainMessage(MESSAGE_POST_RESULT,
+                new AsyncTaskResult<Result>(this, result));
+        message.sendToTarget();
+        return result;
     }
 
 --------
