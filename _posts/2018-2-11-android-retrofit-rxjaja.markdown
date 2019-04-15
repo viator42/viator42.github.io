@@ -5,7 +5,134 @@ date:   2018-2-11
 categories: Java Android
 ---
 
-## RxJava 笔记
+# Retrofit
+
+Retrofit 是一个 RESTful 的 HTTP 网络请求框架的封装，基于okHttp，通过注解进行网络请求参数的配置
+
+其他网络请求开源库    
+
+Android-Async-Http 已经弃用
+Volley    
+OkHttp    
+
+## 配置
+
+AndroidManifest.xml添加网络访问权限
+
+    <uses-permission android:name="android.permission.INTERNET" />
+
+buildGradle,需要加载retrofit, converter-gson, gson, okhttp, okio
+
+    compile 'com.squareup.retrofit2:retrofit:2.3.0'
+    compile 'com.squareup.retrofit2:converter-gson:2.3.0'
+    compile 'com.google.code.gson:gson:2.8.2'
+    compile files('libs/okhttp-3.9.1.jar')
+    compile files('libs/okio-1.13.0.jar')
+
+## 使用方法
+
+__创建Retrofit对象__
+
+需要设置数据解析器
+
+    Retrofit retrofit = new Retrofit.Builder()
+        .baseUrl(StaticValues.SERVER_PATH)  //服务器地址
+        .addConverterFactory(GsonConverterFactory.create())
+        .build();
+
+__定义接口文件__
+
+一组网络操作可以放到一个接口文件中,每个方法都是一个网络操作
+
+    public interface MyGetActionInterfaces {
+
+        //get请求 使用参数拼接url
+        @GET("main/test/get/{param1}/{param2}")
+        Call<GetTesterRestult> getTest(
+                @Path("param1") String param1,
+                @Path("param2") String param2
+        );
+
+        //post请求,方法参数作为表单值
+        @POST("main/test/post/")
+        @FormUrlEncoded
+        Call<List<User>> postTest(@Field("params") String postParams);
+
+        //POJO类作为请求参数
+        @POST("users/new")
+        Call<User> createUser(@Body User user);
+
+    }
+
+Retrofit大量使用@注解来定义属性
+GET把参数拼接到url中,POST使用表单
+
+__网络访问__
+
+GET请求
+
+    public class GetTesterRestult {
+        public String success;
+        public String msg;
+        public String data;
+    }
+
+    MyGetActionInterfaces myGetActionInterfaces = retrofit.create(MyGetActionInterfaces.class);
+    Call<GetTesterRestult> call = myGetActionInterfaces.getTest("123", "456");
+    try {
+        GetTesterRestult getTesterRestult = call.execute().body();
+        Log.v("RetrofitTester", getTesterRestult.success);
+        Log.v("RetrofitTester", getTesterRestult.msg);
+        Log.v("RetrofitTester", getTesterRestult.data);
+    } catch (IOException e) {
+        e.printStackTrace();
+        Log.v("RetrofitTester", "error");
+    }
+
+POST请求
+
+    PostParams postParams = new PostParams();
+    postParams.param1 = "123456";
+    postParams.param2 = "Param2 here";
+
+    Gson gson = new Gson();
+    String paramStr = gson.toJson(postParams);
+
+构建参数
+
+    Call<List<User>> call = myGetActionInterfaces.postTest(paramStr);
+    try {
+        ArrayList<User> userList = (ArrayList<User>) call.execute().body();
+
+    } catch (IOException e) {
+        e.printStackTrace();
+        Log.v("RetrofitTester", "error");
+    }
+
+返回值直接从json格式映射成对象
+
+## 源码解析
+
+__具体请求过程__
+
+* 通过解析网络请求接口的注解，配置网络请求参数
+
+* 通过动态代理生成网络请求对象
+
+* 通过网络请求适配器将网络请求对象进行平台适配
+
+> 平台包括：Android、Rxjava、Guava和java8
+
+* 通过网络请求执行器发送网络请求
+* 通过数据转换器解析服务器返回的数据
+* 通过回调执行器切换线程（子线程 ->>主线程）
+* 用户在主线程处理返回结果
+
+参考：https://www.jianshu.com/p/0c055ad46b6c
+
+--------
+
+# RxJava 笔记
 
 ### 概念
 
@@ -247,103 +374,343 @@ __merge方法__
 
 --------
 
-## Retrofit笔记
+# RxJava运行原理
 
-### 配置
+## 实现一个简单的RxJava
 
-AndroidManifest.xml添加网络访问权限
+Subsribler在RxJava里面是一个抽象类，它实现了Observer接口。
 
-    <uses-permission android:name="android.permission.INTERNET" />
-
-buildGradle,需要加载retrofit, converter-gson, gson, okhttp, okio
-
-    compile 'com.squareup.retrofit2:retrofit:2.3.0'
-    compile 'com.squareup.retrofit2:converter-gson:2.3.0'
-    compile 'com.google.code.gson:gson:2.8.2'
-    compile files('libs/okhttp-3.9.1.jar')
-    compile files('libs/okio-1.13.0.jar')
-
-### 使用方法
-
-__创建Retrofit对象__
-
-需要设置数据解析器
-
-    Retrofit retrofit = new Retrofit.Builder()
-        .baseUrl(StaticValues.SERVER_PATH)  //服务器地址
-        .addConverterFactory(GsonConverterFactory.create())
-        .build();
-
-__定义接口文件__
-
-一组网络操作可以放到一个接口文件中,每个方法都是一个网络操作
-
-    public interface MyGetActionInterfaces {
-
-        //get请求 使用参数拼接url
-        @GET("main/test/get/{param1}/{param2}")
-        Call<GetTesterRestult> getTest(
-                @Path("param1") String param1,
-                @Path("param2") String param2
-        );
-
-        //post请求,方法参数作为表单值
-        @POST("main/test/post/")
-        @FormUrlEncoded
-        Call<List<User>> postTest(@Field("params") String postParams);
-
-        //POJO类作为请求参数
-        @POST("users/new")
-        Call<User> createUser(@Body User user);
-
+    public interface Observer<T> {
+        void onCompleted();
+        void onError(Throwable t);
+        void onNext(T var1);
     }
 
-Retrofit大量使用@注解来定义属性
-GET把参数拼接到url中,POST使用表单
-
-__网络访问__
-
-GET请求
-
-    public class GetTesterRestult {
-        public String success;
-        public String msg;
-        public String data;
+    public abstract class Subscriber<T> implements Observer<T> {
+        public void onStart() {
+        }
     }
 
-    MyGetActionInterfaces myGetActionInterfaces = retrofit.create(MyGetActionInterfaces.class);
-    Call<GetTesterRestult> call = myGetActionInterfaces.getTest("123", "456");
-    try {
-        GetTesterRestult getTesterRestult = call.execute().body();
-        Log.v("RetrofitTester", getTesterRestult.success);
-        Log.v("RetrofitTester", getTesterRestult.msg);
-        Log.v("RetrofitTester", getTesterRestult.data);
-    } catch (IOException e) {
-        e.printStackTrace();
-        Log.v("RetrofitTester", "error");
+定义Observable被观察者
+
+    public class Observable<T> {
+        //OnSubscribe对象用来产生数据流
+        final OnSubscribe<T> onSubscribe;
+
+        //构造函数设为私有
+        private Observable(OnSubscribe<T> onSubscribe) {
+            this.onSubscribe = onSubscribe;
+        }
+
+        //创建Observable实例对象，参数为OnSubscribe对象
+        public static <T> Observable<T> create(OnSubscribe<T> onSubscribe) {
+            return new Observable<T>(onSubscribe);
+        }
+
+        //观察者并注入到被观察者中
+        public void subscribe(Subscriber<? super T> subscriber) {
+            subscriber.onStart();
+            onSubscribe.call(subscriber);
+        }
+
+        /**
+        * call方法是把数据注入到被观察者中，产生数据流
+        * @param <T>
+        */
+        public interface OnSubscribe<T> {
+            void call(Subscriber<? super T> subscriber);
+        }
     }
 
-POST请求
+使用自定义的RxJava
 
-    PostParams postParams = new PostParams();
-    postParams.param1 = "123456";
-    postParams.param2 = "Param2 here";
+    //创建被观察者对象
+    Observable.create(new Observable.OnSubscribe<Integer>() {
+        @Override
+        public void call(Subscriber<? super Integer> subscriber) {
+            //生成数据序列，onNext是将数据发射到subscriber进行处理
+            for (int i = 0; i < 10; i++) {
+                System.out.println("OnSubscribe@ "+Thread.currentThread().getName());
+                subscriber.onNext(i);
+            }
+        }
+    })
+        //生成观察者并注入到被观察者中，Subscriber观察者的作用是定义对数据做什么样的处理
+        .subscribe(new Subscriber<String>() {
+            @Override
+            public void onCompleted() {
 
-    Gson gson = new Gson();
-    String paramStr = gson.toJson(postParams);
+            }
 
-构建参数
+            @Override
+            public void onError(Throwable t) {
 
-    Call<List<User>> call = myGetActionInterfaces.postTest(paramStr);
-    try {
-        ArrayList<User> userList = (ArrayList<User>) call.execute().body();
+            }
 
-    } catch (IOException e) {
-        e.printStackTrace();
-        Log.v("RetrofitTester", "error");
+            @Override
+            public void onNext(String var1) {
+                System.out.println(var1);
+            }
+    });
+
+这里的顺序实际是颠倒的，先定义执行顺序再定义处理方式
+
+## 添加操作符
+
+先执行操作符的call方法，然后再递归执行OnSubscribe的call方法。先执行操作符中的onNext方法，再执行subscriber的onNext方法。    
+Transformer的call方法中进行数据的转换。
+
+    public class Observable<T> {
+        //OnSubscribe对象用来产生数据流
+        final OnSubscribe<T> onSubscribe;
+
+        //构造函数设为私有
+        private Observable(OnSubscribe<T> onSubscribe) {
+            this.onSubscribe = onSubscribe;
+        }
+
+        //创建Observable实例对象，参数为OnSubscribe对象
+        public static <T> Observable<T> create(OnSubscribe<T> onSubscribe) {
+            return new Observable<T>(onSubscribe);
+        }
+
+        //观察者并注入到被观察者中
+        public void subscribe(Subscriber<? super T> subscriber) {
+            subscriber.onStart();
+            onSubscribe.call(subscriber);
+        }
+
+        /**
+        * call方法是把数据注入到被观察者中，产生数据流
+        * @param <T>
+        */
+        public interface OnSubscribe<T> {
+            void call(Subscriber<? super T> subscriber);
+        }
+
+        //----------添加操作符--------
+        public <R> Observable<R> map(Transformer<? super T, ? extends R> transformer) {
+            return create(new OnSubscribe<R>() {
+                @Override
+                public void call(Subscriber<? super R> subscriber) {
+                    Observable.this.subscribe(new Subscriber<T>() {
+                        @Override
+                        public void onCompleted() {
+                            subscriber.onCompleted();
+                        }
+
+                        @Override
+                        public void onError(Throwable t) {
+                            subscriber.onError(t);
+                        }
+
+                        @Override
+                        public void onNext(T var1) {
+                            //调用transformer的call方法
+                            subscriber.onNext(transformer.call(var1));
+                        }
+                    });
+                }
+            });
+        }
+
+        public interface Transformer<T, R> {
+            R call(T from);
+        }
     }
 
-返回值直接从json格式映射成对象
+使用操作符
+
+    //创建被观察者对象
+    Observable.create(new Observable.OnSubscribe<Integer>() {
+        @Override
+        public void call(Subscriber<? super Integer> subscriber) {
+            //生成数据并注入到被观察者
+            for (int i = 0; i < 10; i++) {
+                System.out.println("OnSubscribe@ "+Thread.currentThread().getName());
+                subscriber.onNext(i);
+            }
+        }
+    })
+        .map(new Observable.Transformer<Integer, String>() {
+                @Override
+                public String call(Integer from) {
+                    return "mapping" + String.valueOf(from);
+                }
+            })
+            //生成观察者并注入到被观察者中
+        .subscribe(new Subscriber<String>() {
+            @Override
+            public void onCompleted() {
+
+            }
+
+            @Override
+            public void onError(Throwable t) {
+
+            }
+
+            @Override
+            public void onNext(String var1) {
+                System.out.println(var1);
+            }
+    });
+
+## 添加线程切换功能
+
+利用subscribeOn()结合observeOn()来实现线程控制，让事件的产生和消费发生在不同的线程。observeOn()作用的是Subscriber，而subscribeOn()作用的是OnSubscribe。
+
+RxJava完成线程的切换使用的是Scheduler，创建的参数是线程池的Executor
+
+Scheduler.java
+
+    public class Scheduler {
+        final Executor executor;
+
+        public Scheduler(Executor executor) {
+            this.executor = executor;
+        }
+
+        //创建worker对象
+        public Worker createWorker() {
+            return new Worker(executor);
+        }
+
+        //Worker是Scheduler的内部类，它是具体任务的执行者。当要提交任务给Worker执行需要调用Worker的schedule(Action0 aciton)方法。
+        public static class Worker {
+            final Executor executor;
+
+            public Worker(Executor executor) {
+                this.executor = executor;
+            }
+
+            public void schedule(Runnable runnable) {
+                executor.execute(runnable);
+            }
+        }
+    }
+
+要获得一个Scheduler并不需要我们去new，一般是调用Schedulers的工厂方法。
+
+Schedulers.java
+
+    public final class Schedulers {
+        private static final Scheduler ioScheduler = new Scheduler(Executors.newSingleThreadExecutor());
+        public static Scheduler io() {
+            return ioScheduler;
+        }
+    }
+
+Observable类中实现subscribeOn和observeOn
+
+    public class Observable<T> {
+        //OnSubscribe对象用来产生数据流
+        final OnSubscribe<T> onSubscribe;
+
+        //构造函数设为私有
+        private Observable(OnSubscribe<T> onSubscribe) {
+            this.onSubscribe = onSubscribe;
+        }
+
+        //创建Observable实例对象，参数为OnSubscribe对象
+        public static <T> Observable<T> create(OnSubscribe<T> onSubscribe) {
+            return new Observable<T>(onSubscribe);
+        }
+
+        //观察者并注入到被观察者中
+        public void subscribe(Subscriber<? super T> subscriber) {
+            subscriber.onStart();
+            onSubscribe.call(subscriber);
+        }
+
+        /**
+        * call方法是把数据注入到被观察者中，产生数据流
+        * @param <T>
+        */
+        public interface OnSubscribe<T> {
+            void call(Subscriber<? super T> subscriber);
+        }
+
+        //--------添加线程切换功能--------
+
+        //实现subscribeOn
+        //subscribeOn是作用于上层OnSubscribe的，可以让OnSubscribe的call方法在新线程中执行。
+        public Observable<T> subscribeOn(Scheduler scheduler) {
+            return Observable.create(new OnSubscribe<T>() {
+                @Override
+                public void call(Subscriber<? super T> subscriber) {
+                    subscriber.onStart();
+                    // 将事件的生产切换到新的线程。
+                    scheduler.createWorker().schedule(new Runnable() {
+                        @Override
+                        public void run() {
+                            Observable.this.onSubscribe.call(subscriber);
+                        }
+                    });
+                }
+            });
+        }
+
+        //实现observeOn
+        //subscribeOn是作用于下层Subscriber的，需要让下层Subscriber的事件处理方法放到新线程中执行。
+        public Observable<T> observeOn(Scheduler scheduler) {
+            return Observable.create(new OnSubscribe<T>() {
+                @Override
+                public void call(Subscriber<? super T> subscriber) {
+                    subscriber.onStart();
+                    Scheduler.Worker worker = scheduler.createWorker();
+                    Observable.this.onSubscribe.call(new Subscriber<T>() {
+                        @Override
+                        public void onCompleted() {
+                            subscriber.onCompleted();
+                        }
+
+                        @Override
+                        public void onError(Throwable t) {
+                            subscriber.onError(t);
+                        }
+
+                        @Override
+                        public void onNext(T var1) {
+                            subscriber.onNext(var1);
+                        }
+                    });
+                }
+            });
+        }
+    }
+
+使用线程切换
+
+    Observable.create(new Observable.OnSubscribe<Integer>() {
+        @Override
+        public void call(Subscriber<? super Integer> subscriber) {
+            //生成数据并注入到被观察者
+            for (int i = 0; i < 10; i++) {
+                System.out.println("OnSubscribe@ "+Thread.currentThread().getName());
+                subscriber.onNext(i);
+            }
+        }
+    })
+        .subscribeOn(Schedulers.io())
+        .observeOn(Schedulers.io())
+        //生成观察者并注入到被观察者中
+        .subscribe(new Subscriber<String>() {
+            @Override
+            public void onCompleted() {
+
+            }
+
+            @Override
+            public void onError(Throwable t) {
+
+            }
+
+            @Override
+            public void onNext(String var1) {
+                System.out.println(var1);
+            }
+        });
 
 --------
 
