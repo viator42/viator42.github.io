@@ -7,28 +7,46 @@ categories: Android Kotlin
 
 ## 基本数据类型
 
-类型    位宽度    
-Double 	64    
-Float 	32     
-Long 	64    
-Int 	32    
-Short 	16    
-Byte 	8    
+类型 | 位宽度
+---|---
+Double | 64    
+Float | 32     
+Long | 64    
+Int | 32    
+Short | 16    
+Byte | 8    
 
 类型的转换方法
 
-toByte(): Byte    
-toShort(): Short    
-toInt(): Int    
-toLong(): Long    
-toFloat(): Float    
-toDouble(): Double    
-toChar(): Char    
+> toByte():     Byte    
+> toShort():    Short    
+> toInt():      Int    
+> toLong():     Long    
+> toFloat():    Float    
+> toDouble():   Double    
+> toChar():     Char    
 
 ## 定义变量常量
 
     var <标识符> : <类型> = <初始化值>  //可变变量定义
     val <标识符> : <类型> = <初始化值>  //不可变常量定义，相当于java中的final
+
+## 可空类型
+
+    var a:String?   //在类型后面加个？表示可以为空
+
+安全调用运算符，可以在调用方法之前先判断是否为空
+
+    s?.toUpperCase()等同于if(s != null) s.toUpperCase() else null
+
+__?:__ Elvis运算符，null合并运算符
+
+    val result = param ?: ""    //param为null的时候result赋值为""
+
+
+
+
+--------
 
 ## 字符串
 
@@ -216,8 +234,6 @@ class Person {
 
 在基类中，使用fun声明函数时，此函数默认为final修饰，不能被子类重写。如果允许子类重写该函数，那么就要手动添加 open 修饰它, 子类重写方法使用 override 关键词，子类重写父类属性的时候也需要加override
 
-
-
 --------
 
 ## 接口
@@ -239,6 +255,10 @@ class Person {
         }
     }
 
+## 数据类
+
+    data class Client(val name: String, val age:Int)
+
 --------
 
 ## Kotlin Android 扩展 
@@ -254,5 +274,108 @@ Model类序列化Parcelize
 
     @Parcelize
     class User(val firstName: String, val lastName: String, val age: Int): Parcelable
+
+## 集合类
+
+### List
+
+    var list = ArrayList<String>() //定义
+    list.add(item) //添加
+    list.removeAt(i) //删除指定的项目
+    list.get(i) //获取指定的项目
+    //List遍历
+    var list = ArrayList<String>()
+
+    list.add("111")
+    list.add("222")
+    list.add("333")
+    list.add("444")
+    list.add("555")
+
+    list.set(0, "000")
+    list.removeAt(2)
+
+    for (i in list) {
+        println(i)
+    }
+
+### Map
+
+    //创建map（不可修改
+    val map = mapOf<String, Any>("id" to 1, "name" to "张三", "age" to 18, "address" to "hello street")
+
+    //获取值
+    val name = map["name"]
+    println(name)
+
+    println(map.get("name"))
+
+    //遍历
+    map.forEach {
+        key, value -> println("$key : ${value.toString()}")
+    }
+
+    //创建可修改的map
+    val mutableMap = mutableMapOf<String, Any>("id" to 1, "name" to "张三", "age" to 18, "address" to "hello street")
+
+    //修改value
+    mutableMap["name"] = "李四"
+    //删除值
+    mutableMap.remove("address")
+    //添加值
+    mutableMap["rank"] = "Level 1"
+
+    mutableMap.forEach {
+        key, value -> println("$key : ${value.toString()}")
+    }
+
+### Set
+
+    //创建set（不可修改
+    val set = setOf<Int>(1, 2, 3, 4, 5, 6, 7, 8)
+
+    //遍历
+    for (i in set) {
+        print("${i.toString()} ")
+    }
+    
+    //创建可修改的set
+    val mutableSet = mutableSetOf<Any>(1, 2, "3", 4, 5, "6")
+    
+    //添加元素
+    mutableSet.add(7)
+    //删除元素
+    mutableSet.remove(1)
+
+    for (i in mutableSet) {
+        print("${i.toString()} ")
+    }
+
+--------
+
+## Lambda表达式
+
+Lambda表达式语法
+
+    参数列表 -> 函数体
+    {x: Int, y: Int -> x + y}
+
+表达式始终在花括号内    
+
+可以把Lambda表达式存储在变量内，直接调用
+
+    var sum = {x: Int, y: Int -> x + y}
+    println(sum(1, 2))
+
+只有一个参数的情况下，可以忽略参数部分直接写方法体↓
+
+    var list = ArrayList<Int>()
+        list.add(1)
+        list.add(2)
+        list.add(3)
+
+        list.forEach {
+            println(it)
+        }
 
 
