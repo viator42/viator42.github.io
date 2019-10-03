@@ -1,0 +1,251 @@
+---
+layout: post
+title:  "Git学习笔记"
+date:   "2019-10-2"
+categories: git
+---
+
+### Git让gitignore生效
+
+改动过.gitignore文件之后，在repo的根目录下运行：
+
+    git rm -r --cached .
+    git add .
+
+--------
+
+## Git基本操作
+
+移动到代码所在目录，运行
+
+    git init
+
+添加需要提交的文件到暂存区
+
+    git add xxx.file
+
+添加所有文件
+
+    git add -A
+
+提交代码修改
+
+    git commit -m "comment content"
+
+查看当前状态
+
+    git status
+
+查看修改日志
+
+    git log
+
+从远程库克隆版本库
+
+    tie clone [远程库地址] 
+
+打包一个库文件
+
+    git archive
+
+--------
+
+## Tag
+
+标签(Tag)可以针对某一时间点的版本做标记，常用于版本发布。
+
+创建Tag，给当前版本打标记
+
+    git tag [tag name]
+
+例如
+
+    git tag v1.0
+
+创建带付诸的Tag
+
+    git tag -a v0.1 -m “0.1版本发布”
+
+查看所有的Tag
+
+    git tag
+
+切换到标签
+
+    git checkout [tagname]
+
+用git show命令可以查看标签的版本信息
+
+    git show v0.1
+
+删除标签
+
+    git tag -d v0.1
+
+Tag推送到服务器
+
+通常的git push不会将Tag对象提交到git服务器，我们需要进行显式的操作：
+
+    git push origin v0.1.2 # 将v0.1.2 Tag提交到git服务器
+    git push origin –-tags # 将本地所有Tag一次性提交到git服务器
+
+--------
+
+## 分支操作
+
+__分支修改名称__
+
+    git branch -m [新名称] [旧名称]
+    git branch -m mymaster master
+
+git默认master作为主分支
+
+__创建分支__
+
+从一个现有的分支创建新分支
+
+    git checkout -b [新分支名称] [参照分支]
+    git checkout -b testing master
+
+__删除分支__
+
+    git branch -d [branch_name]
+
+### 分支合并
+
+开发过程中需要维护一条主线分支（master），添加功能是新开一个feature分支，当功能开发完毕后需要合并到主分支上    
+分支合并有两种方法，git merge和git rebase    
+
+使用
+
+    git checkout master
+    git rebase feature
+    git merge  feature
+
+两种方法的区别是merge是将feature分支的最终修改内容合并到master分支上，feature分支的commit内容仍然保持独立。rebase是feature分支除了修改内容，所有的commit记录也合并到master上。
+
+git merge分支合并方式
+
+1.直接合并    
+两条分支的历史轨迹合并,合并到一起
+
+    git merge feature
+
+2.压合合并    
+将被合并分支的所有提交压合成一个提交合并到主分支上来
+
+    git merge --squash feature
+
+3.拣选合并
+挑选一个分支合并到
+
+    git cherry-pick [31483ed 7位的提交编号]
+
+__git stash命令__
+
+如果需要切换到另一个分支并且不想提交当前分支的修改，可以适用git stash命令把当前分支的修改暂存起来    
+git stash会把所有未提交的修改（包括暂存的和非暂存的）都保存起来，用于后续恢复当前工作目录。
+
+储藏修改
+
+    git stash
+
+实际应用中推荐给每个stash加一个message，用于记录版本，使用git stash save取代git stash命令。
+
+    git stash save "stach comment"
+
+可以通过git stash pop命令恢复之前缓存的工作目录
+
+    git stash pop
+
+查看现有stash
+
+    git stash list
+    //运行结果
+    stash@{0}: WIP on master: 049d078 added the index file
+    stash@{1}: WIP on master: c264051 Revert "added file_size"
+    stash@{2}: WIP on master: 21d80a5 added number to log
+
+移除stash    
+可以使用git stash drop命令，后面可以跟着stash名字
+
+    git stash drop stash@{0}
+
+或者使用git stash clear命令，删除所有缓存的stash。
+
+从stash创建分支
+储藏的修改内容移动到一个新的分支
+
+    git stash branch ［branch_name］
+
+__git rebase命令__
+
+1.对已经提交的commit进行编辑修改
+
+合并多次commit成为一个commit
+
+     git rebase -i [startpoint] [endpoint]
+
+参数是设置合并的开始点和结束点，可以只设置开始点，那么就是一直合并到最近的commit
+
+2.将某一段commit粘贴到另一个分支上
+
+    git rebase [startpoint] [endpoint] --onto [branchName]
+
+参数：
+* startpoint 需要复制的commit起始点
+* endpoint 需要复制的commit结束点
+* branchName 要将该指定的提交复制到哪个分支上
+
+--------
+
+## 忽略文件
+
+工程中经常需要忽略一些不需要提交的文件，比如ide配置信息，生成的临时文件等。这就需要编辑 .ignore文件来指定忽略的文件和目录
+编辑后需要重新add所有文件让.ignore文件生效
+
+    git rm -r --cached .
+    git add .
+    git commit -m 'update .gitignore'
+
+--------
+
+## 撤销修改
+
+### 撤销工作区的修改
+
+    git checkout -- 【filepath】
+
+### git revert
+
+git revert是生成一个新的提交来撤销某次提交，此次提交之前的commit都会被保留
+
+revert操作必须提供名称，让Git知道反转什么
+
+    git revert HEAD 撤销前一次 commit
+    git revert -n [commit_id] 撤销到某一次提交
+
+### git reset
+
+git reset是通过删除最近的提交，回退到之前的版本
+
+#### HEAD的概念
+
+HEAD简单来说，指的就是当前当前分支的最近一次提交后的版本，也就是说，HEAD代表的是最新的版本，根据这个概念，我们还可以知道HEAD^就是指上一个版本，同理HEAD^^就是再上一个版本
+
+--hard 和 --soft 的区别
+
+git reset --hard    
+相当于 git reset --hard HEAD
+删除暂存区里的所有修改，回到最新的commit版本    
+git reset --hard HEAD^ 就是回到上一个commit版本
+
+git reset --soft    
+不删除暂存区里的修改，只把commit的内容回退到上一个版本    
+
+---------
+
+git无法pull仓库refusing to merge unrelated histories    
+如果合并了两个不同的开始提交的仓库，在新的 git 会发现这两个仓库可能不是同一个，为了防止开发者上传错误，于是就给下面的提示    
+fatal: refusing to merge unrelated histories    
+解决方式是添加 --allow-unrelated-histories 告诉git允许不相关历史合并
