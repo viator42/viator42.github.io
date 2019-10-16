@@ -92,10 +92,18 @@ build.gradle文件修改
 
 ## 保留不被混淆的东西
 
-#### -keep 
+#### -keep
+
+不混淆某个类
+
+    -keep public com.viator42.sampleapp.SampleClass
+
 保护某些包下的类不被混淆    
 
-    -keep public com.viator42.sampleapp
+    -keep public com.viator42.sampleapp ** { *; }
+
+保护某些类的子类不被混淆
+
     -keep public * extends com.viator42.sampleapp
 
 实体类保留get,set方法不被混淆
@@ -105,6 +113,22 @@ build.gradle文件修改
         public *** get* ();
         public *** is* ();
     }
+
+View类的子类所有以View作为参数的方法不被混淆
+
+    -keep public * extends android.view.View {
+        public void *(android.view.View)
+    }
+
+--------
+
+## 处理第三方jar包的混淆
+
+    -libraryjars libs/alipay.jar
+    -dontwarn com.alipay.android.app ** //打包时忽略警告
+    -keep public com.alipay.android.app ** { *; }   //不混淆这个包以及其中的所有成员
+
+--------
 
 ## 其他keep选项
 
