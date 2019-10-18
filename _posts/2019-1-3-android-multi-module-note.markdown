@@ -44,9 +44,41 @@ App关闭的时候发送一个本地广播通知所有Activity关闭
 
 ## Activity导航
 
-### 隐式跳转
+跳转使用intent，intent分为显式intent和隐式intent
 
-### ARouter
+### 显式intent
+
+    Intent intent = new Intent();
+    intent.setClass(this,Other.class); //此句表示显式意图，因为明确设置激活对象为Other类
+    startActivity(intent);
+
+### 隐式Intent
+
+首先是在AndroidManifest.xml中为某个Activity设置意图过滤器：
+
+__action__
+
+使用action定义目标activity
+
+    <activity
+        android:name=".SecondActivity">
+        <intent-filter>
+            <action android:name="com.viator42,vividandroidexamples.action.SECOND" />
+            <category android:name="android.intent.category.DEFAULT"/>
+        </intent-filter>
+    </activity>
+
+跳转
+
+    Intent intent = new Intent();
+    intent.setAction("com.viator42,vividandroidexamples.action.SECOND");
+    startActivity(intent);
+
+
+
+--------
+
+## ARouter
 
 --------
 
