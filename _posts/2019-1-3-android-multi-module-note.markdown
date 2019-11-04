@@ -40,6 +40,117 @@ App关闭的时候发送一个本地广播通知所有Activity关闭
 
 事件总线。在Activity，Fragment，Service之间传递数据使用，用于代替Handler looper回调
 
+EventBus是基于观察者模式构建的，事件是观察者。
+
+#### EventBus的概述
+
+__三要素__
+
+* Event     事件。它可以是任意类型。
+* Subscriber 事件订阅者。在EventBus3.0之前我们必须定义以onEvent开头的那几个方法，分别是onEvent、onEventMainThread、onEventBackgroundThread和onEventAsync，而在3.0之后事件处理的方法名可以随意取，不过需要加上注解@subscribe()，并且指定线程模型，默认是POSTING。
+* Publisher 事件的发布者。我们可以在任意线程里发布事件，一般情况下，使用EventBus.getDefault()就可以得到一个EventBus对象，然后再调用post(Object)方法即可。
+
+__四种线程模型__
+
+* POSTING   (默认) 表示事件处理函数的线程跟发布事件的线程在同一个线程。
+* MAIN      表示事件处理函数的线程在主线程(UI)线程，因此在这里不能进行耗时操作。
+* BACKGROUND 表示事件处理函数的线程在后台线程，因此不能进行UI操作。如果发布事件的线程是主线程(UI线程)，那么事件处理函数将会开启一个后台线程，如果果发布事件的线程是在后台线程，那么事件处理函数就使用该线程。
+* ASYNC     表示无论事件发布的线程是哪一个，事件处理函数始终会新建一个子线程运行，同样不能进行UI操作。
+
+#### 使用实例
+
+0.build.gradle导入第三方库
+
+    dependencies {
+        。。。
+        implementation 'org.greenrobot:eventbus:3.1.1'
+    }
+
+1.定义事件消息类，就是一个普通的POJO类
+
+    public class EventMsg {
+        public long id;
+        public String msg;
+    }
+
+2.注册订阅者
+
+一般在对象创建的时候注册订阅者，对象销毁的时候注销订阅
+
+    public class EventBusTesterActivity extends AppCompatActivity {
+        @Override
+        protected void onCreate(Bundle savedInstanceState) {
+            。。。
+            EventBus.getDefault().register(this);
+        }
+
+        @Override
+        protected void onDestroy() {
+            super.onDestroy();
+            EventBus.getDefault().unregister(this);
+        }
+    }
+
+2.发送事件消息
+
+    EventMsg eventMsg = new EventMsg();
+    eventMsg.id = 1;
+    eventMsg.msg = "This is event msg";
+
+    EventBus.getDefault().post(eventMsg);
+
+3.接收消息
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMessageEvent(EventMsg eventMsg) {
+        resultTextView.setText(eventMsg.msg);
+    }
+
+__完整实例__
+
+    public class EventBusTesterActivity extends AppCompatActivity {
+        Button basicTestBtn;
+        TextView resultTextView;
+
+        @Override
+        protected void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            setContentView(R.layout.activity_event_bus_tester);
+
+            resultTextView = findViewById(R.id.result);
+
+            basicTestBtn = findViewById(R.id.basic_test);
+            basicTestBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    EventMsg eventMsg = new EventMsg();
+                    eventMsg.id = 1;
+                    eventMsg.msg = "This is event msg";
+
+                    EventBus.getDefault().post(eventMsg);
+                }
+            });
+
+            EventBus.getDefault().register(this);
+        }
+
+        @Override
+        protected void onDestroy() {
+            super.onDestroy();
+            EventBus.getDefault().unregister(this);
+        }
+
+        @Subscribe(threadMode = ThreadMode.MAIN)
+        public void onMessageEvent(EventMsg eventMsg) {
+            resultTextView.setText(eventMsg.msg);
+        }
+
+    }
+
+EventBus的缺点是每一个事件都要定义单独的消息类
+
+参考 http://viator42.github.io/android/2018/03/02/android-eventbus/
+
 --------
 
 ## Activity导航
@@ -73,8 +184,6 @@ __action__
     Intent intent = new Intent();
     intent.setAction("com.viator42,vividandroidexamples.action.SECOND");
     startActivity(intent);
-
-
 
 --------
 
