@@ -7,10 +7,11 @@ categories: android
 
 # 多线程
 
-线程和进程有什么区别    
+### 线程和进程有什么区别    
+
 一个进程是一个独立(self contained)的运行环境，它可以被看作一个程序或者一个应用。而线程是在进程中执行的一个任务。线程是进程的子集，一个进程可以有很多线程，每条线程并行执行不同的任务。不同的进程使用不同的内存空间，而所有的线程共享一片相同的内存空间。
 
-类在多线程中的执行过程
+### 类在多线程中的执行过程
 
 多个线程共享一个类对象,这个对象是被创建在主内存(堆内存)中，每个线程都有自己的工作内存(线程栈).工作内存存储了主内存对象的一个副本，当线程操作C对象时，首先从主内存复制对象到工作内存中，然后执行代码最后用工作内存对象刷新主内存对象。当一个对象在多个内存中都存在副本时，如果一个内存修改了共享变量，其它线程也应该能够看到被修改后的值，此为可见性。保证多个线程按照顺序进行，此为有序性
 
@@ -18,15 +19,12 @@ categories: android
 
 Java线程在运行的声明周期中可能会处于6种不同的状态
 
-• New：新创建状态。线程被创建，还没有调用 start 方法，在线程运行之前还有一些基础工作要做。
-• Runnable：可运行状态。一旦调用start方法，线程就处于Runnable状态。一个可运行的线程可能正在
-运行也可能没有运行，这取决于操作系统给线程提供运行的时间。
-• Blocked：阻塞状态。表示线程被锁阻塞，它暂时不活动。
-• Waiting：等待状态。线程暂时不活动，并且不运行任何代码，这消耗最少的资源，直到线程调度器
-重新激活它。
-• Timed waiting：超时等待状态。和等待状态不同的是，它是可以在指定的时间自行返回的。
-• Terminated：终止状态。表示当前线程已经执行完毕。导致线程终止有两种情况：第一种就是run方
-法执行完毕正常退出；第二种就是因为一个没有捕获的异常而终止了run方法，导致线程进入终止状态。
+* New：新创建状态。线程被创建，还没有调用 start 方法，在线程运行之前还有一些基础工作要做。
+* Runnable：可运行状态。一旦调用start方法，线程就处于Runnable状态。一个可运行的线程可能正在运行也可能没有运行，这取决于操作系统给线程提供运行的时间。
+* Blocked：阻塞状态。表示线程被锁阻塞，它暂时不活动。
+* Waiting：等待状态。线程暂时不活动，并且不运行任何代码，这消耗最少的资源，直到线程调度器重新激活它。
+* Timed waiting：超时等待状态。和等待状态不同的是，它是可以在指定的时间自行返回的。
+* Terminated：终止状态。表示当前线程已经执行完毕。导致线程终止有两种情况：第一种就是run方法执行完毕正常退出；第二种就是因为一个没有捕获的异常而终止了run方法，导致线程进入终止状态。
 
 ## 线程中断
 
@@ -141,20 +139,20 @@ __线程池的优点__
 
 线程池类为 java.util.concurrent.ThreadPoolExecutor，常用构造方法为：
 
-        ThreadPoolExecutor(
-                int corePoolSize, 
-                int maximumPoolSize,
-                long keepAliveTime, 
-                TimeUnit unit,
-                BlockingQueue<Runnable> workQueue,
-                ThreadFactory threadFactory)
+    ThreadPoolExecutor(
+        int corePoolSize, 
+        int maximumPoolSize,
+        long keepAliveTime, 
+        TimeUnit unit,
+        BlockingQueue<Runnable> workQueue,
+        ThreadFactory threadFactory)
 
-corePoolSize：          线程池维护线程的最少数量 核心线程池数量
-maximumPoolSize：       线程池维护线程的最大数量
-keepAliveTime：         线程池维护线程所允许的空闲时间,超过这个时间非核心线程会被销毁
-unit：                  线程池维护线程所允许的空闲时间的单位
-workQueue：             线程池所使用的任务队列
-threadFactory           新线程的创建工厂类
+corePoolSize：          线程池维护线程的最少数量 核心线程池数量    
+maximumPoolSize：       线程池维护线程的最大数量    
+keepAliveTime：         线程池维护线程所允许的空闲时间,超过这个时间非核心线程会被销毁    
+unit：                  线程池维护线程所允许的空闲时间的单位    
+workQueue：             线程池所使用的任务队列    
+threadFactory           新线程的创建工厂类    
 
 __创建新线程的策略__
 
@@ -165,27 +163,25 @@ __创建新线程的策略__
 
 线程池创建后,核心线程会一直存活    
 
-
 __常见的线程池__
 
 * FixedThreadPool    
 创建线程数量固定大小的线程池,只有核心线程,任务队列大小没有限制.适用于快速响应请求.创建一个定长线程池，可控制线程最大并发数，超出的线程会在队列中等待。    
-
     ExecutorService fixedThreadPool = Executors.newFixedThreadPool(3);
     for (int i = 0; i < 10; i++) {
-            final int index = i;
-            fixedThreadPool.execute(new Runnable() {
-                    @Override
-                    public void run() {
-                            try {
-                                    System.out.println(index);
-                                    Thread.sleep(2000);
-                            } catch (InterruptedException e) {
-                                    // TODO Auto-generated catch block
-                                    e.printStackTrace();
-                            }
-                    }
-            });
+        final int index = i;
+        fixedThreadPool.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    System.out.println(index);
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
 * CachedThreadPool    
@@ -193,19 +189,19 @@ __常见的线程池__
 
     ExecutorService cachedThreadPool = Executors.newCachedThreadPool();
     for (int i = 0; i < 10; i++) {
-            final int index = i;
-            try {
-                    Thread.sleep(index * 1000);
-            } catch (InterruptedException e) {
-                    e.printStackTrace();
+        final int index = i;
+        try {
+            Thread.sleep(index * 1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        cachedThreadPool.execute(new Runnable() {
+            @Override
+            public void run() {
+                System.out.println(index);
             }
-    
-            cachedThreadPool.execute(new Runnable() {
-                    @Override
-                    public void run() {
-                            System.out.println(index);
-                    }
-            });
+        });
     }
 
 * ScheduledThreadPool    
@@ -215,19 +211,19 @@ __常见的线程池__
 
     ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(5);
     scheduledThreadPool.schedule(new Runnable() {
-            @Override
-            public void run() {
-                    System.out.println("delay 3 seconds");
-            }
+        @Override
+        public void run() {
+            System.out.println("delay 3 seconds");
+        }
     }, 3, TimeUnit.SECONDS);
 
 表示延迟1秒后每3秒执行一次。
 
     scheduledThreadPool.scheduleAtFixedRate(new Runnable() {
-            @Override
-            public void run() {
-                    System.out.println("delay 1 seconds, and excute every 3 seconds");
-            }
+        @Override
+        public void run() {
+            System.out.println("delay 1 seconds, and excute every 3 seconds");
+        }
     }, 1, 3, TimeUnit.SECONDS);
 
 
@@ -236,20 +232,18 @@ __常见的线程池__
 
     ExecutorService singleThreadExecutor = Executors.newSingleThreadExecutor();
     for (int i = 0; i < 10; i++) {
-            final int index = i;
-            singleThreadExecutor.execute(new Runnable() {
-    
-                    @Override
-                    public void run() {
-                            try {
-                                    System.out.println(index);
-                                    Thread.sleep(2000);
-                            } catch (InterruptedException e) {
-                                    // TODO Auto-generated catch block
-                                    e.printStackTrace();
-                            }
-                    }
-            });
+        final int index = i;
+        singleThreadExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    System.out.println(index);
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
 ### __代码示例__
@@ -257,25 +251,25 @@ __常见的线程池__
 需要执行的Runnable任务
 
     public class ThreadPollTask implements Runnable {
-            // 保存任务所需要的数据
-            private Object threadPoolTaskData;
-            ThreadPollTask(Object tasks) {
-                    this.threadPoolTaskData = tasks;
+        // 保存任务所需要的数据
+        private Object threadPoolTaskData;
+        ThreadPollTask(Object tasks) {
+            this.threadPoolTaskData = tasks;
+        }
+        @Override
+        public void run() {
+            // 处理一个任务，这里的处理方式太简单了，仅仅是一个打印语句
+            System.out.println("start .." + threadPoolTaskData);
+            try {
+                //便于观察，等待一段时间
+                Thread.sleep(2000);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-            @Override
-            public void run() {
-                    // 处理一个任务，这里的处理方式太简单了，仅仅是一个打印语句
-                    System.out.println("start .." + threadPoolTaskData);
-                    try {
-                    //便于观察，等待一段时间
-                    Thread.sleep(2000);
-                    } catch (Exception e) {
-                    e.printStackTrace();
-                    }
-            }
-            public Object getTask() {
-                    return this.threadPoolTaskData;
-            }
+        }
+        public Object getTask() {
+            return this.threadPoolTaskData;
+        }
     }
 
 手动创建线程池
@@ -285,8 +279,8 @@ __常见的线程池__
 
     // 构造一个线程池
     ThreadPoolExecutor threadPool = new ThreadPoolExecutor(2, 4, 3,
-            TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(3),
-            new ThreadPoolExecutor.DiscardOldestPolicy());
+        TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(3),
+        new ThreadPoolExecutor.DiscardOldestPolicy());
 
 执行Callable任务
 
@@ -308,16 +302,16 @@ __常见的线程池__
 AbortPolicy    
 为java线程池默认的阻塞策略，不执行此任务，而且直接抛出一个运行时异常，切记ThreadPoolExecutor.execute需要try catch，否则程序会直接退出。
 
-DiscardPolicy
+DiscardPolicy    
 直接抛弃，任务不执行，空方法
 
-DiscardOldestPolicy
+DiscardOldestPolicy    
 从队列里面抛弃head的一个任务，并再次execute 此task。
 
-CallerRunsPolicy
+CallerRunsPolicy    
 在调用execute的线程里面执行此command，会阻塞入口
 
-用户自定义拒绝策略（最常用）
+用户自定义拒绝策略（最常用）    
 实现RejectedExecutionHandler
 
 --------
@@ -351,8 +345,8 @@ CallerRunsPolicy
 
     // 构造一个线程池
     ThreadPoolExecutor threadPool = new ThreadPoolExecutor(2, 4, 3,
-            TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(3),
-            new ThreadPoolExecutor.DiscardOldestPolicy());
+        TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(3),
+        new ThreadPoolExecutor.DiscardOldestPolicy());
 
     for (int i = 1; i <= produceTaskMaxNumber; i++) {
         try {
