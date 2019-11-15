@@ -1819,22 +1819,6 @@ fail()
 
 --------
 
-## 优化相关
-
-### UI界面优化
-
-* include布局
-* merge标签
-* ViewStub视图
-* 使用RelativeLayout减少视图树层级
-
-### 内存优化
-
-* 加载Bitmap
-* 使用ProGuard进行代码压缩
-* 对最终的apk使用zipalign
-* 使用多进程
-
 ### Android 内存机制
 
 Dalvik内存堆(Heap)栈(Stack)

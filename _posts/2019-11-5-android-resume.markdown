@@ -35,10 +35,421 @@ categories: android
 
 ## [Databinding和MVVM模式](/android/2018/12/25/android-mvvm-databinding/)
 
+# Gradle和ProGuard
+
+## [Gradle](/android/2019/01/01/gradle-for-android/)    
+
+## [ProGuard](/android/2018/04/25/android-proguard/)
+
 # Rertofit RxJava相关
 
+## [Rertofit RxJava相关](/java/android/2018/02/11/android-retrofit-rxjaja/)
+
+# 进程间通信AIDL
+
+AIDL (Android Interface Definition Language)是一种IDL 语言，用于生成可以在Android设备上两个进程之间进行进程间通信(IPC)的代码。
+如果把Service定义到另一个进程中,使用Servicez自带的Binder就无法进行通信,必须使用AIDL.
+
+使用方法
+1.创建AIDL文件,定义接口名称
+
+	interface IBookManagerInterface {
+		List getBookList();
+		void addBook(in int id, in String name);
+	}
+
+2.传输的Model类,必须继承Parcelable接口
+
+new IBookManagerInterface.Stub()创建Binder然后重写接口文件的所有方法
+
+	public class Book implements Parcelable {
+		public int id;
+		public String name;
+
+		public Book(int id, String name) {
+			this.id = id;
+			this.name = name;
+		}
+
+		protected Book(Parcel in) {
+			id = in.readInt();
+			name = in.readString();
+		}
+
+		public static final Creator<Book> CREATOR = new Creator<Book>() {
+			@Override
+			public Book createFromParcel(Parcel in) {
+				return new Book(in);
+			}
+
+			@Override
+			public Book[] newArray(int size) {
+				return new Book[size];
+			}
+		};
+
+		@Override
+		public int describeContents() {
+			return 0;
+		}
+
+		@Override
+		public void writeToParcel(Parcel dest, int flags) {
+			dest.writeInt(id);
+			dest.writeString(name);
+		}
+	}
+
+
+3.Service被调用端
+
+	public class BookManagerService extends Service {
+		public BookManagerService() {
+		}
+
+		private CopyOnWriteArrayList<Book> bookList;
+
+		@Override
+		public void onCreate() {
+			super.onCreate();
+
+			bookList = new CopyOnWriteArrayList<Book>();
+			bookList.add(new Book(1, "Book 001"));
+			bookList.add(new Book(2, "Book 002"));
+			bookList.add(new Book(3, "Book 003"));
+			bookList.add(new Book(4, "Book 004"));
+
+		}
+
+		private Binder mBinder = new IBookManagerInterface.Stub() {
+			@Override
+			public List getBookList() throws RemoteException {
+				return bookList;
+			}
+
+			@Override
+			public void addBook(int id, String name) throws RemoteException {
+				bookList.add(new Book(id, name));
+			}
+		};
+
+		@Override
+		public IBinder onBind(Intent intent) {
+			return mBinder;
+		}
+	}
+
+
+4. Activity调用端,调用接口方法的时候必须try-catch包裹
+
+	private IBookManagerInterface iBookManagerInterface;
+	private ServiceConnection serviceConnection = new ServiceConnection() {
+		@Override
+		public void onServiceConnected(ComponentName name, IBinder service) {
+			iBookManagerInterface = IBookManagerInterface.Stub.asInterface(service);
+		}
+
+		@Override
+		public void onServiceDisconnected(ComponentName name) {
+		}
+	};
+
+	try {
+		iBookManagerInterface.addBook(5, "New Book 005");
+	} catch (RemoteException e) {
+		e.printStackTrace();
+	}
+
+	try {
+		List<Book> bookList = iBookManagerInterface.getBookList();
+		for(Book book: bookList) {
+			Log.v("aidltester", book.name);
+		}
+
+	} catch (RemoteException e) {
+		e.printStackTrace();
+	}
 
 # 题目
+
+    线程中 sleep() 和 wait() 有何区别，各有什么含义？
+    abstract和 interface 的区别?
+    array,arrayList, List 三者有何区别？
+    hashtable和 hashmap 的区别,并简述 Hashmap 的实现原理。
+    StringBuilder和 String，subString方法的细微差别。
+    请写出四种以上你知道的设计模式，并介绍下实现原理。
+    安卓子线程是否能更新UI，如果能请说明具体细节。
+    JavaGC机制的原理和内存泄露。
+    请在100个电话号码找出135的电话号码，注意不能用正则（类似怎么最好的遍历 LogCat日志）。（此类算法一般比较类似，记得京东笔试比较10个数字，拿出最大的数字，也就是冒泡排序。唯品会是让你写一算法，依次从10个数字中拿出3个，不够依此类推）
+    Handler机制，请写出一种更新UI的方法和代码
+    请解释安卓为啥要加签名机制。
+    你觉得安卓开发最关键的技术在哪里？
+
+    多线程多点下载的过程。
+    http协议的理解和用法。
+    安卓解决线程并发问题。
+    你知道的数据结构有哪些，说下具体实现机制。
+    十六进制数据怎么和十进制和二进制之间转换？
+    谈下对 Java OOP 中多态的理解。
+    Activty和 Fragmengt 之间怎么通信，Fragmengt和 Fragmengt 怎么通信？
+    怎么让自己的进程不被第三方应用杀掉，系统杀掉之后怎么能启动起来。
+    说下平时开发中比较注意的一些问题。答 ：可以熟说下svn和git的细节，和代码规范问题，和一些安全信息的问题等。
+    自定义view效率高于xml定义吗？说明理由。
+    广播注册一般有几种，各有什么优缺点？
+    服务启动一般有几种，服务和Activty之间怎么通信，服务和服务之间怎么通信A？
+    布局优化主要哪些？具体优化？
+    数据库的知识，包括本地数据库优化点。
+
+
+    安卓事件分发机制，请详细说下整个流程。
+    安卓 View绘制机制和加载 过程，请详细说下整个流程。
+    Activty的加载过程，请详细介绍下。（不是生命周期切记）
+    安卓采用自动垃圾回收机制，请说下安卓内存管理的原理。
+    说下 安卓虚拟机 和 java虚拟机 的原理和不同点。
+    多线程中的安全队列一般通过什么实现？线程池原理？（java）
+    安卓权限管理，为何在清单中注册权限，安卓APP就可以使用，反之不可以。（操作系统）
+    socket短线重连怎么实现，心跳机制又是怎样实现，四次握手步骤有哪些？（网络通讯原理）
+    HTTP中 TCP和UDP 有啥区别，说下HTTP请求的 IP报文结构。（计算机网络）
+    你知道的安全加密有哪些？ （如果你说了一个加密，面试官就会接着跟进提问，所以之前你必须要会，不会的话背也要背下来）（安全加密）
+    你知道的数据存储结构？堆栈和链表内部机制。（数据结构）
+    说下 Linux进程和线程 的区别。进程调度优先级，和cpu调度进程关系。（操作系统）
+    请你详细说下你知道的一种设计模式，并解释下java的高内聚和低耦合。
+    Spring的反射和代理，在安卓中应用场景。（插件和ROM数据框架）
+    JNI调用过程中 混淆问题。
+    看过安卓源码吗，请说出一个你看过的API或者组建内部原理。
+    Android 5.0、 6.0 以及7.0预测新特性。
+    hybrid混合开发，响应式编程等。
+    为啥离职呢 对待加班看法？
+    你擅长什么，做了哪些东西？
+
+    说下项目中遇到的棘手问题，包括技术，交际和沟通。
+    说下你进几年的规划。
+    给你一个项目，你怎么看待他的市场和技术的关系？
+    你一般喜欢从什么渠道获取技术信息，和提高自己的能力？
+    你以往的项目中，以你现在的眼光去评价项目的利弊。
+    对加班怎么看？（不要太浮夸，现实一点哦）
+    说下 OPP 和 AOP 的思想。
+    你知道的一些开源框架和原理。
+    不同语言是否可以互相调用？
+    安卓适配和性能调优问题。
+    对于非立项（KPI）项目，怎么推进？
+    你还要什么了解和要问的吗？
+
+### 布局优化
+
+* 使用RelativeLayout减少视图树层级
+* include布局和merge标签把重复的布局抽取出来
+* ViewStub组件实现按需加载
+* 减少过度绘制
+
+### 绘制优化
+
+* 自定义View中onDraw() 方法中不要做耗时的任务，不要创建新的局部对象。
+
+### 内存优化
+
+Activity的实例引用到static变量，会导致Activity无法正常销毁，导致内存泄漏    
+属性动画需要在onDestory()方法中停止不然会造成Activity销毁之后动画依然在播放，导致内存泄漏    
+
+### ANR对策
+
+ANR全名Application Not Responding, 也就是"应用无响应".    
+在如下两种情况下会弹出ANR对话框:    
+
+* 5s内无法响应用户输入事件(例如键盘输入, 触摸屏幕等).
+* BroadcastReceiver在10s内无法结束.
+
+如何避免ANR
+
+	不要在主线程(UI线程)里面做繁重的操作.
+
+ANR的处理
+
+针对三种不同的情况, 一般的处理情况如下
+
+* 主线程阻塞的
+开辟单独的子线程来处理耗时阻塞事务.
+
+* CPU满负荷, I/O阻塞的
+I/O阻塞一般来说就是文件读写或数据库操作执行在主线程了, 也可以通过开辟子线程的方式异步执行.
+
+* 内存不够用的
+增大VM内存, 使用largeHeap属性, 排查内存泄露(这个在内存优化那篇细说吧)等.
+
+### ListView优化
+
+使用ViewHolder，避免在getView中做耗时操作
+
+1. convertView重用，利用好 convertView 来重用 View，切忌每次 getView() 都新建。ListView 的核心原理就是重用 View，如果重用 view 不改变宽高，重用View可以减少重新分配缓存造成的内存频繁分配/回收;
+2. ViewHolder优化，使用ViewHolder的原因是findViewById方法耗时较大，如果控件个数过多，会严重影响性能，而使用ViewHolder主要是为了可以省去这个时间。通过setTag，getTag直接获取View。
+3. 减少Item View的布局层级，这是所有layout都必须遵循的，布局层级过深会直接导致View的测量与绘制浪费大量的时间。
+4. adapter中的getView方法尽量少使用逻辑
+5. 图片加载采用三级缓存，避免每次都要重新加载。
+6. 尝试开启硬件加速来使ListView的滑动更加流畅。
+7. 使用 RecycleView 代替。
+
+### 线程优化
+
+尽量采用线程池，避免每次创建新的Thread
+
+### 内存优化
+
+* 避免创建更多的对象
+* 尽量使用final static来修饰
+* 使用Android特有的数据结构，比如SparseArray和Pair等
+* 使用软引用和弱引用
+* 采用内存缓存和磁盘缓存
+* 尽量采用静态内部类
+* 加载Bitmap
+* 使用ProGuard进行代码压缩
+* 对最终的apk使用zipalign
+* 使用多进程
+
+### binder机制
+
+作用 用于在线程之间传递信息,子线程向主线程传递结果,进度信息.
+
+* Message：封装的消息体.
+
+     其中包含了消息ID，消息处理对象以及处理的数据等，由MessageQueue统一列队，终由Handler处理。
+     参数:
+          what 自定义消息id
+          arg1, arg2 消息参数
+          obj 消息内容,可以为任意类型
+          
+* Handler：处理者，负责Message的发送及处理。在接收消息的地方定义.重写handleMessage(Message msg)方法来处理消息.
+
+* MessageQueue：消息队列，用来存放Handler发送过来的消息，并按照FIFO规则执行。当然，存放Message并非实际意义的保存，而是将Message以链表的方式串联起来的，等待Looper的抽取。内部封装的类,使用时不可见.
+* Looper：消息泵，不断地从MessageQueue中抽取Message执行。因此，一个MessageQueue需要一个Looper。UI线程自带Looper不需要定义.
+子线程在定义Hander的时候需要先初始化Looper,初始化Hander的代码写在Looper.prepare();和Looper.loop();之间.
+
+主线程和子线程通过Handler交互的实例
+
+	public class MainActivity extends AppCompatActivity {
+		private Button startThreadBtn;
+		private Button pushMsgToSubBtn;
+		private TextView msgTextView;
+		private Handler toSubThreadHandler;
+		private Handler toMainThreadHandler;
+		private final static int MSG_TO_MAIN = 1;
+		private final static int MSG_TO_SUB = 2;
+
+		@Override
+		protected void onCreate(Bundle savedInstanceState) {
+			super.onCreate(savedInstanceState);
+			setContentView(R.layout.activity_main);
+			msgTextView = (TextView) findViewById(R.id.msg);
+			startThreadBtn = (Button) findViewById(R.id.start_thread);
+			startThreadBtn.setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					SubThread subThread = new SubThread();
+					subThread.start();
+
+					pushMsgToSubBtn.setEnabled(true);
+				}
+			});
+
+			pushMsgToSubBtn = (Button) findViewById(R.id.push_msg_to_sub);
+			pushMsgToSubBtn.setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					Message message1 = Message.obtain();
+					String msg1 = "This is an message to sub thread";
+					message1.obj = msg1;
+					message1.what = MSG_TO_SUB;
+					toMainThreadHandler.sendMessage(message1);
+				}
+			});
+			pushMsgToSubBtn.setEnabled(false);
+
+			toSubThreadHandler = new Handler() {
+				@Override
+				public void handleMessage(Message msg) {
+					super.handleMessage(msg);
+
+					switch (msg.what)
+					{
+						case MSG_TO_MAIN:
+							msgTextView.setText((String) msg.obj);
+							break;
+					}
+				}
+			};
+		}
+
+		private class SubThread extends Thread
+		{
+			@Override
+			public void run() {
+				super.run();
+
+				Message toMainThreadMsg = new Message();
+				toMainThreadMsg.what = 1;
+				String msg = "A Messgae to Main Thread";
+				toMainThreadMsg.obj = msg;
+
+				toSubThreadHandler.sendMessage(toMainThreadMsg);
+
+				Looper.prepare();
+				toMainThreadHandler = new Handler(){
+					@Override
+					public void handleMessage(Message msg) {
+						super.handleMessage(msg);
+						switch (msg.what)
+						{
+							case MSG_TO_SUB:
+								Toast.makeText(MainActivity.this, (String) msg.obj, Toast.LENGTH_SHORT).show();
+								break;
+						}
+					}
+				};
+				Looper.loop();
+			}
+		}
+	}
+
+### handler原理， Message,loop,messageQueue关系，handler内存泄露问题。
+
+Handler主要用途是在子线程中访问UI使用，子线程中进行网络访问，文件操作等耗时操作需要反映到UI的时候使用handler与主线程进行交互。        
+Handler原理是借助Loop消息队列来满足线程间的通信，Handler在创建的时候会使用当前线程的Looper来构建消息系统，主线程中自带ActivityLooper不需要自己创建，Handler创建在子线程中的时候就需要手动创建Looper；Looper初始化的时候会创建一个消息队列MessageQueue；MessageQueue是一个队列，遵循先进先出的原则，作用是存放所有handler发送过来的消息，这些消息会一直存放消息队列中，等待被处理，每一个线程只有一直MessageQueue队列。    
+Looper：每个线程通过Handler发送的消息都保存在，MessageQueue中，Looper通过调用loop（）的方法，就会进入到一个无限循环当中，然后每当发现MessageQueue中存在一条消息，就会将它取出，并传递到Handler的handleMessage（）方法中。每个线程中只会有一个Looper对象。    
+信息传递的单位是Message，message就是一个数据模型，它的作用用于线程之间传递信息，常用的四个字段target，what，obj，arg;    
+
+handler:它主要用于发送和接收消息，有三个主要方法
+
+* sendMessage（）；    
+* dispatchMessage（）；    
+* handleMessage（）；    
+
+发送方通过sendMessage把消息压入消息队列，Looper发现有新消息到来时调用handleMessage处理消息。
+
+ThreadLocal是一个线程内部的数据存储类，通过他可以在指定的线程中存取数据，每个线程都有自己的ThreadLocal可以保证数据隔离。线程的Looper就是存储在ThreadLocal中，这样每个线程的Handler都可以独立运行不会相互干扰。如果不用ThreadLocal系统就必须定义一个全局表供Handler查找指定的Looper
+
+### service生命周期，可以执行耗时操作吗？
+
+不可以。    
+Service和activity是运行在当前app所在的main thread（UI主线程）中的，而耗时操作（如：网络请求、拷贝数据、大文件）会阻塞主线程，给用户不好的体验。    
+
+如果需要在服务中进行耗时操作，可以选择IntentService，  IntentService是Service的子类，用来处理异步请求。     
+IntentService在onCreate()方法中通过HandlerThread单独开启一个线程来处理Intent请求对象所对应的任务，这样可以避免事务处理阻塞主线程。    
+onHandleIntent()函数针对Intent的不同进行不同的事务处理就可以，执行完一个Intent请求对象所对应的工作之后，如果没有新的Intent请求达到，则自动停止Service； 否则ServiceHandler会取得下一个Intent请求    
+传入该函数来处理其所对应的任务。    
+
+### 自己设计一个图片加载框架
+
+### http ResponseCode
+
+* 200 - 请求成功
+* 301 - 资源（网页等）被永久转移到其它URL
+* 404 - 请求的资源（网页等）不存在
+* 500 - 内部服务器错误
+
+### 插件化，动态加载
+
+### http协议了解多少，说说里面的协议头部有哪些字段？
+
+### https了解多少？为什么百度全部都用了https包括首页
 
 ### ArrayList和Vector的主要区别是什么？
 
