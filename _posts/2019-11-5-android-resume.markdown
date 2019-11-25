@@ -5,43 +5,25 @@ date:   2019-11-5
 categories: android
 ---
 
-# Java基础
+## [Java基础](/java/2018/02/24/java-notes/)
 
-## [Java基础相关笔记](/java/2018/02/24/java-notes/)
-
-# Android基础
-
-## [Android基础相关笔记](/android/2015/04/04/android-note/)
-
-# 四大组件的原理
+## [Android基础](/android/2015/04/04/android-note/)
 
 ## [四大组件的原理](/android/2017/05/06/android-activity-service-broadcastservice-contentprovider/)
 
-# View绘制的过程，事件分发机制，自定义View
-
-## [View相关](/android/2017/05/06/android-activity-service-broadcastservice-contentprovider/)
-
-# Android动画相关
+## [View绘制的过程，事件分发机制，自定义View](/android/2017/05/06/android-activity-service-broadcastservice-contentprovider/)
 
 ## [Android动画相关](/android/2016/06/29/android-animation/)
 
-# Android多线程，多进程，Handler Looper 机制
+## [Android多线程，多进程，Handler Looper 机制](/android/2017/08/09/android-multi-thread/)
 
-## [Android多线程，多进程](/android/2017/08/09/android-multi-thread/)
-
-# MVP和MVVM模式,与MVC模式有什么不同
-
-## [MVP模式](/android/2018/03/05/android-mvp/)
+## [MVP和MVVM模式,与MVC模式有什么不同](/android/2018/03/05/android-mvp/)
 
 ## [Databinding和MVVM模式](/android/2018/12/25/android-mvvm-databinding/)
-
-# Gradle和ProGuard
 
 ## [Gradle](/android/2019/01/01/gradle-for-android/)    
 
 ## [ProGuard](/android/2018/04/25/android-proguard/)
-
-# Rertofit RxJava相关
 
 ## [Rertofit RxJava相关](/java/android/2018/02/11/android-retrofit-rxjaja/)
 
@@ -185,7 +167,7 @@ new IBookManagerInterface.Stub()创建Binder然后重写接口文件的所有方
     请解释安卓为啥要加签名机制。
     你觉得安卓开发最关键的技术在哪里？
 
-    多线程多点下载的过程。
+    
     http协议的理解和用法。
     安卓解决线程并发问题。
     你知道的数据结构有哪些，说下具体实现机制。
@@ -234,6 +216,20 @@ new IBookManagerInterface.Stub()创建Binder然后重写接口文件的所有方
     安卓适配和性能调优问题。
     对于非立项（KPI）项目，怎么推进？
     你还要什么了解和要问的吗？
+
+### 多线程多点下载，断点续传
+
+android中断点续传的思路
+
+一、 断点续传的实现步骤：
+
+第一步： 我们要获得下载资源的的长度，用http请求中HttpURLConnection的getContentLength()方法
+第二步：在本地创建一个文件，设计其长度。File file = new File()
+第三步：从数据库中获得上次下载的进度，当暂停下载时，存储下载的状态，用到数据库的知识
+第四步：从上次下载的位置下载数据，同时保存进度到数据库：RandomAccessFile的seek方法与HttpURLConnection的setRequestProperty方法
+第五步：将下载进度回传到Activity，可以通过Intent将数据广播到Activity中
+第六步：下载完成后删除下载信息，在数据库中删除相应的信息
+
 
 ### 布局优化
 
