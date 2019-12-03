@@ -121,7 +121,92 @@ GET访问
 
 POST访问
 
+--------
 
+## Provider
 
+__导入包__
+
+pubspec.yaml
+
+    dependencies:
+        provider: ^3.1.0
+
+__创建model类__
+
+这里需要混入ChangeNotifer，修改的时候还需要调用notifyListeners()通知刷新
+
+    class Counter with ChangeNotifier {
+        int _count;
+        Counter(this._count);
+
+        void add() {
+            _count++;
+            notifyListeners();
+        }
+
+        get count => _count;
+    }
+
+__外层页面__
+
+创建共享的顶层数据，外层需要ChangeNotifierProvider包裹，builder()方法初始化数据对象，显示值的时候使用Provider.of()方法获取对象
+
+    class ProviderExampleViewPage extends StatelessWidget {
+        @override
+        Widget build(BuildContext context) {
+            // TODO: implement build
+            return ChangeNotifierProvider<Counter> (
+            builder: (context) => Counter(1),
+            child: Scaffold(
+                appBar: AppBar(
+                title: Text('ProviderExampleViewPage'),
+                ),
+
+                body: Center(
+                child: Column(
+                    children: <Widget>[
+                    Consumer<Counter>(
+                        builder: (context, counter, _) => Text("${Provider.of<Counter>(context).count}"),
+                    ),
+                    ChangerWidget(),
+                    ],
+                ),
+                ),
+            ),
+            );
+        }
+    }
+
+__内层页面__
+
+直接使用Privider.of()方法获取model对象，进行修改的时候就会在不同页面直接进行数据同步和刷新。
+
+    class ChangerWidget extends StatelessWidget {
+        @override
+        Widget build(BuildContext context) {
+            // TODO: implement build
+            return RaisedButton(
+            child: Text('Plus one'),
+                onPressed: () {
+                    var counter = Provider.of<Counter>(context);
+                    counter.add();
+                },
+            );
+        }
+    }
+
+Provider适用于在不同的Widget之间进行数据同步，同一个Widget中不起作用，widget内部的状态改变还是Stateful widget。
+
+当有多个Provider的时候使用MultiPrivoder
+
+    MultiProvider(
+        providers: [
+            Provider<Foo>.value(value: foo),
+            Provider<Bar>.value(value: bar),
+            Provider<Baz>.value(value: baz),
+        ],
+        child: someWidget,
+    )
 
 
