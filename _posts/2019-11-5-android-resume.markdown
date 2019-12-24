@@ -181,8 +181,6 @@ new IBookManagerInterface.Stub()创建Binder然后重写接口文件的所有方
     服务启动一般有几种，服务和Activty之间怎么通信，服务和服务之间怎么通信A？
     布局优化主要哪些？具体优化？
     数据库的知识，包括本地数据库优化点。
-
-
     安卓事件分发机制，请详细说下整个流程。
     安卓 View绘制机制和加载 过程，请详细说下整个流程。
     Activty的加载过程，请详细介绍下。（不是生命周期切记）
@@ -190,9 +188,7 @@ new IBookManagerInterface.Stub()创建Binder然后重写接口文件的所有方
     说下 安卓虚拟机 和 java虚拟机 的原理和不同点。
     多线程中的安全队列一般通过什么实现？线程池原理？（java）
     安卓权限管理，为何在清单中注册权限，安卓APP就可以使用，反之不可以。（操作系统）
-    socket短线重连怎么实现，心跳机制又是怎样实现，四次握手步骤有哪些？（网络通讯原理）
     HTTP中 TCP和UDP 有啥区别，说下HTTP请求的 IP报文结构。（计算机网络）
-    你知道的安全加密有哪些？ （如果你说了一个加密，面试官就会接着跟进提问，所以之前你必须要会，不会的话背也要背下来）（安全加密）
     你知道的数据存储结构？堆栈和链表内部机制。（数据结构）
     说下 Linux进程和线程 的区别。进程调度优先级，和cpu调度进程关系。（操作系统）
     请你详细说下你知道的一种设计模式，并解释下java的高内聚和低耦合。
@@ -216,20 +212,6 @@ new IBookManagerInterface.Stub()创建Binder然后重写接口文件的所有方
     安卓适配和性能调优问题。
     对于非立项（KPI）项目，怎么推进？
     你还要什么了解和要问的吗？
-
-### 多线程多点下载，断点续传
-
-android中断点续传的思路
-
-一、 断点续传的实现步骤：
-
-第一步： 我们要获得下载资源的的长度，用http请求中HttpURLConnection的getContentLength()方法
-第二步：在本地创建一个文件，设计其长度。File file = new File()
-第三步：从数据库中获得上次下载的进度，当暂停下载时，存储下载的状态，用到数据库的知识
-第四步：从上次下载的位置下载数据，同时保存进度到数据库：RandomAccessFile的seek方法与HttpURLConnection的setRequestProperty方法
-第五步：将下载进度回传到Activity，可以通过Intent将数据广播到Activity中
-第六步：下载完成后删除下载信息，在数据库中删除相应的信息
-
 
 ### 布局优化
 
@@ -800,5 +782,525 @@ Activity的 onSaveInstanceState() 和 onRestoreInstanceState()并不是生命周
 在activity被杀掉之前调用保存每个实例的状态,以保证该状态可以在onCreate(Bundle)或者onRestoreInstanceState(Bundle) (传入的Bundle参数是由onSaveInstanceState封装好的)中恢复。这个方法在一个activity被杀死前调用，当该activity在将来某个时刻回来时可以恢复其先前状态。
 
 例如，如果activity B启用后位于activity A的前端，在某个时刻activity A因为系统回收资源的问题要被杀掉，A通过onSaveInstanceState将有机会保存其用户界面状态，使得将来用户返回到activity A时能通过onCreate(Bundle)或者onRestoreInstanceState(Bundle)恢复界面的状态。
+
+### 多线程多点下载，断点续传
+
+android中断点续传的思路
+
+一、 断点续传的实现步骤：
+
+第一步： 我们要获得下载资源的的长度，用http请求中HttpURLConnection的getContentLength()方法
+第二步：在本地创建一个文件，设计其长度。File file = new File()
+第三步：从数据库中获得上次下载的进度，当暂停下载时，存储下载的状态，用到数据库的知识
+第四步：从上次下载的位置下载数据，同时保存进度到数据库：RandomAccessFile的seek方法与HttpURLConnection的setRequestProperty方法
+第五步：将下载进度回传到Activity，可以通过Intent将数据广播到Activity中
+第六步：下载完成后删除下载信息，在数据库中删除相应的信息
+
+#### Http分段请求
+
+现代WEB服务器都支持大文件分段下载,加快下载速度,判断WEB服务器是否支持分段下载通过返回头是否有 Accept-Ranges: bytes 字段.分段下载分为两种，一种就是一次请求一个分段，一种就是一次请求多个分段。
+
+__请求分段中的一部分__
+
+请求头部添加如下字段,0-1024代表文件最前面的1025个字节    
+
+	Range: bytes=0-1024
+
+Range字段支持的写法
+
+> Range: bytes=0-1024 	获取最前面1025个字节    
+> Range: bytes=-500		获取最后500个字节    
+> Range: bytes=1025-	获取从1025开始到文件末尾所有的字节    
+> Range: 0-0			获取第一个字节    
+> Range: -1				获取最后一个字节    
+
+请求成功后服务器会返回状态码206, 并返回如下字段指示返回结果, 0-1024指示返回分段范围, 7877指示文件总大小    
+Content-Range: bytes 0-1024/7877    
+
+下面是用curl请求百度首页图片前面1025个字节的示例, 可以看到返回长度1025.    
+请求命令    
+
+	curl -v --header Range:bytes=0-1024  "http://www.baidu.com/img/bd_logo1.png"
+
+请求头部
+
+	GET /img/bd_logo1.png HTTP/1.1
+	User-Agent: curl/7.15.5 (i386-redhat-linux-gnu) libcurl/7.15.5 OpenSSL/0.9.8b zlib/1.2.3 libidn/0.6.5
+	Host: www.baidu.com
+	Accept: */*
+	Range:bytes=0-1024
+
+返回头部
+
+	HTTP/1.0 206 Partial Content
+	Date: Sun, 06 Sep 2015 07:49:07 GMT
+	Server: Apache
+	Last-Modified: Wed, 03 Sep 2014 10:00:27 GMT
+	ETag: "1ec5-502264e2ae4c0"
+	Accept-Ranges: bytes
+	Cache-Control: max-age=315360000
+	Expires: Wed, 03 Sep 2025 07:49:07 GMT
+	Content-Type: image/png
+	Content-Range: bytes 0-1024/7877
+	Content-Length: 1025
+	Age: 989
+
+__请求分段中的多个部分__
+
+请求头部Range字段需要添加多个范围    
+
+	Range: bytes=0-1024,2000-3000    
+
+请求成功后同样返回状态码206, 返回的Content-Type字段和请求一部分时不一样, 其中multipart/byteranges;指示返回的多段请求类型, boundary指示多段内容之间的分割符    
+
+	Content-Type: multipart/byteranges; boundary="Lusca/LUSCA_HEAD-r14809:4F1BDE32A109AC4345453D6C95A71222"
+
+同样我们以请求百度首页logo图片为例    
+请求命令    
+
+	curl -v --header Range:bytes=0-1024,2000-3000  "http://www.baidu.com/img/bd_logo1.png"
+
+请求头部
+
+	GET /img/bd_logo1.png HTTP/1.1
+	User-Agent: curl/7.15.5 (i386-redhat-linux-gnu) libcurl/7.15.5 OpenSSL/0.9.8b zlib/1.2.3 libidn/0.6.5
+	Host: www.baidu.com
+	Accept: */*
+	Range:bytes=0-1024,2000-3000
+
+返回头部
+
+	HTTP/1.0 206 Partial Content
+	Date: Sun, 06 Sep 2015 07:49:07 GMT
+	Server: Apache
+	Last-Modified: Wed, 03 Sep 2014 10:00:27 GMT
+	ETag: "1ec5-502264e2ae4c0"
+	Accept-Ranges: bytes
+	Cache-Control: max-age=315360000
+	Expires: Wed, 03 Sep 2025 07:49:07 GMT
+	Content-Type: multipart/byteranges; boundary="Lusca/LUSCA_HEAD-r14809:4F1BDE32A109AC4345453D6C95A71222"
+	Content-Length: 2339
+	Age: 724
+
+返回内容
+
+	--Lusca/LUSCA_HEAD-r14809:4F1BDE32A109AC4345453D6C95A71222
+	Content-Type: image/png
+	Content-Range: bytes 0-1024/7877
+	xxxx前面1025字节内容xxxxx
+	--Lusca/LUSCA_HEAD-r14809:4F1BDE32A109AC4345453D6C95A71222
+	Content-Type: image/png
+	Content-Range: bytes 2000-3000/7877
+	xxxx2000-3000中间1001个字节内容字节内容xxxxx
+	--Lusca/LUSCA_HEAD-r14809:4F1BDE32A109AC4345453D6C95A71222--
+
+可以看到每段内容包含Content-Type和Content-Range字段, --boundary 表示内容分段, --boundar-- 表示内容结束.如果请求的Range字段范围超出了文件大小, 则服务器返回406错误码.
+
+#### 代码示例
+
+主要代码
+
+	package com.five.fashion.duandianxuchuan;
+	
+	import android.os.Bundle;
+	import android.os.Environment;
+	import android.os.Handler;
+	import android.os.Message;
+	import android.os.SystemClock;
+	import android.support.annotation.Nullable;
+	import android.support.v7.app.AppCompatActivity;
+	import android.text.TextUtils;
+	import android.util.Log;
+	import android.view.View;
+	import android.widget.Button;
+	import android.widget.ProgressBar;
+	import android.widget.TextView;
+	
+	import com.loopj.android.http.HttpGet;
+	
+	import java.io.BufferedReader;
+	import java.io.File;
+	import java.io.FileReader;
+	import java.io.FileWriter;
+	import java.io.InputStream;
+	import java.io.RandomAccessFile;
+	
+	import cz.msebera.android.httpclient.Header;
+	import cz.msebera.android.httpclient.HttpResponse;
+	import cz.msebera.android.httpclient.client.HttpClient;
+	import cz.msebera.android.httpclient.client.methods.HttpHead;
+	import cz.msebera.android.httpclient.impl.client.DefaultHttpClient;
+	
+	
+	public class MainActivity extends AppCompatActivity {
+	protected static final String TAG = "OtherActivity";
+	//下载线程的数量
+	private final static int threadsize = 3;
+	protected static final int SET_MAX = 0;
+	public static final int UPDATE_VIEW = 1;
+	private ProgressBar pb;
+	private Button bt_download;
+	private Button bt_pause;
+	private TextView tv_info;
+	//显示进度和更新进度
+	private Handler mHandler = new Handler(){
+		public void handleMessage(android.os.Message msg) {
+		switch (msg.what) {
+			case SET_MAX://设置进度条的最大值
+			int filelength = msg.arg1;
+			pb.setMax(filelength);
+			break;
+			case UPDATE_VIEW://更新进度条 和 下载的比率
+			int len = msg.arg1;//新下载的长度
+			pb.setProgress(pb.getProgress()+len);//设置进度条的刻度
+	
+			int max = pb.getMax();//获取进度的最大值
+			int progress = pb.getProgress();//获取已经下载的数据量
+			// 下载：30  总：100
+			int result = (progress*100)/max;
+	
+			tv_info.setText("下载:"+result+"%");
+	
+			break;
+	
+			default:
+			break;
+		}
+		};
+	};
+	String uri = "http://c.hiphotos.baidu.com/image/pic/item/b90e7bec54e736d1e51217c292504fc2d46269f3.jpg";
+	@Override
+	protected void onCreate(@Nullable Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_main);
+		//找到控件
+		pb = (ProgressBar) findViewById(R.id.pb);
+		tv_info = (TextView) findViewById(R.id.tv_info);
+		bt_download = (Button) findViewById(R.id.bt_download);
+		bt_pause = (Button) findViewById(R.id.bt_pause);
+		//数据的回显
+		//确定下载的文件
+		String name = getFileName(uri);
+		File file = new File(Environment.getExternalStorageDirectory(), name);
+		if (file.exists()){//文件存在回显
+		//获取文件的大小
+		int filelength = (int) file.length();
+		pb.setMax(filelength);
+		try {
+			//统计原来所有的下载量
+			int count = 0;
+			//读取下载记录文件
+			for (int threadid = 0; threadid < threadsize; threadid++) {
+			//获取原来指定线程的下载记录
+			int existDownloadLength = readDownloadInfo(threadid);
+			count = count + existDownloadLength;
+			}
+			//设置进度条的刻度
+			pb.setProgress(count);
+	
+			//计算比率
+			int result = (count * 100) / filelength;
+			tv_info.setText("下载:" + result + "%");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		}
+		bt_download.setOnClickListener(new View.OnClickListener() {
+		@Override
+		public void onClick(View v) {
+			download(v);
+		}
+		});
+		bt_pause.setOnClickListener(new View.OnClickListener() {
+		@Override
+		public void onClick(View v) {
+			pause(v);
+		}
+		});
+	}
+	//暂停
+	private boolean flag = false;//是否在下载
+	
+	public void pause(View v){
+		flag = false;
+		bt_download.setEnabled(true);
+		bt_pause.setEnabled(false);
+	}
+	
+	//下载
+	public void download(View v){
+		flag = true; //是在下载
+		bt_download.setEnabled(false);//一点击变成不可点击
+		bt_pause.setEnabled(true);//一点击变成可点击
+		new Thread(){//子线程
+		public void run() {
+			try {
+			//获取服务器上文件的大小
+			HttpClient client = new DefaultHttpClient();
+			HttpHead request = new HttpHead(uri);
+			HttpResponse response = client.execute(request);
+			//response 只有响应头 没有响应体
+			if(response.getStatusLine().getStatusCode() == 200){
+				Header[] headers = response.getHeaders("Content-Length");
+				String value = headers[0].getValue();
+				//文件大小
+				int filelength = Integer.parseInt(value);
+				Log.i(TAG, "filelength:"+filelength);
+	
+				//设置进度条的最大值
+				Message msg_setmax = Message.obtain(mHandler, SET_MAX, filelength, 0);
+				msg_setmax.sendToTarget();
+	
+	
+				//处理下载记录文件
+				for(int threadid=0;threadid<threadsize;threadid++){
+				//对应的下载记录文件
+				File file = new File(Environment.getExternalStorageDirectory(),threadid+".txt");
+				//判断文件是否存在
+				if(!file.exists()){
+					//创建文件
+					file.createNewFile();
+				}
+				}
+	
+				//在sdcard创建和服务器大小一样的文件
+				String name = getFileName(uri);
+				File file = new File(Environment.getExternalStorageDirectory(),name);
+				//随机访问文件
+				RandomAccessFile raf = new RandomAccessFile(file, "rwd");
+				//设置文件的大小
+				raf.setLength(filelength);
+				//关闭
+				raf.close();
+	
+				//计算每条线程的下载量
+				int block = (filelength%threadsize == 0)?(filelength/threadsize):(filelength/threadsize+1);
+				//开启三条线程执行下载
+				for(int threadid=0;threadid<threadsize;threadid++){
+				new DownloadThread(threadid, uri, file, block).start();
+				}
+			}
+			} catch (Exception e) {
+			e.printStackTrace();
+			}
+		};
+		}.start();
+	}
+	
+	
+	//线程下载类
+	private class DownloadThread extends Thread{
+		private int threadid;//线程的id
+		private String uri;//下载的地址
+		private File file;//下载文件
+		private int block;//下载的块
+		private int start;
+		private int end;
+	
+		public DownloadThread(int threadid, String uri, File file, int block) {
+		super();
+		this.threadid = threadid;
+		this.uri = uri;
+		this.file = file;
+		this.block = block;
+		//计算下载的开始位置和结束位置
+		start = threadid * block;
+		end = (threadid + 1)*block -1;
+	
+		try {
+			//读取该条线程原来的下载记录
+			int existDownloadLength = readDownloadInfo(threadid);
+	
+			//修改下载的开始位置  从新下载
+			start = start + existDownloadLength;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		}
+	
+		//下载  状态码：200是普通的下载   206是分段下载    Range:范围
+		@Override
+		public void run() {
+		super.run();
+		try {
+			RandomAccessFile raf = new RandomAccessFile(file, "rwd");
+			//跳转到起始位置
+			raf.seek(start);
+	
+			//分段下载
+			HttpClient client = new DefaultHttpClient();
+			HttpGet request = new HttpGet(uri);
+			request.addHeader("Range", "bytes:"+start+"-"+end);//添加请求头
+			HttpResponse response = client.execute(request);
+			if(response.getStatusLine().getStatusCode() == 200){
+			InputStream inputStream = response.getEntity().getContent();
+			//把流写入到文件
+			byte[] buffer = new byte[1024];
+			int len = 0;
+			while((len = inputStream.read(buffer)) != -1){
+				//如果暂停下载 点击暂停 false 就直接return 点击下载true接着下载
+				if(!flag){
+				return;//标准线程结束
+				}
+				//写数据
+				raf.write(buffer, 0, len);
+	
+				//读取原来下载的数据量 这里读取是为了更新下载记录
+				int existDownloadLength = readDownloadInfo(threadid);//原来下载的数据量
+	
+				//计算最新的下载
+				int newDownloadLength = existDownloadLength + len;
+	
+				//更新下载记录 从新记录最新下载位置
+				updateDownloadInfo(threadid, newDownloadLength);
+				//更新进度条的显示  下载的百分比
+				Message update_msg = Message.obtain(mHandler, UPDATE_VIEW, len, 0);
+				update_msg.sendToTarget();
+				//模拟 看到进度条动的效果
+				SystemClock.sleep(50);
+			}
+			inputStream.close();
+			raf.close();
+			Log.i(TAG, "第"+threadid+"条线程下载完成");
+			}
+	
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		}
+	}
+	
+	
+	/**
+	* 读取指定线程的下载数据量
+	* @param threadid 线程的id
+	* @return
+	* @throws Exception
+	*/
+	public int readDownloadInfo(int threadid) throws Exception{
+		//下载记录文件
+		File file = new File(Environment.getExternalStorageDirectory(),threadid+".txt");
+		BufferedReader br = new BufferedReader(new FileReader(file));
+		//读取一行数据
+		String content = br.readLine();
+	
+		int downlength = 0;
+		//如果该文件第一次创建去执行读取操作 文件里面的内容是 null
+		if(!TextUtils.isEmpty(content)){
+		downlength = Integer.parseInt(content);
+		}
+		//关闭流
+		br.close();
+		return downlength;
+	}
+	
+	
+	/**
+	* 更新下载记录
+	* @param threadid
+	* @param newDownloadLength
+	*/
+	public void updateDownloadInfo(int threadid,int newDownloadLength) throws Exception{
+		//下载记录文件
+		File file = new File(Environment.getExternalStorageDirectory(),threadid+".txt");
+		FileWriter fw = new FileWriter(file);
+		fw.write(newDownloadLength+"");
+		fw.close();
+	}
+	
+	/**
+	* 获取文件的名称
+	* @param uri
+	* @return
+	*/
+	private String getFileName(String uri){
+		return uri.substring(uri.lastIndexOf("/")+1);
+	}
+	
+	}
+
+参考： https://www.jb51.net/article/144209.htm
+
+### Https相关
+
+__客户端和服务端的身份认证 SSL加密__
+
+在使用HTTPS是需要保证服务端配置正确了对应的安全证书
+
+* 客户端发送请求到服务端
+* 服务端返回公钥和证书到客户端
+* 客户端接收后会验证证书的安全性,如果通过则会随机生成一个随机数,用公钥对其加密,发送到服务端
+* 服务端接受到这个加密后的随机数后会用私钥对其解密得到真正的随机数,随后用这个随机数当做私钥对需要发送的数据进行对称加密
+* 客户端在接收到加密后的数据使用私钥(即生成的随机值)对数据进行解密并且解析数据呈现结果给客户
+* SSL加密建立
+
+__数据传输的机密性__
+
+客户端和服务端在开始传输数据之前，会协商传输过程需要使用的加密算法。 客户端发送协商请求给服务端, 其中包含自己支持的非对成加密的密钥交换算法 ( 一般是RSA), 数据签名摘要算法 ( 一般是SHA或者MD5) , 加密传输数据的对称加密算法 ( 一般是DES),以及加密密钥的长度。 服务端接收到消息之后，选中安全性最高的算法，并将选中的算法发送给客户端，完成协商。客户端生成随机的字符串，通过协商好的非对称加密算法，使用服务端的公钥对该字符串进行加密，发送给服务端。 服务端接收到之后，使用自己的私钥解密得到该字符串。在随后的数据传输当中，使用这个字符串作为密钥进行对称加密。
+
+防止重放攻击
+
+SSL使用序列号来保护通讯方免受报文重放攻击。这个序列号被加密后作为数据包的负载。在整个SSL握手中,都有一个唯一的随机数来标记SSL握手。 这样防止了攻击者嗅探整个登录过程，获取到加密的登录数据之后，不对数据进行解密, 而直接重传登录数据包的攻击手法。
+
+__非对称加密__
+
+非对称加密算法需要两个密钥：公开密钥（publickey:简称公钥）和私有密钥（privatekey:简称私钥）。公钥与私钥是一对，如果用公钥对数据进行加密，只有用对应的私钥才能解密。因为加密和解密使用的是两个不同的密钥，所以这种算法叫作非对称加密算法。 非对称加密算法实现机密信息交换的基本过程是：甲方生成一对密钥并将公钥公开，需要向甲方发送信息的其他角色(乙方)使用该密钥(甲方的公钥)对机密信息进行加密后再发送给甲方；甲方再用自己私钥对加密后的信息进行解密。甲方想要回复乙方时正好相反，使用乙方的公钥对数据进行加密，同理，乙方使用自己的私钥来进行解密。
+
+另一方面，甲方可以使用自己的私钥对机密信息进行签名后再发送给乙方；乙方再用甲方的公钥对甲方发送回来的数据进行验签。
+
+甲方只能用其私钥解密由其公钥加密后的任何信息。 非对称加密算法的保密性比较好，它消除了最终用户交换密钥的需要。
+
+非对称密码体制的特点：算法强度复杂、安全性依赖于算法与密钥但是由于其算法复杂，而使得加密解密速度没有对称加密解密的速度快。对称密码体制中只有一种密钥，并且是非公开的，如果要解密就得让对方知道密钥。所以保证其安全性就是保证密钥的安全，而非对称密钥体制有两种密钥，其中一个是公开的，这样就可以不需要像对称密码那样传输对方的密钥了。这样安全性就大了很多
+
+### 你知道的安全加密有哪些？
+
+RSA，AES
+
+### socket短线重连怎么实现，
+
+* 客户端维护一个线程安全的待发送信息队列
+* 开启死循环
+* 判断Socket = null
+* 调用Socket的sendUrgentData(0xFF)发送1个字节的心跳包
+* 捕捉到连接异常后就关闭IO和Socket连接
+* 读取队列内容，如果队列为空就休眠3秒，然后continue
+* 遍历待发送消息队列，依次发送里面的内容
+* 全部发送成功后清空队列
+* 如果socket为null说明断开连接；重建Socket连接，并开启IO
+* 重建连接时如果连接不上，出现异常，那就休眠10秒，之后进入新一轮循环
+
+### 心跳机制又是怎样实现，四次握手步骤有哪些？（网络通讯原理）
+
+心跳包的发送，通常有两种技术
+
+__方法1：应用层自己实现的心跳包__
+
+由应用程序自己发送心跳包来检测连接是否正常，大致的方法是：服务器在一个Timer事件中定时向客户端发送一个短小精悍的数据包，然后启动一个低级别的线程，在该线程中不断检测客户端的回应，如果在一定时间内没有收到客户端的回应，即认为客户端已经掉线；同样，如果客户端在一定时间内没有收到服务器的心跳包，则认为连接不可用。
+
+__方法2：TCP的KeepAlive保活机制__
+
+因为要考虑到一个服务器通常会连接多个客户端，因此由用户在应用层自己实现心跳包，代码较多且稍显复杂，而利用TCP／IP协议层为内置的KeepAlive功能来实现心跳功能则简单得多。不论是服务端还是客户端，一方开启KeepAlive功能后，就会自动在规定时间内向对方发送心跳包，而另一方在收到心跳包后就会自动回复，以告诉对方我仍然在线。 因为开启KeepAlive功能需要消耗额外的宽带和流量，所以TCP协议层默认并不开启KeepAlive功能，尽管这微不足道，但在按流量计费的环境下增加了费用，另一方面，KeepAlive设置不合理时可能会 因为短暂的网络波动而断开健康的TCP连接。并且，默认的KeepAlive超时需要7,200，000 MilliSeconds， 即2小时，探测次数为5次。对于很多服务端应用程序来说，2小时的空闲时间太长。因此，我们需要手工开启KeepAlive功能并设置合理的KeepAlive参数。
+
+__心跳包机制__
+
+跳包之所以叫心跳包是因为：它像心跳一样每隔固定时间发一次，以此来告诉服务器，这个客户端还活着。事实上这是为了保持长连接，至于这个包的内容，是没有什么特别规定的，不过一般都是很小的包，或者只包含包头的一个空包。
+
+在TCP的机制里面，本身是存在有心跳包的机制的，也就是TCP的选项：SO_KEEPALIVE。系统默认是设置的2小时的心跳频率。但是它检查不到机器断电、网线拔出、防火墙这些断线。而且逻辑层处理断线可能也不是那么好处理。一般，如果只是用于保活还是可以的。
+
+心跳包一般来说都是在逻辑层发送空的echo包来实现的。下一个定时器，在一定时间间隔下发送一个空包给客户端，然后客户端反馈一个同样的空包回来，服务器如果在一定时间内收不到客户端发送过来的反馈包，那就只有认定说掉线了。
+
+其实，要判定掉线，只需要send或者recv一下，如果结果为零，则为掉线。但是，在长连接下，有可能很长一段时间都没有数据往来。理论上说，这个连接是一直保持连接的，但是实际情况中，如果中间节点出现什么故障是难以知道的。更要命的是，有的节点（防火墙）会自动把一定时间之内没有数据交互的连接给断掉。在这个时候，就需要我们的心跳包了，用于维持长连接，保活。
+
+在获知了断线之后，服务器逻辑可能需要做一些事情，比如断线后的数据清理呀，重新连接呀……当然，这个自然是要由逻辑层根据需求去做了。    
+总的来说，心跳包主要也就是用于长连接的保活和断线处理。一般的应用下，判定时间在30-40秒比较不错。如果实在要求高，那就在6-9秒。    
+
+__心跳检测步骤：__
+
+1. 客户端每隔一个时间间隔发生一个探测包给服务器
+2. 客户端发包时启动一个超时定时器
+3. 服务器端接收到检测包，应该回应一个包
+4. 如果客户机收到服务器的应答包，则说明服务器正常，删除超时定时器
+5. 如果客户端的超时定时器超时，依然没有收到应答包，则说明服务器挂了
+
 
 
