@@ -9,6 +9,8 @@ categories: android
 
 ## [Android基础](/android/2015/04/04/android-note/)
 
+## [TCP/IP相关](/notes/tcp/ip/2018/09/11/tcp-ip-note/)
+
 ## [四大组件的原理](/android/2017/05/06/android-activity-service-broadcastservice-contentprovider/)
 
 ## [View绘制的过程，事件分发机制，自定义View](/android/2017/05/06/android-activity-service-broadcastservice-contentprovider/)
@@ -163,12 +165,7 @@ new IBookManagerInterface.Stub()创建Binder然后重写接口文件的所有方
     安卓子线程是否能更新UI，如果能请说明具体细节。
     JavaGC机制的原理和内存泄露。
     请在100个电话号码找出135的电话号码，注意不能用正则（类似怎么最好的遍历 LogCat日志）。（此类算法一般比较类似，记得京东笔试比较10个数字，拿出最大的数字，也就是冒泡排序。唯品会是让你写一算法，依次从10个数字中拿出3个，不够依此类推）
-    Handler机制，请写出一种更新UI的方法和代码
-    请解释安卓为啥要加签名机制。
     你觉得安卓开发最关键的技术在哪里？
-
-    
-    http协议的理解和用法。
     安卓解决线程并发问题。
     你知道的数据结构有哪些，说下具体实现机制。
     十六进制数据怎么和十进制和二进制之间转换？
@@ -179,7 +176,6 @@ new IBookManagerInterface.Stub()创建Binder然后重写接口文件的所有方
     自定义view效率高于xml定义吗？说明理由。
     广播注册一般有几种，各有什么优缺点？
     服务启动一般有几种，服务和Activty之间怎么通信，服务和服务之间怎么通信A？
-    布局优化主要哪些？具体优化？
     数据库的知识，包括本地数据库优化点。
     安卓事件分发机制，请详细说下整个流程。
     安卓 View绘制机制和加载 过程，请详细说下整个流程。
@@ -188,13 +184,11 @@ new IBookManagerInterface.Stub()创建Binder然后重写接口文件的所有方
     说下 安卓虚拟机 和 java虚拟机 的原理和不同点。
     多线程中的安全队列一般通过什么实现？线程池原理？（java）
     安卓权限管理，为何在清单中注册权限，安卓APP就可以使用，反之不可以。（操作系统）
-    HTTP中 TCP和UDP 有啥区别，说下HTTP请求的 IP报文结构。（计算机网络）
     你知道的数据存储结构？堆栈和链表内部机制。（数据结构）
     说下 Linux进程和线程 的区别。进程调度优先级，和cpu调度进程关系。（操作系统）
     请你详细说下你知道的一种设计模式，并解释下java的高内聚和低耦合。
     Spring的反射和代理，在安卓中应用场景。（插件和ROM数据框架）
     JNI调用过程中 混淆问题。
-    看过安卓源码吗，请说出一个你看过的API或者组建内部原理。
     Android 5.0、 6.0 以及7.0预测新特性。
     hybrid混合开发，响应式编程等。
     为啥离职呢 对待加班看法？
@@ -414,8 +408,6 @@ IntentService在onCreate()方法中通过HandlerThread单独开启一个线程�
 onHandleIntent()函数针对Intent的不同进行不同的事务处理就可以，执行完一个Intent请求对象所对应的工作之后，如果没有新的Intent请求达到，则自动停止Service； 否则ServiceHandler会取得下一个Intent请求    
 传入该函数来处理其所对应的任务。    
 
-### 自己设计一个图片加载框架
-
 ### http ResponseCode
 
 * 200 - 请求成功
@@ -424,10 +416,6 @@ onHandleIntent()函数针对Intent的不同进行不同的事务处理就可以�
 * 500 - 内部服务器错误
 
 ### 插件化，动态加载
-
-### http协议了解多少，说说里面的协议头部有哪些字段？
-
-### https了解多少？为什么百度全部都用了https包括首页
 
 ### ArrayList和Vector的主要区别是什么？
 
@@ -1302,5 +1290,92 @@ __心跳检测步骤：__
 4. 如果客户机收到服务器的应答包，则说明服务器正常，删除超时定时器
 5. 如果客户端的超时定时器超时，依然没有收到应答包，则说明服务器挂了
 
+### 自己设计一个图片加载框架
 
+图片加载库的组成部分
+
+* 多线程下载图片
+* LruCache内存缓存
+* DiskLruCache磁盘缓存
+* BitmapFactory.option进行图片压缩，控制图片加载的尺寸
+
+### http协议了解多少，说说里面的协议头部有哪些字段？
+
+	GET /simple.htm HTTP/1.1
+	Accept: image/gif, image/x-xbitmap, image/jpeg, image/pjpeg, application/x-shockwave-flash, application/vnd.ms-excel, application/vnd.ms-powerpoint, application/msword, */*
+	Accept-Language: zh-cn
+	Accept-Encoding: gzip, deflate
+	User-Agent: Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 1.1.4322; .NET CLR 2.0.50727)
+	Host: localhost:8080
+	Connection: Keep-Alive
+
+第一行、“GET”表示我们所使用的HTTP动作，其他可能的还有“POST”等，GET的消息没有消息体，而POST消息是有消息体的，消息体的内容就是要POST的数据。后面/simple.htm就是我们要请求的对象，之后HTTP1.1表示使用的是HTTP1.1协议。
+
+第二行、表示我们所用的浏览器能接受的Content-type
+
+第三四两行、是语言和编码信息
+
+第五行、显示出本机的相关系信息，包括浏览器类型、操作系统信息等，很多网站可以显示出你所使用的浏览器和操作系统版本，就是因为可以从这里获取到这些信息。
+
+第六行、表示我们所请求的主机和端口，第七行表示使用Keep-Alive方式，即数据传递完并不立即关闭连接。
+
+### 请解释安卓为啥要加签名机制
+
+1. 应用程序升级：如果你希望用户无缝升级到新的版本，那么你必须用同一个证书进行签名。这是由于只有以同一个证书签名，系统才会允许安装升级的应用程序。如果你采用了不同的证书，那么系统会要求你的应用程序采用不同的包名称，在这种情况下相当于安装了一个全新的应用程序。如果想升级应用程序，签名证书要相同，包名称要相同！
+
+2. 应用程序模块化：Android系统可以允许同一个证书签名的多个应用程序在一个进程里运行，系统实际把他们作为一个单个的应用程序，此时就可以把我们的应用程序以模块的方式进行部署，而用户可以独立的升级其中的一个模块。
+
+3. 代码或者数据共享：Android提供了基于签名的权限机制，那么一个应用程序就可以为另一个以相同证书签名的应用程序公开自己的功能。以同一个证书对多个应用程序进行签名，利用基于签名的权限检查，你就可以在应用程序间以安全的方式共享代码和数据了。  
+
+不同的应用程序之间，想共享数据，或者共享代码，那么要让他们运行在同一个进程中，而且要让他们用相同的证书签名。
+
+### 签名过程
+
+对APK中所有文件内容分别进行Hash计算，并将结果以BASE64编码格式保存在MANIFEST.MF。使用开发者的私钥对MANIFEST.MF进行加密，将加密结果保存在CERT.SF。最后CERT.RSA(证书信息包括公钥）和上面的两个文件，放入APK的META-INF目录下。
+
+android签名生成的三个文件    
+对代码签名之后会生成三个文件：MANIFEST.MF、CERT.SF和CERT.RSA。    
+
+* MANIFEST.MF的内容是所有文件进行SHA-1（这是一个Hash算法）之后再base64编码之后的值
+* CERT.SF就是将MANIFEST.MF文件按一定规则再进行SHA-1之后再base64。
+* CERT.RSA就是CERT.SF文件用私钥加密，然后把数字证书，公钥等一起组合在一起生成CERT.RSA。
+
+签名验证流程
+
+安装应用时PackageManagerService会对APK进行签名检查，具体分为以下几步。
+
+1. 读取CERT.RSA(证书信息包括公钥）、MANIFEST.MF、CERT.SF
+2. 使用获取的公钥对CERT.SF解密，将解密结果和MANIFEST.MF进行比较，如果相同说明证书有效、MANIFEST.MF未被更改
+3. 对APK中所有文件内容分别进行Hash计算，将结果的BASE64编码和MANIFEST.MF里的相应内容进行比较，全部相同则APK的内容未被更改
+
+如何判断证书是否有效
+
+因为签名的时候是使用私钥对MANIFEST.MF进行加密保存在CERT.SF中，之后只需要用证书中的公钥对CERT.SF进行解密，将结果和MANIFEST.MF进行比较即可
+
+注意，在证书正确的情况下如果更改的APK里面文件内容，此时以上判断还是不会通过。因为MANIFEST.MF保存的是APK里面所有文件的Hash值，只要改变了APK里文件内容，Hash值就会变化
+
+如何判断APK是否被更改
+
+在签名保证MANIFEST.MF有效的前提下，只要对当前APK所有文件的内容的Hash值的BASE64编码和MANIFEST.MF相应文件存的值进行比较即可
+
+如何防范被重新签名
+
+通过反编译工具（apktool）可以轻易的对APK进行重新签名，针对这种情况可以通过以下几个方法加强被成功重新签名的难度
+
+* 对APK进行加壳处理，增加反编译难度
+* 程序中对签名自行验证，可配合服务端进行
+
+SHA-1加密的私钥保存在开发者手里，签名文件只能进行解密无法加密，防止重新签名。
+
+### HTTP中 TCP和UDP 有啥区别，说下HTTP请求的 IP报文结构。（计算机网络）
+
+* TCP提供面向连接的传输，通信前要先建立连接（三次握手机制）；UDP提供无连接的传输，通信前不需要建立连接。
+* TCP提供可靠的传输（有序，无差错，不丢失，不重复）；UDP提供不可靠的传输。
+* TCP面向字节流的传输，因此它能将信息分割成组，并在接收端将其重组；UDP是面向数据报的传输，没有分组开销。
+* TCP提供拥塞控制和流量控制机制；UDP不提供拥塞控制和流量控制机制。
+
+### 请说出一个你看过的API或者组件内部原理    
+AsyncTask
+
+### 布局优化主要哪些？具体优化？
 
