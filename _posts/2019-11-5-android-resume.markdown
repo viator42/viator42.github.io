@@ -29,6 +29,10 @@ categories: android
 
 ## [Rertofit RxJava相关](/java/android/2018/02/11/android-retrofit-rxjaja/)
 
+## [多模块，组件化架构](/android/2019/01/03/android-multi-module-note/)
+
+## [单元测试](/android,unittest/2018/07/25/android-unit-test/)
+
 # 进程间通信AIDL
 
 AIDL (Android Interface Definition Language)是一种IDL 语言，用于生成可以在Android设备上两个进程之间进行进程间通信(IPC)的代码。
@@ -153,59 +157,6 @@ new IBookManagerInterface.Stub()创建Binder然后重写接口文件的所有方
 	} catch (RemoteException e) {
 		e.printStackTrace();
 	}
-
-# 题目
-
-    线程中 sleep() 和 wait() 有何区别，各有什么含义？
-    abstract和 interface 的区别?
-    array,arrayList, List 三者有何区别？
-    hashtable和 hashmap 的区别,并简述 Hashmap 的实现原理。
-    StringBuilder和 String，subString方法的细微差别。
-    请写出四种以上你知道的设计模式，并介绍下实现原理。
-    安卓子线程是否能更新UI，如果能请说明具体细节。
-    JavaGC机制的原理和内存泄露。
-    请在100个电话号码找出135的电话号码，注意不能用正则（类似怎么最好的遍历 LogCat日志）。（此类算法一般比较类似，记得京东笔试比较10个数字，拿出最大的数字，也就是冒泡排序。唯品会是让你写一算法，依次从10个数字中拿出3个，不够依此类推）
-    你觉得安卓开发最关键的技术在哪里？
-    安卓解决线程并发问题。
-    你知道的数据结构有哪些，说下具体实现机制。
-    十六进制数据怎么和十进制和二进制之间转换？
-    谈下对 Java OOP 中多态的理解。
-    Activty和 Fragmengt 之间怎么通信，Fragmengt和 Fragmengt 怎么通信？
-    怎么让自己的进程不被第三方应用杀掉，系统杀掉之后怎么能启动起来。
-    说下平时开发中比较注意的一些问题。答 ：可以熟说下svn和git的细节，和代码规范问题，和一些安全信息的问题等。
-    自定义view效率高于xml定义吗？说明理由。
-    广播注册一般有几种，各有什么优缺点？
-    服务启动一般有几种，服务和Activty之间怎么通信，服务和服务之间怎么通信A？
-    数据库的知识，包括本地数据库优化点。
-    安卓事件分发机制，请详细说下整个流程。
-    安卓 View绘制机制和加载 过程，请详细说下整个流程。
-    Activty的加载过程，请详细介绍下。（不是生命周期切记）
-    安卓采用自动垃圾回收机制，请说下安卓内存管理的原理。
-    说下 安卓虚拟机 和 java虚拟机 的原理和不同点。
-    多线程中的安全队列一般通过什么实现？线程池原理？（java）
-    安卓权限管理，为何在清单中注册权限，安卓APP就可以使用，反之不可以。（操作系统）
-    你知道的数据存储结构？堆栈和链表内部机制。（数据结构）
-    说下 Linux进程和线程 的区别。进程调度优先级，和cpu调度进程关系。（操作系统）
-    请你详细说下你知道的一种设计模式，并解释下java的高内聚和低耦合。
-    Spring的反射和代理，在安卓中应用场景。（插件和ROM数据框架）
-    JNI调用过程中 混淆问题。
-    Android 5.0、 6.0 以及7.0预测新特性。
-    hybrid混合开发，响应式编程等。
-    为啥离职呢 对待加班看法？
-    你擅长什么，做了哪些东西？
-
-    说下项目中遇到的棘手问题，包括技术，交际和沟通。
-    说下你进几年的规划。
-    给你一个项目，你怎么看待他的市场和技术的关系？
-    你一般喜欢从什么渠道获取技术信息，和提高自己的能力？
-    你以往的项目中，以你现在的眼光去评价项目的利弊。
-    对加班怎么看？（不要太浮夸，现实一点哦）
-    说下 OPP 和 AOP 的思想。
-    你知道的一些开源框架和原理。
-    不同语言是否可以互相调用？
-    安卓适配和性能调优问题。
-    对于非立项（KPI）项目，怎么推进？
-    你还要什么了解和要问的吗？
 
 ### 布局优化
 
@@ -1377,5 +1328,136 @@ SHA-1加密的私钥保存在开发者手里，签名文件只能进行解密无
 ### 请说出一个你看过的API或者组件内部原理    
 AsyncTask
 
-### 布局优化主要哪些？具体优化？
+### OOM和ANR异常引发的原因以及解决方法
+
+ANR: Application Not Responding    
+1. Activity在5秒内没有响应输入的事件。
+2. BroadcastReceiver在制定时间内完成。
+
+__ANR产生的原因__
+
+* 主线程被IO操作（从4.0之后网络IO不允许在主线程中）阻塞
+* 主线程中存在耗时的计算
+
+__Android中哪些操作在主线程__
+
+* Activity的所有生命周期方法
+* Service执行
+* 广播的onReceive
+* 没有使用子线程的Looper的Handler的HandleMessage，post是执行在主线程的
+* AsyncTast的回调中除了doInbackgound，其他都是在主线程的
+
+__如何解决ANR__
+
+* 使用AsyncTast, Handler处理IO,文件读取，网络访问这些耗时的任务
+* 运行在主线程里的任何方法都尽可能少做事情,Activity的onCreate和onResume回调中尽量避免耗时的代码
+* 应用程序应该避免在BroadcastReceiver里做耗时的操作或计算。但不再是在子线程里做这些任务（因为BroadcastReceiver的生命周期短），替代的是，如果响应Intent ，应用程序应该启动一个Service。
+* 避免在IntentReceiver里启动一个Activity，因为它会创建一个新的画面，并从当前用户正在运行的程序上抢夺焦点。如果你的应用程序在响应Intent广播时需要向用户展示什么，你应该使用Notification Manager来实现。
+
+OOM: 当前占用的内存加上我们申请的内存资源超过了Dalvik虚拟机的最大内存限制就会抛出Out Of Memory异常
+
+__OOM的可能产生原因__
+
+* 不恰当的使用static关键字。尽量不要使用static保存对象。
+* 内部类对Activity的引用。内部类对象如果引用Activity对象，同时有很长的声明周期的话会导致 Activity对象释放不及时。
+* Bitmap使用。大量的bitmap会导致程序包和运行时的内存消耗变大。
+* 游标cursor的使用。Cursor对象用完应该及时关闭
+
+__解决方法__
+
+使用static来修饰成员变量时生命周期过长，应该尽量避免static成员变量引用资源耗费过多的实例，比如Context    
+Context尽量使用ApplicationContext，因为Application的Context的生命周期比较长，引用它不会出现内存泄露的问题。    
+使用 WeakReference代替强引用。    
+
+### ANR三种类型(activity timeout, service timeout 和 receiver timeout)
+
+### 隐式、显式Intent的区别
+
+显式Intent直接指定要跳转的Activity。隐式不是像显式的那样直接指定需要调用的Activity，隐式不明确指定启动哪个Activity，而是设置Action、Data、Category，让系统来筛选出合适的Activity。筛选是根据所有的\<intent-filter\>来筛选。
+
+### 响应式编程
+
+响应式编程是一种通过异步和数据流来构建事务关系的编程模型。响应式编程是使用异步数据流进行编程    
+流程的主线是对数据的处理，通过对数据的处理联系起有关的事务。
+RxJava，MVVM使用的就是响应式编程
+
+__实现响应式的手段__
+
+1. 订阅发布模式        
+订阅发布模式是实现响应式的基础，这种模式我们都很熟悉了，主要是通过把观察者的回调注册进被观察者来实现二者的订阅关系，当被观察者notify的时候，则所有的观察就会自动响应。这种模式也实现了观察者和被观察者的解耦。
+
+2. LiveData
+
+3. RxJava
+
+4. MVVM
+
+5. 事件总线EventBus
+
+### 安卓适配和性能调优问题
+
+### 横竖屏切换时候activity的生命周期?
+
+设置屏幕横屏代码
+
+	setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+
+判断屏幕是横屏还是竖屏的状态
+
+	/**
+         *系统中定义： int ORIENTATION_PORTRAIT = 1;  竖屏
+         *系统中定义： int ORIENTATION_LANDSCAPE = 2; 横屏
+	*/
+	//获取屏幕的方向  ,数值1表示竖屏，数值2表示横屏
+	int screenNum = getResources().getConfiguration().orientation;
+
+切换时的生命周期调用
+
+1、不设置Activity的android:configChanges时，切屏会重新调用各个生命周期，相当于重新创建activity
+
+	Activity1----->onPause
+    Activity1----->onSaveInstanceState
+	Activity1----->onStop
+    Activity1----->onDestroy
+    Activity1----->onCreate
+    Activity1----->onStart
+    Activity1----->onRestoreInstanceState
+    Activity1----->onResume
+
+2、设置Activity的android:configChanges="orientation"时，切屏还是会重新调用各个生命周期，相比之下多执行了onConfigurationChanged方法
+
+	onSaveInstanceState-->
+	onPause-->
+	onStop-->
+	onDestroy-->
+	onCreate-->
+	onStart-->
+	onRestoreInstanceState-->
+	onResume-->
+	onConfigurationChanged-->
+
+3、设置Activity的android:configChanges="orientation|keyboardHidden"时，切屏不会重新调用各个生命周期，只会执行onConfigurationChanged方法
+
+	onConfigurationChanged-->
+
+当前Activity产生事件弹出Toast和AlertDialog的时候Activity的生命周期不会有改变
+
+Activity运行时按下HOME键(跟被完全覆盖是一样的)：onSaveInstanceState --> onPause --> onStop onRestart -->onStart--->onResume
+
+Activity未被完全覆盖只是失去焦点：onPause--->onResume
+
+### AOP
+
+__ANdroid系统的AOP框架__
+
+* APT（Annotation Processing Tool ）注解处理器
+* AspectJ
+
+### 多线程中的安全队列一般通过什么实现？线程池原理？（java）
+
+### 安卓事件分发机制，请详细说下整个流程。
+
+### 安卓 View绘制机制和加载 过程，请详细说下整个流程。
+
+### Activty的加载过程，请详细介绍下。（不是生命周期切记）
 
