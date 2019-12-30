@@ -548,9 +548,133 @@ Java程序中wait 和 sleep都会造成某种形式的暂停，它们可以满�
 
 ### 如何实现线程同步？
 
-1. synchronized关键字修改的方法。
-2. synchronized关键字修饰的语句块3、
-3. 使用特殊域变量（volatile）实现线程同步
+__synchronized关键字修饰方法__
+
+由于java的每个对象都有一个内置锁，当用此关键字修饰方法时，
+内置锁会保护整个方法。在调用该方法前，需要获得内置锁，否则就处于阻塞状态。
+
+	public synchronized void save(){}
+
+注： synchronized关键字也可以修饰静态方法，此时如果调用该静态方法，将会锁住整个类
+
+__synchronized关键字修饰的语句块__
+
+即有synchronized关键字修饰的语句块。
+被该关键字修饰的语句块会自动被加上内置锁，从而实现同步
+
+	synchronized(object){
+		。。。
+	}
+
+__使用特殊域变量（volatile）实现线程同步__
+
+为需要同步的变量加上volatile，这样使用volatile修饰域相当于告诉虚拟机该域可能会被其他线程更新，每次使用该域就要重新计算，而不是使用寄存器中的值，volatile不会提供任何原子操作，它也不能用来修饰final类型的变量 
+
+	class Bank {
+		//需要同步的变量加上volatile
+		private volatile int account = 100;
+
+		public int getAccount() {
+			return account;
+		}
+		//这里不再需要synchronized 
+		public void save(int money) {
+			account += money;
+		}
+	｝
+
+__使用重入锁实现线程同步__
+
+在JavaSE5.0中新增了一个java.util.concurrent包来支持同步。     
+ReentrantLock类是可重入、互斥、实现了Lock接口的锁，它与使用synchronized方法和快具有相同的基本行为和语义，并且扩展了其能力。
+ReenreantLock类的常用方法有：
+
+	ReentrantLock() : 创建一个ReentrantLock实例 
+	lock() : 获得锁 
+	unlock() : 释放锁 
+
+代码示例
+
+	private int account = 100;
+	private ReentrantLock lock = new ReentrantLock();
+	public int getAccount() {
+		return account;
+	}
+	//同步方法
+	public  void save(int money) {
+		lock.lock();
+		try {
+			account+=money;
+		} finally {
+			lock.unlock();
+		}
+		
+	}
+
+__使用局部变量来实现线程同步__
+
+如果使用ThreadLocal管理变量，则每一个使用该变量的线程都获得该变量的副本，副本之间相互独立，这样每一个线程都可以随意修改自己的变量副本，而不会对其他线程产生影响。
+
+ThreadLocal 类的常用方法
+
+* ThreadLocal() : 创建一个线程本地变量
+* get() : 返回此线程局部变量的当前线程副本中的值
+* initialValue() : 返回此线程局部变量的当前线程的"初始值"
+* set(T value) : 将此线程局部变量的当前线程副本中的值设置为value
+
+代码实例： 
+
+	public class Bank{
+		//使用ThreadLocal类管理共享变量account
+		private static ThreadLocal<Integer> account = new ThreadLocal<Integer>(){
+			@Override
+			protected Integer initialValue(){
+				return 100;
+			}
+		};
+		public void save(int money){
+			account.set(account.get()+money);
+		}
+		public int getAccount(){
+			return account.get();
+		}
+	}
+
+__使用阻塞队列实现线程同步__
+
+ LinkedBlockingQueue<E>是一个基于已连接节点的，范围任意的blocking queue。队列是先进先出的顺序（FIFO），
+    
+LinkedBlockingQueue 类常用方法 
+
+* LinkedBlockingQueue() : 创建一个容量为Integer.MAX_VALUE的LinkedBlockingQueue 
+* put(E e) : 在队尾添加一个元素，如果队列满则阻塞 
+* size() : 返回队列中的元素个数 
+* take() : 移除并返回队头元素，如果队列空则阻塞 
+
+__使用原子变量实现线程同步__
+
+在java的util.concurrent.atomic包中提供了创建了原子类型变量的工具类，使用该类可以简化线程同步。
+
+其中AtomicInteger 表可以用原子方式更新int的值，可用在应用程序中(如以原子方式增加的计数器)，
+但不能用于替换Integer；可扩展Number，允许那些处理机遇数字类的工具和实用工具进行统一访问。
+
+AtomicInteger类常用方法：
+
+* AtomicInteger(int initialValue) : 创建具有给定初始值的新的AtomicInteger
+* addAddGet(int dalta) : 以原子方式将给定值与当前值相加
+* get() : 获取当前值
+
+	class Bank {
+        private AtomicInteger account = new AtomicInteger(100);
+
+        public AtomicInteger getAccount() {
+            return account;
+        }
+
+        public void save(int money) {
+            account.addAndGet(money);
+        }
+    }
 
 ### 死锁的四个必要条件？
 

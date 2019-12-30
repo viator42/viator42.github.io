@@ -1,11 +1,22 @@
 ---
 layout: post
-title:  "Android 单元测试"
+title:  "Android测试相关"
 date:   2018-7-25
 categories: android,UnitTest
 ---
 
 ## 测试分类
+
+### Monkey 测试
+
+在控制台输入
+
+    adb shell monkey -p com.brand.ushopping -v 100
+
+参数列表:    
+* 最后的参数表示操作次数
+* -v 输出结果
+* -s 用于指定伪随机数生成器的seed值，如果seed相同，则两次Monkey测试所产生的事件序列也相同的
 
 ### Small Test    
 单元测试，对每一个功能模块进行单独的测试
