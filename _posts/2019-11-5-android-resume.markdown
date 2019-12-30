@@ -1585,3 +1585,11 @@ __ANdroid系统的AOP框架__
 
 ### Activty的加载过程，请详细介绍下。（不是生命周期切记）
 
+### AsyncTask工作原理与源码实现
+
+### Handler,Message,Looper异步实现机制与源码分析
+
+### 如何保存Activity的状态或者(Activiy 重启怎么保存数据？
+
+### 如何退出Activity？如何安全退出已调用多个Activity的Application？
+
