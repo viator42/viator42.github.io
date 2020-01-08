@@ -230,37 +230,34 @@ Activity.java
 
 BindingTesterActivity.java
 
-public class BindingTesterActivity extends AppCompatActivity {
-    @Override
-        protected void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            setContentView(R.layout.activity_binding_tester);
-        
-            //创建binding
-            ActivityBindingTesterBinding binding = DataBindingUtil.setContentView(this, R.layout.activity_binding_tester);
+    public class BindingTesterActivity extends AppCompatActivity {
+        @Override
+            protected void onCreate(Bundle savedInstanceState) {
+                super.onCreate(savedInstanceState);
+                setContentView(R.layout.activity_binding_tester);
             
-            Swordman swordman = new Swordman();
-            swordman.setName("John");
-            swordman.setLevel("36");;
+                //创建binding
+                ActivityBindingTesterBinding binding = DataBindingUtil.setContentView(this, R.layout.activity_binding_tester);
+                
+                Swordman swordman = new Swordman();
+                swordman.setName("John");
+                swordman.setLevel("36");;
 
-            //model类赋值给binding对象
-            binding.setSwordman(swordman);
+                //model类赋值给binding对象
+                binding.setSwordman(swordman);
 
-            //给view中的组件设置事件
-            binding.fetchData.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    CommonUtils.makeToast(BindingTesterActivity.this, "button clicked");
-                    swordman.setName("harry");
-                    swordman.setLevel("19");
-                }
-            });
+                //给view中的组件设置事件
+                binding.fetchData.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        CommonUtils.makeToast(BindingTesterActivity.this, "button clicked");
+                        swordman.setName("harry");
+                        swordman.setLevel("19");
+                    }
+                });
 
-        }
-
-    
-
-}
+            }
+    }
 
 ### 双向绑定
 
