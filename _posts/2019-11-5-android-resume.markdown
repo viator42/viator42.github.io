@@ -804,33 +804,6 @@ Activity的状态通常情况下系统会自动保存的，只有当我们需要
 singleTop 跟standard 模式比较类似。唯一的区别就是，当跳转的对象是位于栈顶的activity（应该可以理解为用户眼前所 看到的activity）时，程序将不会生成一个新的activity实例，而是直接跳到现存于栈顶的那个activity实例。拿上面的例子来说，当Act1 为 singleTop 模式时，执行跳转后栈里面依旧只有一个实例，如果现在按返回键程序将直接退出。
 	singleTask模式和singleInstance模式都是只创建一个实例的。在这种模式下，无论跳转的对象是不是位于栈顶的activity，程序都不会生成一个新的实例（当然前提是栈里面已经有这个实例）。这种模式相当有用，在以后的多activity开发中，常会因为跳转的关系导致同个页面生成多个实例，这个在用户体验上始终有点不好，而如果你将对应的activity声明为singleTask 模式，这种问题将不复存在。在主页的Activity很常用
 
-### 性能调优的经验
-
-UI的样式减少嵌套,多使用RelativeLayout和ConstraintLayout来布局,减少屏幕的控件数量    
-ListView的每一个单元格中这样调优效果明显,减少滑动的卡顿感    
-
-图片Bitmap尽量压缩尺寸,原图尽量减少尺寸,设置inSampleSize(缩放比例)和decode format(解码格式)    
-选择ARGB_8888/RBG_565/ARGB_4444/ALPHA_8，存在很大差异。    
-
-Activity退出的时候释放Bitmap资源    
-
-ListView列表中使用RecyclerView来提高效率    
-
-UI线程中不允许网络访问,Android官方已在4.0以后禁止了    
-加载图片,访问文件这种耗时的操作也应该放到单独的线程中操作    
-ASyncTask就是多线程操作的辅助类    
-
-### Android 屏幕适配
-
-屏幕适配的方式：xxxdpi， wrap_content,match_parent. 获取屏幕大小，做处理。    
-dp来适配屏幕，sp来确定字体大小    
-drawable-xxdpi, values-1280*1920等 这些就是资源的适配。    
-wrap_content,match_parent, 这些是view的自适应    
-weight，这是权重的适配。    
-
-在res目录下创建不同的layout文件夹    
-9.png 使用点9图保证图片拉伸的时候不失真    
-
 ### 对Handler ，looper，MessageQueue 的理解
 
 andriod提供了 Handler 和 Looper 来满足线程间的通信。Handler 先进先出原则。Looper类用来管理特定线程内对象之间的消息交换(Message Exchange)。
@@ -1569,6 +1542,56 @@ __实现响应式的手段__
 Activity运行时按下HOME键(跟被完全覆盖是一样的)：onSaveInstanceState --> onPause --> onStop onRestart -->onStart--->onResume
 
 Activity未被完全覆盖只是失去焦点：onPause--->onResume
+
+### 性能调优的经验
+
+UI的样式减少嵌套,多使用RelativeLayout和ConstraintLayout来布局,减少屏幕的控件数量    
+ListView的每一个单元格中这样调优效果明显,减少滑动的卡顿感    
+
+图片Bitmap尽量压缩尺寸,原图尽量减少尺寸,设置inSampleSize(缩放比例)和decode format(解码格式)    
+选择ARGB_8888/RBG_565/ARGB_4444/ALPHA_8，存在很大差异。    
+
+Activity退出的时候释放Bitmap资源    
+
+ListView列表中使用RecyclerView来提高效率    
+
+UI线程中不允许网络访问,Android官方已在4.0以后禁止了    
+加载图片,访问文件这种耗时的操作也应该放到单独的线程中操作    
+ASyncTask就是多线程操作的辅助类    
+
+#### Android 屏幕适配
+
+屏幕适配的方式：xxxdpi， wrap_content,match_parent. 获取屏幕大小，做处理。    
+dp来适配屏幕，sp来确定字体大小    
+drawable-xxdpi, values-1280*1920等 这些就是资源的适配。    
+wrap_content,match_parent, 这些是view的自适应    
+weight，这是权重的适配。    
+
+在res目录下创建不同的layout文件夹    
+9.png 使用点9图保证图片拉伸的时候不失真    
+
+以mdpi(320 × 480)为基准，进行尺寸的缩放；    
+缩放规则：    
+
+* mdpi 1 原始尺寸
+* ldpi 0.75倍 尺寸
+* hdpi 1.5倍 尺寸
+* xhdpi 2倍 尺寸
+* xxhdpi 3倍
+* xxxhdpi 4倍
+
+在android3.0之后出现了一套新的屏幕尺寸适配规则： swXXXdp, wXXXdp, hXXXdp 
+
+### 机型适配
+
+防止调用失败，文件选择器不调用系统自带的，在App中集成一个   
+
+__一个机型适配的案例__
+
+屏幕手势Touch事件
+
+最近在做监听Touch事件时候，在onInterceptTouchEvent拦截事件时候，拦截Move事件，开发时在华为手机上没有什么问题，而在vivo和魅族手机上，却发现点击屏幕时，手势down之后，不移动在这两个手机上却发出了move事件，并且打印的getY值是一样的，这导致了出现了拦截这次点击事件，但是点击事件收不到。而回头到华为手机上时，只有down事件，一旦移动才会有move事件发生，这才是正确的事件分发。
+解决办法：故为了兼容，才在move中判断下move下移动距离必须大于0才拦截
 
 ### AOP
 
