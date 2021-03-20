@@ -712,6 +712,128 @@ Observable类中实现subscribeOn和observeOn
             }
         });
 
+## Observables：Single、Completable、Maybe。
+
+除了标准的Observable类以外还可以使用其他的类型的Observable。比如 Single、Completable、Maybe。
+
+### Single
+Single是用来发送单一的数据，只有 onSuccess 和 onError 事件。对数据进行异步操作的时候常用。
+
+onSuccess()用于发射数据(在Observable/Flowable中使用onNext()来发射数据)。而且只能发射一个数据，后面即使再发射数据也不会做任何处理。
+
+    Single.create(new SingleOnSubscribe<Address>() {
+        @Override
+        public void subscribe(@NonNull SingleEmitter<Address> emitter) throws Exception {
+            emitter.onSuccess(address);
+        }
+    }).subscribeOn(Schedulers.newThread()) // "work" on io thread
+    .observeOn(AndroidSchedulers.mainThread()) // "listen" on UIThread);
+    .subscribe(new SingleObserver<Address>() {
+        @Override
+        public void onSubscribe(@NonNull Disposable d) {
+        }
+
+        @Override
+        public void onSuccess(@NonNull Address address) {
+            dismiss();
+        }
+
+        @Override
+        public void onError(@NonNull Throwable e) {
+            e.printStackTrace();
+        }
+    });
+
+### Completable
+
+Completable在创建后，不会发射任何数据。
+
+### Maybe
+
+Maybe 是 RxJava2.x 之后才有的新类型，可以看成是Single和Completable的结合。
+
+Maybe创建之后，MaybeEmitter 和 SingleEmitter 一样并没有onNext()方法，同样需要通过onSuccess()方法来发射数据。
+
+    Maybe.create(new MaybeOnSubscribe<String>() {
+        @Override
+        public void subscribe(@NonNull MaybeEmitter<String> e) throws Exception {
+            e.onSuccess("testA");
+        }
+    }).subscribe(new Consumer<String>() {
+
+        @Override
+        public void accept(@NonNull String s) throws Exception {
+
+            System.out.println("s="+s);
+        }
+    });
+
+## Flowable背压策略
+
+被观察者发送事件的速度大于观察者接收事件的速度时，观察者内会创建一个无限制大少的缓冲池存储未接收的事件，因此当存储的事件越来越多时就会导致OOM的出现。（注：当subscribeOn与observeOn不为同一个线程时，被观察者与观察者内存在不同时长耗时任务，就会使发送与接收速度存在差异。）
+
+Flowable的例子
+
+    Flowable.create(new FlowableOnSubscribe<Integer>() {
+        @Override
+        public void subscribe(FlowableEmitter<Integer> e) throws Exception {
+            for(int j = 0;j<=150;j++){
+                e.onNext(j);
+                Log.i(TAG," 发送数据："+j);
+                try{
+                    Thread.sleep(50);
+                }catch (Exception ex){
+                }
+            }
+        }
+    },BackpressureStrategy.ERROR)
+    .subscribeOn(Schedulers.newThread())
+    .observeOn(Schedulers.newThread())
+    .subscribe(new Subscriber<Integer>() {
+        @Override
+        public void onSubscribe(Subscription s) {
+            s.request(Long.MAX_VALUE); //观察者设置接收事件的数量,如果不设置接收不到事件
+        }
+        @Override
+        public void onNext(Integer integer) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            Log.e(TAG,"onNext : "+(integer));
+        }
+        @Override
+        public void onError(Throwable t) {
+            Log.e(TAG,"onError : "+t.toString());
+        }
+        @Override
+        public void onComplete() {
+            Log.e(TAG,"onComplete");
+        }
+    });
+
+跟Observable的区别
+
+* 被观察者使用FlowableOnSubscribe而不是ObservableOnSubscribe
+* 观察者使用Subscriber
+* 需要添加BackpressureStrategy策略类
+
+BackpressureStrategy 背压策略
+
+* ERROR    
+    缓存池默认大少为：128，当被观察者发送事件大于128时，观察者抛出异常并终止接收事件，但不会影响被观察者继续发送事件。
+* BUFFER    
+    与Observable一样存在背压问题，但是接收性能比Observable低，因为BUFFER类型通过BufferAsyncEmitter添加了额外的逻辑处理，再发送至观察者。
+* DROP    
+    每当观察者接收128事件之后，就会丢弃部分事件。
+* LATEST    
+    LATEST与DROP使用效果一样，但LATEST会保证能接收最后一个事件，而DROP则不会保证。
+* MISSING     
+    MISSING就是没有采取背压策略的类型，效果跟Obserable一样。
+
+request(int count)：设置接收事件的数量,如果不设置接收不到事件
+
 --------
 
 ## Retrofit和RxJava结合
