@@ -93,23 +93,37 @@ Tag推送到服务器
 
 ## 分支操作
 
-__分支修改名称__
+### 查看分支
+
+    git branch
+
+### 查看远程分支
+
+    git branch -a
+
+### 分支修改名称
 
     git branch -m [新名称] [旧名称]
     git branch -m mymaster master
 
 git默认master作为主分支
 
-__创建分支__
+### 创建分支
 
 从一个现有的分支创建新分支
 
     git checkout -b [新分支名称] [参照分支]
     git checkout -b testing master
 
-__删除分支__
+没有参照分支的话就以当前分支参照创建新分支
+
+### 删除分支
 
     git branch -d [branch_name]
+
+### 删除远程分支
+
+    git branch -r -d origin/branch-name
 
 ### 分支合并
 
@@ -141,7 +155,7 @@ git merge分支合并方式
 
     git cherry-pick [31483ed 7位的提交编号]
 
-__git stash命令__
+## git stash 修改暂存命令
 
 如果需要切换到另一个分支并且不想提交当前分支的修改，可以适用git stash命令把当前分支的修改暂存起来    
 git stash会把所有未提交的修改（包括暂存的和非暂存的）都保存起来，用于后续恢复当前工作目录。
@@ -178,7 +192,7 @@ git stash会把所有未提交的修改（包括暂存的和非暂存的）都�
 
     git stash branch ［branch_name］
 
-__git rebase命令__
+## git rebase命令
 
 1.对已经提交的commit进行编辑修改
 
