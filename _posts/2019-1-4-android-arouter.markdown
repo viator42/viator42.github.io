@@ -146,4 +146,4 @@ categories: Android
 3，启动 Activity
 
     ARouter.getInstance().build(RouterPath.PATH_CART)
-        .navigation(WishlistActivity.this, new LoginNavigationCallbackImpl());
+        ·.navigation(WishlistActivity.this, new LoginNavigationCallbackImpl());
