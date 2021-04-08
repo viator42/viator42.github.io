@@ -1,9 +1,52 @@
 ---
 layout: post
-title:  "Dagger2 笔记"
+title:  "Hilt & Dagger2 笔记"
 date:   "2018-12-18"
 categories: android
 ---
+
+# Hilt
+
+Hilt是用来代替Dagger的依赖注入框架，解决了Dagger存在的问题并更适用于Android开发。
+
+## Hilt相对于Dagger做的优化有
+
+1.无需编写大量的Component代码
+2.Scope也会与Component自动绑定
+3.预定义绑定，例如 Application与Activity
+4.预定义的限定符，例如@ApplicationContext与@ActivityContext
+
+## Hilt的用法
+
+### 1.必须要自定义一个Application并添加@HiltAndroidApp注解，否则Hilt将无法正常工作。
+
+    @HiltAndroidApp
+    class MyApplication : Application() {
+        。。。
+    }
+
+### 2.@AndroidEntryPoint定义入口点
+
+    class MainActivity : AppCompatActivity() {
+        override fun onCreate(savedInstanceState: Bundle?) {
+            super.onCreate(savedInstanceState)
+            setContentView(R.layout.activity_main)
+        }
+        
+    }
+
+Hilt大幅简化了Dagger2的用法，使得我们不用通过@Component注解去编写桥接层的逻辑，但是也因此限定了注入功能只能从几个Android固定的入口点开始。
+
+    * Application
+    * Activity
+    * Fragment
+    * View
+    * Service
+    * BroadcastReceiver
+
+--------
+
+# Dagger2 已废弃
 
 ## 概念
 

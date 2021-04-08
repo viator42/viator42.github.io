@@ -378,4 +378,63 @@ Lambda表达式语法
             println(it)
         }
 
+--------
+
+# Kotlin Android相关
+
+## Kotlin Android Extensions
+
+绑定视图功能
+
+content_main.xml
+
+    <LinearLayout
+            android:layout_marginTop="@dimen/margin_standard"
+            android:layout_centerHorizontal="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/tomatoView">
+        <Button
+                android:text="@string/start"
+                android:id="@+id/start"
+                android:layout_margin="@dimen/margin_standard"
+                android:background="@color/colorPrimary"
+                android:textColor="@color/textWhite"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+        <Button
+                android:text="@string/stop"
+                android:layout_margin="@dimen/margin_standard"
+                android:background="@color/colorPrimary"
+                android:textColor="@color/textWhite"
+                android:id="@+id/stop"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+    </LinearLayout>
+
+MainActivity.kt
+
+    import kotlinx.android.synthetic.main.content_main.*
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        。。。
+
+        //可以在代码中直接使用view，不再需要findViewById
+        start.setOnClickListener(object : View.OnClickListener {
+            override fun onClick(v: View?) {
+                。。。
+            }
+        })
+
+        stop.setOnClickListener(object : View.OnClickListener {
+            override fun onClick(v: View?) {
+                。。。
+            }
+        })
+
+    }
+
+
+
 
