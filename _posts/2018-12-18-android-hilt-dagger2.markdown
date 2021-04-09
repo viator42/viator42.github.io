@@ -16,6 +16,27 @@ Hilt是用来代替Dagger的依赖注入框架，解决了Dagger存在的问题�
 3.预定义绑定，例如 Application与Activity
 4.预定义的限定符，例如@ApplicationContext与@ActivityContext
 
+## Hilt集成
+
+build.gradle (项目根目录)
+
+    dependencies {
+            。。。
+            classpath 'com.google.dagger:hilt-android-gradle-plugin:2.28-alpha'
+        }
+
+build.gradle （app）
+
+    apply plugin: 'kotlin-android'
+    apply plugin: 'kotlin-kapt'
+    apply plugin: 'dagger.hilt.android.plugin'
+
+    dependencies {
+        。。。
+        implementation "com.google.dagger:hilt-android:2.28-alpha"
+        kapt "com.google.dagger:hilt-android-compiler:2.28-alpha"
+    }
+
 ## Hilt的用法
 
 ### 1.必须要自定义一个Application并添加@HiltAndroidApp注解，否则Hilt将无法正常工作。
@@ -43,6 +64,133 @@ Hilt大幅简化了Dagger2的用法，使得我们不用通过@Component注解�
     * View
     * Service
     * BroadcastReceiver
+
+### 3.对于被注入的类要定义@Inject注解，通过这个构造函数来创建类
+
+    class Truck @Inject constructor() {
+        fun deliver() {
+            println("Truck is delivering cargo.")
+        }
+    }
+
+### 4.注入类实现
+
+    @AndroidEntryPoint
+    class MainActivity : AppCompatActivity() {
+
+        @Inject
+        lateinit var truck: Truck
+
+        override fun onCreate(savedInstanceState: Bundle?) {
+            super.onCreate(savedInstanceState)
+            setContentView(R.layout.activity_main)
+            truck.deliver()
+        }
+
+    }
+
+## 带参数的依赖注入
+
+    class Truck @Inject constructor(val driver: Driver) {
+        fun deliver() {
+            println("Truck is delivering cargo. Driven by $driver")
+        }
+    }
+
+构造函数中所依赖的所有其他对象都支持依赖注入了，那么本类才可以被依赖注入。
+
+## 接口的依赖注入
+
+正常的创建接口，不需要特殊处理
+
+    interface Engine {
+        fun start()
+        fun shutdown()
+    }
+
+创建实现接口的类，实现接口方法，@Inject标注构造方法
+
+    class GasEngine @Inject constructor(): Engine {
+        override fun start() {
+            println("")
+            Log.v("HiltTester","Gas engine start.")
+        }
+
+        override fun shutdown() {
+            println("")
+            Log.v("HiltTester","Gas engine shutdown.")
+        }
+
+    }
+
+创建一个Module抽象类，类名不限，@InstallIn标明作用范围，作用是标识接口使用哪个实现类进行初始化
+
+    @Module
+    @InstallIn(ActivityComponent::class)
+    abstract class EngineModule {
+        @Binds
+        abstract fun bindEngine(gasEngine: GasEngine): Engine
+    }
+
+接下来就可以对接口进行注入
+
+    class Truck @Inject constructor() {
+        @Inject
+        lateinit var engine: Engine
+
+        fun startEngine() {
+            engine.start()
+        }
+    }
+
+## 第三方类的注入
+
+对于第三方类，没法在类中添加@Inject入口，解决方法是在Module类中手动实现构造方法，@Provides方法注解构造方法。
+
+    @Module
+    @InstallIn(ActivityComponent::class)
+    class NetworkModule {
+
+        @Singleton  //如果在作用域中只需要一个对象，就添加@Single注解
+        @Provides
+        fun provideOkHttpClient(): OkHttpClient {
+            return OkHttpClient.Builder()
+                .connectTimeout(20, TimeUnit.SECONDS)
+                .readTimeout(20, TimeUnit.SECONDS)
+                .writeTimeout(20, TimeUnit.SECONDS)
+                .build()
+        }
+
+    }
+
+## 组件的作用域
+
+nstallIn，就是安装到的意思。那么@InstallIn(ActivityComponent::class)，就是把这个模块安装到Activity组件当中。
+
+既然是安装到了Activity组件当中，那么自然在Activity中是可以使用由这个模块提供的所有依赖注入实例。另外，Activity中包含的Fragment和View也可以使用，但是除了Activity、Fragment、View之外的其他地方就无法使用了。
+
+* Hilt 组件       注入器面向的对象
+* ApplicationComponent    Application
+* ActivityRetainedComponent	ViewModel
+* ActivityComponent	Activity
+* FragmentComponent	Fragment
+* ViewComponent	View
+* ViewWithFragmentComponent	带有 @WithFragmentBindings 注释的 View
+* ServiceComponent	Service
+
+## 预置Qualifier
+
+如果需要注入的类需要Context参数，参数前面加入ApplicationContext注解即可
+
+    @Singleton
+        class Driver @Inject constructor(@ApplicationContext val context: Context) {
+    }
+
+如果是Activity参数
+
+    @Singleton
+        class Driver @Inject constructor(@ActivityContext val context: Context) {
+    }
 
 --------
 
