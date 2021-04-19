@@ -7,14 +7,14 @@ categories: Android Kotlin
 
 ## 基本数据类型
 
-类型 | 位宽度
----|---
-Double | 64    
-Float | 32     
-Long | 64    
-Int | 32    
-Short | 16    
-Byte | 8    
+｜ 类型 | 位宽度 ｜
+｜ --- | --- ｜
+｜ Double | 64 ｜    
+｜ Float | 32 ｜    
+｜Long | 64 ｜   
+｜ Int | 32 ｜   
+｜ Short | 16 ｜   
+｜ Byte | 8 ｜   
 
 类型的转换方法
 
@@ -42,9 +42,6 @@ Byte | 8
 __?:__ Elvis运算符，null合并运算符
 
     val result = param ?: ""    //param为null的时候result赋值为""
-
-
-
 
 --------
 
@@ -127,6 +124,12 @@ if语句的判断结果可以作为表达式返回
 
     val max = if (a > b) a else b
 
+使用 in 运算符来检测某个数字是否在指定区间内，区间格式为 x..y 
+
+    if (x in 1..8) {
+        println("x 在区间内")
+    }
+
 ### 循环
 
 迭代器迭代循环
@@ -140,6 +143,24 @@ if语句的判断结果可以作为表达式返回
 
     if (x in 1..8) {
         println(x)
+    }
+
+    for (i in 1..4) print(i) // 输出“1234”
+
+    for (i in 4..1) print(i) // 什么都不输出
+
+    if (i in 1..10) { // 等同于 1 <= i && i <= 10
+        println(i)
+    }
+
+    // 使用 step 指定步长
+    for (i in 1..4 step 2) print(i) // 输出“13”
+
+    for (i in 4 downTo 1 step 2) print(i) // 输出“42”
+
+    // 使用 until 函数排除结束元素
+    for (i in 1 until 10) {   // i in [1, 10) 排除了 10
+        println(i)
     }
 
 ### When表达式
