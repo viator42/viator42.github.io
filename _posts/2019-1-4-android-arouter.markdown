@@ -15,7 +15,7 @@ categories: Android
         annotationProcessor 'com.alibaba:arouter-compiler:1.2.2'
     }
 
-1.在尽量早的地方初始化，比如Application类中
+### 1.在尽量早的地方初始化，比如Application类中
 
     public class AppContext extends Application {
         @Override
@@ -27,7 +27,7 @@ categories: Android
         }
     }
 
-2.跳转的目标Activity添加注解，包括url参数
+### 2.跳转的目标Activity添加注解，包括url参数
 
     @Route(path = "/app/test/basic")
     public class RouteDestActivityActivity extends AppCompatActivity {
@@ -49,12 +49,20 @@ categories: Android
         }
     }
 
-3.跳转
+### 3.跳转
 
     ARouter.getInstance().build("/app/test/basic")
         .withInt("testInt", 666)
-        .withString("testString", "this is testString")
+        .withString("testString", "this is testString")     //添加参数
+        .withTransition(R.anim.wrap_slide_enter_in, R.anim.wrap_slide_enter_out)    //添加跳转动画
         .navigation();
+
+    参数可以在目标Activity用Bundle接收
+
+### 4.跳转时添加requestCode，相当于startActivityForResult
+
+    ARouter.getInstance().build("/app/test/basic")
+        .navigation(SettingsActivity.this, 1000);   //第二个参数为requestCode
 
 ## 拦截器
 
