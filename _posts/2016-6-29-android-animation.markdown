@@ -161,6 +161,7 @@ Android 3.0之后出现了属性动画.
 __有关类__
 
 ValueAnimator    
+
 属性动画的运行机制是通过不断地对值进行操作来实现的，通过不断控制值的变化，再不断手动赋给对象的属性，从而实现动画效果。而初始值和结束值之间的动画过渡就是由ValueAnimator这个类来负责计算的。相当于一个计数器
 
     ValueAnimator valueAnimator = ValueAnimator.ofInt(0,100);
@@ -173,15 +174,16 @@ ValueAnimator
     });
     valueAnimator.start();
 
-ValueAnimator类    
+ValueAnimator
+
 属性动画机制中 最核心的一个类    
 实现动画的原理：通过不断控制 值 的变化，再不断 手动 赋给对象的属性，从而实现动画效果。
 
 ValueAnimatior类的方法
 
-ofInt()       
-ofFloat()
-ofObject()    
+* ofInt()       
+* ofFloat()
+* ofObject()    
 
 ifInt(0, 100, 0) 参数为任意多个整形数,赋给对象的值在这些范围内变化,从开始值过渡到结束值,ofFloat同理
 
@@ -213,8 +215,6 @@ ofObject() 将初始值以对象的形式过渡到结束值
     });
     valueAnimator1.start();
 
---------
-
 ObjectAnimator    
 对任意的对象进行动画操作的类
 
@@ -243,6 +243,48 @@ AnimatorSet animSet = new AnimatorSet();    //创建Animationset
 animSet.play(anim1).with(anim2).before(anim3);  //组合播放动画的策略
 animSet.setDuration(5000);  //播放动画
 animSet.start();
+
+组合动画示例
+
+    ObjectAnimator AlphaAnimator = ObjectAnimator.ofFloat(coverImageView, "alpha", 0.8f, 0f);
+    ObjectAnimator moveXAnimatior = ObjectAnimator.ofFloat(badgeImageView, "translationX",-100f);
+    ObjectAnimator moveYAnimatior = ObjectAnimator.ofFloat(badgeImageView, "translationY", -100f);
+    ObjectAnimator scaleX = ObjectAnimator.ofFloat(badgeImageView, "scaleX", 1f, 0.1f);
+    ObjectAnimator scaleY = ObjectAnimator.ofFloat(badgeImageView, "scaleY", 1f, 0.1f);
+
+    AnimatorSet animSet = new AnimatorSet();
+    animSet.play(moveXAnimatior)
+            .with(moveYAnimatior)
+            .with(scaleX)
+            .with(scaleY)
+            .with(AlphaAnimator);
+
+    animSet.setDuration(3000);
+
+    //动画开始/结束/取消时的回调方法
+    animSet.addListener(new Animator.AnimatorListener() {
+        @Override
+        public void onAnimationStart(Animator animation) {
+
+        }
+
+        @Override
+        public void onAnimationEnd(Animator animation) {
+            badgeImageView.setVisibility(View.GONE);
+            coverImageView.setVisibility(View.GONE);
+        }
+
+        @Override
+        public void onAnimationCancel(Animator animation) {
+
+        }
+
+        @Override
+        public void onAnimationRepeat(Animator animation) {
+
+        }
+    });
+    animSet.start();
 
 或者说在xml文件中定义动画集合
 
