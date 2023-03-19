@@ -87,13 +87,31 @@ __重写onLayout__
 
 onLayout方法确定ViewGroup所有的子元素的位置
 
+__draw绘制流程__
+
+1. 如果需要，绘制背景。
+2. 有过有必要，保存当前canvas。
+3. 绘制View的内容。
+4. 绘制子View。
+5. 如果有必要，绘制边缘、阴影等效果。
+6. 绘制装饰，如滚动条等等。
+
 __自定义View需要注意的地方__
 
 * View支持wrap_content    
 * View支持padding,就是设置padding值的时候onMeasure函数返回的尺寸减去padding值    
 * 使用post方法来传递信息,尽量不使用Handler   
-* onDetatchedFromVindow方法加载动画和线程,onDetachedFromWindow方法停止动画和线程,防止一直占用系统资源导致OOM   
+* onAttachedToWindow方法加载动画和线程,onDetachedFromWindow方法停止动画和线程,防止一直占用系统资源导致OOM   
 * View有滑动时处理滑动冲突
+
+__onAttachedToWindow () 和 onDetachedFromWindow ()__
+
+onAttachedToWindow是在第一次onDraw前调用的。也就是我们写的View在没有绘制出来时调用的，但只会调用一次。
+onDetachedFromWindow在所属的activity被销毁的时候调用
+
+onAttachedToWindow方法是在Act resume的时候被调用的，也就是act对应的window被添加的时候，且每个view只会被调用一次，父view的调用在前，不论view的visibility状态都会被调用，适合做些view特定的初始化操作；
+
+onDetachedFromWindow方法是在Act destroy的时候被调用的，也就是act对应的window被删除的时候，且每个view只会被调用一次，父view的调用在后，也不论view的visibility状态都会被调用，适合做最后的清理操作；
 
 ---------
 
